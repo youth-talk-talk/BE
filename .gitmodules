@@ -1,0 +1,3 @@
+[submodule "BE-submodule-data"]
+	path = BE-submodule-data
+	url = https://github.com/youth-talk-talk/BE-submodule-data.git

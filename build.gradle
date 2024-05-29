@@ -1,0 +1,59 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.2.5'
+	id 'io.spring.dependency-management' version '1.1.4'
+}
+
+group = 'com.server'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	sourceCompatibility = '17'
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+	implementation 'com.h2database:h2' // H2 데이터베이스 의존성 추가 (테스트용)
+
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+
+
+	// JUnit 5 (JUnit Jupiter) 의존성 명시적 선언
+//	testImplementation 'org.junit.jupiter:junit-jupiter-api'
+//	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+//	testImplementation 'org.mockito:mockito-core'
+//	testImplementation 'org.mockito:mockito-junit-jupiter'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+tasks.register('copyYamlFiles', Copy) {
+	from './BE-submodule-data'
+	include '*.yml'
+	into 'src/main/resources'
+}
+
+processResources {
+	dependsOn tasks.named('copyYamlFiles')
+}
