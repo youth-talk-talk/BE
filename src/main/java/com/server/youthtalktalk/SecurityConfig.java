@@ -1,3 +1,4 @@
+/*
 package com.server.youthtalktalk;
 
 import com.server.youthtalktalk.exception.Exception401;
@@ -6,12 +7,14 @@ import com.server.youthtalktalk.security.JwtAuthenticationFilter;
 import com.server.youthtalktalk.util.FilterResponseUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -25,6 +28,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 
 @Slf4j
 @RequiredArgsConstructor
+@EnableWebSecurity
 @Configuration
 public class SecurityConfig {
 
@@ -36,6 +40,8 @@ public class SecurityConfig {
 
     @Value("${jwt.secret}")
     private String jwtSecret;
+
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -102,4 +108,4 @@ public class SecurityConfig {
         manager.createUser(User.withUsername(username).password(passwordEncoder().encode(password)).roles("USER").build()); // 사용자 생성
         return manager;
     }
-}
+}*/
