@@ -28,7 +28,7 @@ out/
 
 ## 보안 ##
 /src/main/resources/*.yml
-
+/src/main/resources/*.properties
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/

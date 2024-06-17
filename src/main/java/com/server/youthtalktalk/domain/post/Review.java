@@ -1,6 +1,6 @@
 package com.server.youthtalktalk.domain.post;
 
-import com.server.youthtalktalk.domain.Policy;
+import com.server.youthtalktalk.domain.policy.Policy;
 import jakarta.persistence.*;
 import lombok.Getter;
 
