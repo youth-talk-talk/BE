@@ -21,8 +21,8 @@ public class Member {
     private String nickname;
 
     private String email;
-    private String profile;
-    private String userType;
+    private String profileUrl;
+    private UserType userType;
     private String region;
 
     @OneToMany(mappedBy = "writer")
@@ -35,6 +35,6 @@ public class Member {
     private List<Scrap> scraps = new ArrayList<>();
 
     @OneToMany(mappedBy = "member")
-    private List<Like> likes = new ArrayList<>();
+    private List<Likes> likes = new ArrayList<>();
 
 }

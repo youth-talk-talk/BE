@@ -1,12 +1,15 @@
 package com.server.youthtalktalk.domain.post;
 
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
+import com.server.youthtalktalk.domain.Policy;
+import jakarta.persistence.*;
 import lombok.Getter;
 
 @Entity
 @Getter
 @DiscriminatorValue("review")
 public class Review extends Post {
-    private Long policyId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "policy_id")
+    private Policy policy;
 }

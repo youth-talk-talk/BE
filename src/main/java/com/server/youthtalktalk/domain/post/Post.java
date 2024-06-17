@@ -36,5 +36,5 @@ public abstract class Post {
     private List<Image> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "post")
-    private List<Comment> postComments = new ArrayList<>();
+    private List<PostComment> postComments = new ArrayList<>();
 }

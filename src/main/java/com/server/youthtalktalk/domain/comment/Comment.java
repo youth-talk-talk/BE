@@ -1,6 +1,6 @@
 package com.server.youthtalktalk.domain.comment;
 
-import com.server.youthtalktalk.domain.Like;
+import com.server.youthtalktalk.domain.Likes;
 import com.server.youthtalktalk.domain.Member;
 import jakarta.persistence.*;
 import lombok.Generated;
@@ -30,5 +30,5 @@ public abstract class Comment {
     private Long view;
 
     @OneToMany(mappedBy = "comment")
-    private List<Like> commentLikes = new ArrayList<>();
+    private List<Likes> commentLikes = new ArrayList<>();
 }
