@@ -34,12 +34,12 @@ public class Policy {
     private RepeatCode repeatCode; // 반복 코드
 
     @Column(columnDefinition = "TEXT")
-    private String applDate; // 신청기간
+    private String applyTerm; // 신청기간
 
     @Column(columnDefinition = "TEXT")
-    private String operDate; // 운영기간
+    private String operationTerm; // 운영기간
 
-    private LocalDate applEndDate; // 신청 마감일
+    private LocalDate applyDue; // 신청 마감일
 
     private int minAge; // 최소 연령
 

@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Getter
@@ -119,7 +120,14 @@ public class PolicyData {
         /**
          * TO-DO 신청기간에서 마감일 추출
          */
-        LocalDate applEndDate = null;
+        DateExtractor dateExtractor = new DateExtractor();
+        String applyTerm = Optional
+                .ofNullable(this.rqutPrdCn)
+                .map(String::trim) // null이 아니면 공백 제거
+                .orElseGet(()->"-"); // null은 "-"으로 대체
+        LocalDate applyDue = dateExtractor.extractDue(applyTerm);
+        log.info("applyTerm={}", applyTerm);
+        log.info("applyDue={}", applyDue);
 
         return Policy.builder()
                 .policyId(cDataConvert(this.bizId))
@@ -128,9 +136,9 @@ public class PolicyData {
                 .minAge(minAge)
                 .maxAge(maxAge)
                 .repeatCode(repeatCode)
-                .applDate(this.rqutPrdCn)
-                .operDate(this.bizPrdCn)
-                .applEndDate(applEndDate)
+                .applyTerm(applyTerm)
+                .operationTerm(this.bizPrdCn)
+                .applyDue(applyDue)
                 .addition(cDataConvert(this.aditRscn))
                 .etc(cDataConvert(this.etct))
                 .addrIncome(cDataConvert(this.prcpCn))
