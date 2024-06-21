@@ -3,14 +3,19 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.server.youthtalktalk.domain.policy.Category;
 import com.server.youthtalktalk.domain.policy.Policy;
 import com.server.youthtalktalk.domain.policy.Region;
+import com.server.youthtalktalk.domain.policy.RepeatCode;
+import com.server.youthtalktalk.util.DateExtractor;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 @Getter
 @NoArgsConstructor(access=AccessLevel.PROTECTED)
 public class PolicyData {
@@ -81,7 +86,7 @@ public class PolicyData {
     @JacksonXmlProperty(localName = "polyRlmCd")
     private String polyRlmCd;
 
-    public Policy toPolicy(Region region){
+    public Policy toPolicy(Region region) {
         // 카테고리 분류
         Category category = switch (this.polyRlmCd) {
             case "023010" -> Category.JOB;
@@ -90,55 +95,31 @@ public class PolicyData {
             case "023050" -> Category.PARTICIPATION;
             default -> null;
         };
+
+        // 연령정보 분류
         int minAge = 0;
         int maxAge = 0;
-        LocalDateTime applStartDate = null;
-        LocalDateTime applEndDate = null;
-        // 연령정보 분류
         String ageInfo = cDataConvert(this.ageInfo);
         if(ageInfo!=null&&!ageInfo.equals("제한없음")){
             String[] ages = ageInfo.replaceAll("[^0-9~]", "").split("~");
             minAge = Integer.parseInt(ages[0].trim());
             if(ages.length>=2) maxAge = Integer.parseInt(ages[1].trim());
         }
-        // 신청기간 분류
-        String applTerm = cDataConvert(this.rqutPrdCn);
-//        List<String> dateList = new ArrayList<>();
-//        if(applTerm!=null&&!applTerm.equals("-")){
-//            // 숫자만 추출하는 정규 표현식 패턴
-//            Pattern pattern = Pattern.compile("\\d+");
-//            Matcher matcher = pattern.matcher(applTerm);
-//
-//            // 매치된 숫자들을 리스트에 추가
-//            while (matcher.find()) {
-//                String number = matcher.group(); // 매치된 숫자 문자열
-//                if (number.length() == 1) {
-//                    number = "0" + number; // 두 자리 숫자로 맞추기
-//                }
-//                dateList.add(number);
-//            }
-//        }
-//        int startYear=0,startMonth=0,startDay=0;
-//        int endYear=0,endMonth=0,endDay=0;
-//        for(int i=0; i<dateList.size(); i++){
-//            switch(i){
-//                case 0 -> startYear = Integer.parseInt(dateList.get(i).trim());
-//                case 1 -> startMonth = Integer.parseInt(dateList.get(i).trim());
-//                case 2 -> startDay = Integer.parseInt(dateList.get(i).trim());
-//                case 3 -> endYear = Integer.parseInt(dateList.get(i).trim());
-//                case 4 -> endMonth = Integer.parseInt(dateList.get(i).trim());
-//                case 5 -> endDay = Integer.parseInt(dateList.get(i).trim());
-//                default -> { break; }
-//            }
-//            System.out.println("dateList.get(i)="+dateList.get(i));
-//        }
-//
-//        if(startYear!=0&&startMonth!=0&&startDay!=0){
-//            applStartDate = LocalDateTime.of(startYear,startMonth,startDay,0,0);
-//        }
-//        if(endYear!=0&&endMonth!=0&&endDay!=0){
-//            applEndDate = LocalDateTime.of(endYear,endMonth,endDay,0,0);
-//        }
+
+        // 반복코드 분류
+        RepeatCode repeatCode = switch(this.prdRpttSecd) {
+            case "002001" -> RepeatCode.ALWAYS;
+            case "002002" -> RepeatCode.ANNUALLY;
+            case "002003" -> RepeatCode.MONTHLY;
+            case "002004" -> RepeatCode.PERIOD;
+            case "002005" -> RepeatCode.UNDEFINED;
+            default -> null;
+        };
+
+        /**
+         * TO-DO 신청기간에서 마감일 추출
+         */
+        LocalDate applEndDate = null;
 
         return Policy.builder()
                 .policyId(cDataConvert(this.bizId))
@@ -146,7 +127,9 @@ public class PolicyData {
                 .title(cDataConvert(this.polyBizSjnm))
                 .minAge(minAge)
                 .maxAge(maxAge)
-                .applStartDate(applStartDate)
+                .repeatCode(repeatCode)
+                .applDate(this.rqutPrdCn)
+                .operDate(this.bizPrdCn)
                 .applEndDate(applEndDate)
                 .addition(cDataConvert(this.aditRscn))
                 .etc(cDataConvert(this.etct))

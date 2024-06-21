@@ -14,10 +14,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -27,7 +30,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
     private final PolicyRepository policyRepository;
     @Value("${youthpolicy.api.secret-key}")
     private String secretKey;
-    private int pageSize = 1;
+    private int pageSize = 50;
 
     @Override
     @Transactional
@@ -36,6 +39,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
         List<Policy> policyList = new ArrayList<>();
         // 지역별로 데이터 저장
         for(Region region : regions) {
+            log.info("region={}", region.getName());
             List<PolicyData> dataList = fetchData(region.getKey());
             for(PolicyData data : dataList)
                 policyList.add(data.toPolicy(region));
@@ -47,10 +51,10 @@ public class PolicyDataServiceImpl implements PolicyDataService {
     @Override
     public List<PolicyData> fetchData(String regionCode) {
         List<PolicyData> dataList = new ArrayList<>();
-
         WebClient webClient = WebClient.builder().baseUrl("https://www.youthcenter.go.kr/").build();
         int pageIndex = 1;
-        while(pageIndex<=3){
+        boolean hasMoreData = true;
+        while(hasMoreData){
             // api 호출 response 받기
             int page = pageIndex;
             Mono<String> response = webClient.get()
@@ -67,14 +71,20 @@ public class PolicyDataServiceImpl implements PolicyDataService {
             ObjectMapper xmlMapper = new XmlMapper();
             try {
                 PolicyDataListResponse dataListResponse = xmlMapper.readValue(response.block(), PolicyDataListResponse.class);
-                if(dataListResponse.getYouthPolicies().isEmpty()) // 더 이상 페이지가 없으면 break
-                    break;
-                dataList.addAll(dataListResponse.getYouthPolicies()); // 데이터리스트에 추가
+                List<PolicyData> youthPolicies = Optional
+                        .ofNullable(dataListResponse.getYouthPolicies())
+                        .orElse(Collections.emptyList());
+                if (youthPolicies.isEmpty()) {
+                    log.info("No more policies available");
+                    hasMoreData=false;
+                }
+                dataList.addAll(youthPolicies);
+                log.info("pageIndex={}", pageIndex);
+                pageIndex++;
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
                 return null;
             }
-            pageIndex++;
         }
         return dataList;
     }

@@ -1,6 +1,9 @@
-package com.server.youthtalktalk.domain;
+package com.server.youthtalktalk.domain.member;
 
+import com.server.youthtalktalk.domain.Likes;
+import com.server.youthtalktalk.domain.Scrap;
 import com.server.youthtalktalk.domain.comment.Comment;
+import com.server.youthtalktalk.domain.policy.Region;
 import com.server.youthtalktalk.domain.post.Post;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -23,7 +26,9 @@ public class Member {
     private String email;
     private String profileUrl;
     private UserType userType;
-    private String region;
+
+    @Enumerated(EnumType.STRING)
+    private Region region;
 
     @OneToMany(mappedBy = "writer")
     private List<Post> posts = new ArrayList<>();

@@ -1,13 +1,11 @@
-/*
 package com.server.youthtalktalk;
 
-import com.server.youthtalktalk.exception.Exception401;
-import com.server.youthtalktalk.exception.Exception403;
+import com.server.youthtalktalk.response.exception.Exception401;
+import com.server.youthtalktalk.response.exception.Exception403;
 import com.server.youthtalktalk.security.JwtAuthenticationFilter;
 import com.server.youthtalktalk.util.FilterResponseUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -108,4 +106,4 @@ public class SecurityConfig {
         manager.createUser(User.withUsername(username).password(passwordEncoder().encode(password)).roles("USER").build()); // 사용자 생성
         return manager;
     }
-}*/
+}

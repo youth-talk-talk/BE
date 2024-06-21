@@ -5,6 +5,7 @@ import com.server.youthtalktalk.domain.post.Review;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ public class Policy {
     @Id
     private String policyId; // 정책 아이디
 
+    @Enumerated(EnumType.STRING)
     private Region region; // 지역
 
     private String title; // 정책명
@@ -28,9 +30,16 @@ public class Policy {
     @Column(columnDefinition = "TEXT")
     private String supportDetail; // 지원 내용
 
-    private LocalDateTime applStartDate; // 신청 시작일
+    @Enumerated(EnumType.STRING)
+    private RepeatCode repeatCode; // 반복 코드
 
-    private LocalDateTime applEndDate; // 신청 마감일
+    @Column(columnDefinition = "TEXT")
+    private String applDate; // 신청기간
+
+    @Column(columnDefinition = "TEXT")
+    private String operDate; // 운영기간
+
+    private LocalDate applEndDate; // 신청 마감일
 
     private int minAge; // 최소 연령
 
@@ -74,6 +83,7 @@ public class Policy {
     @Column(columnDefinition = "TEXT")
     private String etc; // 기타 사항
 
+    @Enumerated(EnumType.STRING)
     private Category category; // 카테고리
 
     @OneToMany(mappedBy = "policy")
