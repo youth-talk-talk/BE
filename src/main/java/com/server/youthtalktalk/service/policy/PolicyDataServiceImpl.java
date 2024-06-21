@@ -3,6 +3,7 @@ package com.server.youthtalktalk.service.policy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.server.youthtalktalk.domain.policy.Category;
 import com.server.youthtalktalk.domain.policy.Policy;
 import com.server.youthtalktalk.domain.policy.Region;
 import com.server.youthtalktalk.dto.policy.PolicyData;
@@ -16,8 +17,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -38,7 +45,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
         for(Region region : regions) {
             List<PolicyData> dataList = fetchData(region.getKey());
             for(PolicyData data : dataList)
-                policyList.add(data.toPolicy(region));
+                policyList.add(data.toPolicy(data,region));
         }
 
         policyRepository.saveAll(policyList);
@@ -50,7 +57,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
         WebClient webClient = WebClient.builder().baseUrl("https://www.youthcenter.go.kr/").build();
         int pageIndex = 1;
-        while(pageIndex<=3){
+        while(true){
             // api 호출 response 받기
             int page = pageIndex;
             Mono<String> response = webClient.get()
@@ -67,7 +74,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
             ObjectMapper xmlMapper = new XmlMapper();
             try {
                 PolicyDataListResponse dataListResponse = xmlMapper.readValue(response.block(), PolicyDataListResponse.class);
-                if(dataListResponse.getYouthPolicies().isEmpty()) // 더 이상 페이지가 없으면 break
+                if(dataListResponse.getYouthPolicies()==null) // 더 이상 페이지가 없으면 break
                     break;
                 dataList.addAll(dataListResponse.getYouthPolicies()); // 데이터리스트에 추가
             } catch (JsonProcessingException e) {

@@ -18,4 +18,13 @@ public class PolicyDataController {
         dataService.saveData();
         return "success";
     }
+
+    @GetMapping("/test")
+    public String test() {
+        boolean result = true;
+        if(result)
+            throw new RuntimeException("테스트 에러");
+        else
+            return "test";
+    }
 }

@@ -5,6 +5,7 @@ import com.server.youthtalktalk.domain.post.Review;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,9 +29,7 @@ public class Policy {
     @Column(columnDefinition = "TEXT")
     private String supportDetail; // 지원 내용
 
-    private LocalDateTime applStartDate; // 신청 시작일
-
-    private LocalDateTime applEndDate; // 신청 마감일
+    private LocalDate applEndDate; // 신청 마감일
 
     private int minAge; // 최소 연령
 

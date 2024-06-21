@@ -1,8 +1,7 @@
-/*
-package com.server.youthtalktalk;
 
-import com.server.youthtalktalk.exception.Exception401;
-import com.server.youthtalktalk.exception.Exception403;
+package com.server.youthtalktalk;
+import com.server.youthtalktalk.response.exception.Exception401;
+import com.server.youthtalktalk.response.exception.Exception403;
 import com.server.youthtalktalk.security.JwtAuthenticationFilter;
 import com.server.youthtalktalk.util.FilterResponseUtils;
 import lombok.RequiredArgsConstructor;
@@ -108,4 +107,4 @@ public class SecurityConfig {
         manager.createUser(User.withUsername(username).password(passwordEncoder().encode(password)).roles("USER").build()); // 사용자 생성
         return manager;
     }
-}*/
+}

@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -81,9 +82,10 @@ public class PolicyData {
     @JacksonXmlProperty(localName = "polyRlmCd")
     private String polyRlmCd;
 
-    public Policy toPolicy(Region region){
+
+    public Policy toPolicy(PolicyData data, Region region){
         // 카테고리 분류
-        Category category = switch (this.polyRlmCd) {
+        Category category = switch (data.getPolyRlmCd()) {
             case "023010" -> Category.JOB;
             case "023020", "023040" -> Category.LIFE;
             case "023030" -> Category.EDUCATION;
@@ -92,80 +94,45 @@ public class PolicyData {
         };
         int minAge = 0;
         int maxAge = 0;
-        LocalDateTime applStartDate = null;
-        LocalDateTime applEndDate = null;
+
         // 연령정보 분류
-        String ageInfo = cDataConvert(this.ageInfo);
+        String ageInfo = cDataConvert(data.getAgeInfo());
         if(ageInfo!=null&&!ageInfo.equals("제한없음")){
             String[] ages = ageInfo.replaceAll("[^0-9~]", "").split("~");
             minAge = Integer.parseInt(ages[0].trim());
             if(ages.length>=2) maxAge = Integer.parseInt(ages[1].trim());
         }
         // 신청기간 분류
-        String applTerm = cDataConvert(this.rqutPrdCn);
-//        List<String> dateList = new ArrayList<>();
-//        if(applTerm!=null&&!applTerm.equals("-")){
-//            // 숫자만 추출하는 정규 표현식 패턴
-//            Pattern pattern = Pattern.compile("\\d+");
-//            Matcher matcher = pattern.matcher(applTerm);
-//
-//            // 매치된 숫자들을 리스트에 추가
-//            while (matcher.find()) {
-//                String number = matcher.group(); // 매치된 숫자 문자열
-//                if (number.length() == 1) {
-//                    number = "0" + number; // 두 자리 숫자로 맞추기
-//                }
-//                dateList.add(number);
-//            }
-//        }
-//        int startYear=0,startMonth=0,startDay=0;
-//        int endYear=0,endMonth=0,endDay=0;
-//        for(int i=0; i<dateList.size(); i++){
-//            switch(i){
-//                case 0 -> startYear = Integer.parseInt(dateList.get(i).trim());
-//                case 1 -> startMonth = Integer.parseInt(dateList.get(i).trim());
-//                case 2 -> startDay = Integer.parseInt(dateList.get(i).trim());
-//                case 3 -> endYear = Integer.parseInt(dateList.get(i).trim());
-//                case 4 -> endMonth = Integer.parseInt(dateList.get(i).trim());
-//                case 5 -> endDay = Integer.parseInt(dateList.get(i).trim());
-//                default -> { break; }
-//            }
-//            System.out.println("dateList.get(i)="+dateList.get(i));
-//        }
-//
-//        if(startYear!=0&&startMonth!=0&&startDay!=0){
-//            applStartDate = LocalDateTime.of(startYear,startMonth,startDay,0,0);
-//        }
-//        if(endYear!=0&&endMonth!=0&&endDay!=0){
-//            applEndDate = LocalDateTime.of(endYear,endMonth,endDay,0,0);
-//        }
+        String applTerm = cDataConvert(data.getRqutPrdCn());
+
+        LocalDate applEndDate = null;
+        // 파싱 코드
 
         return Policy.builder()
-                .policyId(cDataConvert(this.bizId))
+                .policyId(cDataConvert(data.getBizId()))
                 .region(region)
-                .title(cDataConvert(this.polyBizSjnm))
+                .title(cDataConvert(data.getPolyBizSjnm()))
                 .minAge(minAge)
                 .maxAge(maxAge)
-                .applStartDate(applStartDate)
                 .applEndDate(applEndDate)
-                .addition(cDataConvert(this.aditRscn))
-                .etc(cDataConvert(this.etct))
-                .addrIncome(cDataConvert(this.prcpCn))
-                .applLimit(cDataConvert(this.prcpLmttTrgtCn))
-                .applStep(cDataConvert(this.rqutProcCn))
-                .applUrl(cDataConvert(this.rqutUrla))
+                .addition(cDataConvert(data.getAditRscn()))
+                .etc(cDataConvert(data.getEtct()))
+                .addrIncome(cDataConvert(data.getPrcpCn()))
+                .applLimit(cDataConvert(data.getPrcpLmttTrgtCn()))
+                .applStep(cDataConvert(data.getRqutProcCn()))
+                .applUrl(cDataConvert(data.getRqutUrla()))
                 .category(category)
-                .education(cDataConvert(this.accrRqisCn))
-                .employment(extractEmployment(cDataConvert(this.empmSttsCn)))
-                .hostDep(cDataConvert(this.mngtMson))
-                .refUrl1(cDataConvert(this.rfcSiteUrla1))
-                .refUrl2(cDataConvert(this.rfcSiteUrla2))
-                .evaluation(cDataConvert(this.jdgnPresCn))
-                .introduction(cDataConvert(this.polyItcnCn))
-                .operatingOrg(cDataConvert(this.cnsgNmor))
-                .specialization(cDataConvert(this.splzRlmRqisCn))
-                .submitDoc(cDataConvert(this.pstnPaprCn))
-                .supportDetail(cDataConvert(this.sporCn))
+                .education(cDataConvert(data.getAccrRqisCn()))
+                .employment(extractEmployment(cDataConvert(data.getEmpmSttsCn())))
+                .hostDep(cDataConvert(data.getMngtMson()))
+                .refUrl1(cDataConvert(data.getRfcSiteUrla1()))
+                .refUrl2(cDataConvert(data.getRfcSiteUrla2()))
+                .evaluation(cDataConvert(data.getJdgnPresCn()))
+                .introduction(cDataConvert(data.getPolyItcnCn()))
+                .operatingOrg(cDataConvert(data.getCnsgNmor()))
+                .specialization(cDataConvert(data.getSplzRlmRqisCn()))
+                .submitDoc(cDataConvert(data.getPstnPaprCn()))
+                .supportDetail(cDataConvert(data.getSporCn()))
                 .build();
     }
 
