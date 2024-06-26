@@ -1,5 +1,7 @@
 package com.server.youthtalktalk.controller.post;
 
+import com.server.youthtalktalk.response.BaseResponse;
+import com.server.youthtalktalk.response.BaseResponseCode;
 import com.server.youthtalktalk.service.image.ImageServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +16,8 @@ public class ImageController {
     private final ImageServiceImpl imageService;
 
     @PostMapping("/images")
-    public String uploadImage(@RequestParam("image") MultipartFile image) throws IOException {
-        return imageService.uploadFile(image);
+    public BaseResponse<String> uploadImage(@RequestParam("image") MultipartFile image) throws IOException {
+        String imgUrl = imageService.uploadFile(image);
+        return new BaseResponse<>(imgUrl, BaseResponseCode.SUCCESS);
     }
 }
