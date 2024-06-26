@@ -1,4 +1,4 @@
-package com.server.youthtalktalk.util;
+package com.server.youthtalktalk.global.util;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;

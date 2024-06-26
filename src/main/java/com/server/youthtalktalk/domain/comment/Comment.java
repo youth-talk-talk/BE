@@ -1,7 +1,7 @@
 package com.server.youthtalktalk.domain.comment;
 
 import com.server.youthtalktalk.domain.Likes;
-import com.server.youthtalktalk.domain.Member;
+import com.server.youthtalktalk.domain.member.Member;
 import jakarta.persistence.*;
 import lombok.Generated;
 import lombok.Getter;

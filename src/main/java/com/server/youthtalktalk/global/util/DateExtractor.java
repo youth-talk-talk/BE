@@ -1,4 +1,4 @@
-package com.server.youthtalktalk.util;
+package com.server.youthtalktalk.global.util;
 
 import lombok.extern.slf4j.Slf4j;
 

@@ -1,4 +1,4 @@
-package com.server.youthtalktalk.response.error;
+package com.server.youthtalktalk.global.response.error;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;

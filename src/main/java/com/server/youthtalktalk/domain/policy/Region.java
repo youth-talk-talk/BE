@@ -1,5 +1,9 @@
 package com.server.youthtalktalk.domain.policy;
 
+import com.server.youthtalktalk.domain.member.Member;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -26,4 +30,5 @@ public enum Region {
 
     private final String key;
     private final String name;
+
 }

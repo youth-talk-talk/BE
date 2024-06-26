@@ -4,14 +4,13 @@ import com.server.youthtalktalk.domain.policy.Category;
 import com.server.youthtalktalk.domain.policy.Policy;
 import com.server.youthtalktalk.domain.policy.Region;
 import com.server.youthtalktalk.domain.policy.RepeatCode;
-import com.server.youthtalktalk.util.DateExtractor;
+import com.server.youthtalktalk.global.util.DateExtractor;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;

@@ -1,5 +1,6 @@
 package com.server.youthtalktalk.domain.policy;
 
+import com.server.youthtalktalk.domain.BaseTimeEntity;
 import com.server.youthtalktalk.domain.comment.PolicyComment;
 import com.server.youthtalktalk.domain.post.Review;
 import jakarta.persistence.*;
@@ -15,7 +16,7 @@ import java.util.List;
 @Builder(toBuilder = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class Policy {
+public class Policy extends BaseTimeEntity {
     @Id
     private String policyId; // 정책 아이디
 

@@ -1,4 +1,4 @@
-package com.server.youthtalktalk.security;
+package com.server.youthtalktalk.global.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

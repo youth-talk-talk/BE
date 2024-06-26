@@ -1,5 +1,6 @@
 package com.server.youthtalktalk.domain;
 
+import com.server.youthtalktalk.domain.member.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 

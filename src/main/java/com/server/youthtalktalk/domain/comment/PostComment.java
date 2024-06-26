@@ -13,4 +13,10 @@ public class PostComment extends Comment{
     @JoinColumn(name = "post_id")
     private Post post;
 
+    /* 연관관계 메서드 */
+    public void setPost(Post post) {
+        this.post = post;
+        post.getPostComments().add(this);
+    }
+
 }

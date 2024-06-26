@@ -1,4 +1,4 @@
-package com.server.youthtalktalk.response.error;
+package com.server.youthtalktalk.global.response.error;
 
 public class InvalidValueException extends BusinessException {
     

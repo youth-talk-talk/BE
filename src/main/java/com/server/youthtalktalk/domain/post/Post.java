@@ -1,40 +1,45 @@
 package com.server.youthtalktalk.domain.post;
 
+import com.server.youthtalktalk.domain.BaseTimeEntity;
 import com.server.youthtalktalk.domain.Image;
-import com.server.youthtalktalk.domain.Member;
-import com.server.youthtalktalk.domain.comment.Comment;
+import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.comment.PostComment;
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.*;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "dtype")
-public abstract class Post {
+@DiscriminatorColumn(name = "post_type")
+public abstract class Post extends BaseTimeEntity {
 
     @Id
     @GeneratedValue
     @JoinColumn(name =  "post_id")
     private Long id;
 
+    private String title;
+    private String content;
+    private Long view;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member writer;
 
-    private String title;
-    private String content;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private Long view;
-
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<Image> images = new ArrayList<>();
 
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<PostComment> postComments = new ArrayList<>();
+
+    /* 연관관계 메서드 */
+    public void setWriter(Member member) {
+        this.writer = member;
+        member.getPosts().add(this);
+    }
+
 }
