@@ -2,10 +2,13 @@ package com.server.youthtalktalk.domain;
 
 import com.server.youthtalktalk.domain.post.Post;
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.*;
 
 @Entity
 @Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Image {
 
     @Id
@@ -22,4 +25,6 @@ public class Image {
         this.post = post;
         post.getImages().add(this);
     }
+
+    private String imgUrl;
 }
