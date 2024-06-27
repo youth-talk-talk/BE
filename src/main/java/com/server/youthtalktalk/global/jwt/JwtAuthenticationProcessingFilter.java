@@ -109,16 +109,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     /**
      * 인증 허가 처리
-     * 파라미터의 member : 서비스의 회원 객체 / 빌더의 유저 : UserDetails의 User 객체
-     *
-     * new UsernamePasswordAuthenticationToken()로 인증 객체인 Authentication 객체 생성
-     * UsernamePasswordAuthenticationToken의 파라미터
-     * 1. 위에서 만든 UserDetailsUser 객체 (유저 정보)
-     * 2. credential(보통 비밀번호로, 인증 시에는 보통 null로 제거)
-     * 3. Collection < ? extends GrantedAuthority>로,
-     * UserDetails의 User 객체 안에 Set<GrantedAuthority> authorities이 있어서 getter로 호출한 후에,
-     * new NullAuthoritiesMapper()로 GrantedAuthoritiesMapper 객체를 생성하고 mapAuthorities()에 담기
-     *
      * SecurityContextHolder.getContext()로 SecurityContext를 꺼낸 후,
      * setAuthentication()을 이용하여 위에서 만든 Authentication 객체에 대한 인증 허가 처리
      */
