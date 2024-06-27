@@ -24,8 +24,10 @@ public class Member extends BaseTimeEntity {
     @Column(name = "member_id")
     private Long id;
 
-    private String nickname;
+    @Column(unique = true)
     private String email;
+
+    private String nickname;
     private String socialId;
     private String refreshToken;
 
@@ -58,6 +60,11 @@ public class Member extends BaseTimeEntity {
     // refresh token 업데이트
     public void updateRefreshToken(String updateRefreshToken) {
         this.refreshToken = updateRefreshToken;
+    }
+
+    // refresh token 제거
+    public void destroyRefreshToken() {
+        this.refreshToken = null;
     }
 
 }

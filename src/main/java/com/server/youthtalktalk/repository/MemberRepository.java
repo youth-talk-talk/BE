@@ -10,8 +10,7 @@ import java.util.Optional;
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
-    /**
-     * 소셜 타입과 식별값으로 회원 조회
-     */
+    Optional<Member> findByEmail(String email);
+    Optional<Member> findByRefreshToken(String refreshToken);
     Optional<Member> findBySocialTypeAndSocialId(SocialType socialType, String socialId);
 }

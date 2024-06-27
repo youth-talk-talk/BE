@@ -1,4 +1,4 @@
-package com.server.youthtalktalk.config;
+package com.server.youthtalktalk.global.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

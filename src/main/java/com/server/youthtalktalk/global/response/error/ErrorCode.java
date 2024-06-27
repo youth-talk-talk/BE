@@ -14,8 +14,10 @@ public enum ErrorCode {
     FILE_NOT_UPLOAD("C05", "Internal Server Error.", HttpStatus.BAD_REQUEST.value()),
 
     //Member
-    MEMBER_ACCESS_DENIED("M01", "Member Access is Denied.", HttpStatus.UNAUTHORIZED.value()),
-    MEMBER_NOT_FOUND("M02", "Member is not Found.", HttpStatus.BAD_REQUEST.value());
+    MEMBER_ACCESS_DENIED("M01", "Member Access is Denied.", HttpStatus.FORBIDDEN.value()),
+    MEMBER_NOT_FOUND("M02", "Member is not Found.", HttpStatus.BAD_REQUEST.value()),
+    MEMBER_UNAUTHORIZED("M03", "Not a Member. Login is required.", HttpStatus.UNAUTHORIZED.value());
+
 
     private final String code;
     private final String message;
