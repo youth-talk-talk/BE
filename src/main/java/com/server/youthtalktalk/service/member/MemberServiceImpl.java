@@ -7,6 +7,7 @@ import com.server.youthtalktalk.dto.member.apple.AppleTokenResponseDto;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.BusinessException;
 import com.server.youthtalktalk.global.response.exception.member.AppleNeedAddSignUpException;
+import com.server.youthtalktalk.global.util.AppleAuthUtil;
 import com.server.youthtalktalk.repository.MemberRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
