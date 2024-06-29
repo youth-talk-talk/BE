@@ -4,11 +4,9 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.member.Role;
-import com.server.youthtalktalk.global.response.error.member.MemberNotFoundException;
 import com.server.youthtalktalk.repository.MemberRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletRequest;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +17,10 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @Transactional
@@ -203,5 +201,35 @@ class JwtServiceTest {
         // then
         assertThat(extractRefreshToken).isEqualTo(refreshToken);
         assertThat(getVerify(extractRefreshToken).getSubject()).isEqualTo(REFRESH_TOKEN_SUBJECT);
+    }
+    
+    @Test
+    void access_token에서_email_추출() throws Exception {
+        // given
+        String accessToken = jwtService.createAccessToken(email);
+        String refreshToken = jwtService.createRefreshToken();
+        HttpServletRequest request = setRequest(accessToken, refreshToken);
+        String extractedAccessToken = jwtService.extractAccessToken(request).get();
+
+        // when
+        Optional<String> extractedEmail = jwtService.extractEmail(extractedAccessToken);
+
+        // then
+        assertThat(extractedEmail.isPresent()).isTrue();
+        assertThat(extractedEmail.get()).isEqualTo(email);
+    }
+
+    @Test
+    void 토큰_유효성_검사() throws Exception {
+        //given
+        String accessToken = jwtService.createAccessToken(email);
+        String refreshToken = jwtService.createRefreshToken();
+
+        //when, then
+        assertThat(jwtService.isTokenValid(accessToken)).isTrue();
+        assertThat(jwtService.isTokenValid(refreshToken)).isTrue();
+        assertThat(jwtService.isTokenValid(accessToken+"a")).isFalse();
+        assertThat(jwtService.isTokenValid(accessToken+"a")).isFalse();
+
     }
 }
