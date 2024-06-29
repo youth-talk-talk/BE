@@ -54,7 +54,7 @@ public class AppleAuthUtil {
     private String appleSignKeyFilePath;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private AppleClient appleClient;
+    private final AppleClient appleClient;
     // identityToken 공개키를 이용한 서명 검증
     public Claims verifyIdentityToken(String identityToken) {
         try {
