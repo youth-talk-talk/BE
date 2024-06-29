@@ -25,8 +25,9 @@ public class Member extends BaseTimeEntity {
     private Long id;
 
     @Column(unique = true)
-    private String email;
+    private String username;
 
+    private String email;
     private String nickname;
     private String socialId;
     private String refreshToken;
@@ -36,9 +37,6 @@ public class Member extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
-    @Enumerated(EnumType.STRING)
-    private SocialType socialType;
 
     @OneToMany(mappedBy = "writer", cascade = CascadeType.ALL)
     private List<Post> posts = new ArrayList<>();
