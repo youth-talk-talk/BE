@@ -1,6 +1,13 @@
 package com.server.youthtalktalk.global.login;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.server.youthtalktalk.dto.member.apple.AppleTokenResponseDto;
+import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.global.response.exception.BusinessException;
+import com.server.youthtalktalk.global.response.exception.InvalidValueException;
+import com.server.youthtalktalk.global.util.AppleAuthUtil;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,15 +36,18 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
     private static final String HTTP_METHOD = "POST";
     private static final String CONTENT_TYPE = "application/json";
     private static final String USERNAME_KEY = "username";
+    private static final String AUTHORIZATION_CODE = "authorizationCode"; // 애플 로그인
 
     private static final AntPathRequestMatcher DEFAULT_LOGIN_PATH_REQUEST_MATCHER =
             new AntPathRequestMatcher(DEFAULT_LOGIN_REQUEST_URL, HTTP_METHOD); // POST "/login" 으로 온 요청
 
     private final ObjectMapper objectMapper;
+    private final AppleAuthUtil appleAuthUtil;
 
-    public CustomJsonUsernamePasswordAuthenticationFilter(ObjectMapper objectMapper) {
+    public CustomJsonUsernamePasswordAuthenticationFilter(ObjectMapper objectMapper, AppleAuthUtil appleAuthUtil) {
         super(DEFAULT_LOGIN_PATH_REQUEST_MATCHER);
         this.objectMapper = objectMapper;
+        this.appleAuthUtil = appleAuthUtil;
     }
 
     /**
@@ -68,9 +78,49 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
         Map<String, String> loginDataMap = objectMapper.readValue(messageBody, Map.class);
         String username = loginDataMap.get(USERNAME_KEY);
 
+        // apple 토큰 검증 과정
+        if(username.substring(0,5).equals("apple")){ // 애플 로그인 요청일 경우
+            String authorizationCode = loginDataMap.get(AUTHORIZATION_CODE);
+            if(authorizationCode.isEmpty()){
+                throw new InvalidValueException(BaseResponseCode.INVALID_INPUT_VALUE);
+            }
+
+            String identityToken = username.substring(5);
+            String sub = appleVerification(identityToken,authorizationCode); // 검증 완료된 애플 고유 아이디
+            username = "apple"+sub;
+        }
+
         UsernamePasswordAuthenticationToken authRequest =
                 new UsernamePasswordAuthenticationToken(username, "");
 
         return this.getAuthenticationManager().authenticate(authRequest);
+    }
+
+    private String appleVerification(String identityToken, String authorizationCode){
+        log.info("[AUTH] apple login request : identityToken = {} authorizationCode = {}", identityToken, authorizationCode);
+
+        // identityToken 서명 검증
+        Claims claims = appleAuthUtil.verifyIdentityToken(identityToken);
+        log.info("[AUTH] apple login verification : identityToken 검증 성공");
+        // apple ID Server에 애플 토큰 요청
+        AppleTokenResponseDto appleTokenResponseDto = appleAuthUtil.getAppleToken(authorizationCode);
+
+        String idToken = appleTokenResponseDto.idToken();
+        log.info("[AUTH] apple login token request : idToken = {}",idToken);
+        // 유효한 idToken이 없을 경우
+        if(idToken.isEmpty()){
+            throw new BusinessException(BaseResponseCode.APPLE_NEED_SIGN_UP);
+        }
+        // 유효한 idToken이 있을 경우 -> 애플 회원가입을 완료한 유저
+        Claims idTokenClaims = Jwts.parserBuilder()
+                .build()
+                .parseClaimsJws(idToken)
+                .getBody();
+
+        // sub(고유 id) 클레임 추출
+        String sub = idTokenClaims.get("sub", String.class);
+        String email = idTokenClaims.get("email", String.class);
+        log.info("[AUTH] apple login token request : idToken sub(고유 id) = {} email = {}",sub,email);
+        return sub;
     }
 }
