@@ -23,7 +23,7 @@ repositories {
 
 /* openfeign 설정*/
 ext {
-	springCloudVersion = '2021.0.3'
+	springCloudVersion = '2023.0.0'
 }
 
 dependencyManagement {
@@ -51,6 +51,7 @@ dependencies {
 	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
 	implementation 'io.netty:netty-resolver-dns-native-macos:4.1.68.Final:osx-aarch_64'
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+	implementation "org.bouncycastle:bcpkix-jdk15to18:1.78.1"
 
 	// Jwt
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'

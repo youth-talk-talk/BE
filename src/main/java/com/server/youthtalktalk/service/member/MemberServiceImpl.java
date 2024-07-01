@@ -3,6 +3,7 @@ package com.server.youthtalktalk.service.member;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.member.SocialType;
 import com.server.youthtalktalk.dto.member.CheckIfJoinedDto;
+import com.server.youthtalktalk.dto.member.apple.AppleDto;
 import com.server.youthtalktalk.dto.member.apple.AppleTokenResponseDto;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.BusinessException;
@@ -15,6 +16,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import static com.server.youthtalktalk.dto.member.apple.AppleDto.*;
 
 @Slf4j
 @Service
@@ -60,10 +63,13 @@ public class MemberServiceImpl implements MemberService {
                 .getBody();
 
         // sub(고유 id) 클레임 추출
-        String sub = idTokenClaims.getSubject();
-        log.info("[AUTH] apple login : idToken sub(고유 id) = {}",sub);
+        String sub = claims.get("sub", String.class);
+        String email = claims.get("email", String.class);
+        String emailVerified = claims.get("email_verified", String.class);
 
-        Member member = memberRepository.findBySocialTypeAndSocialId(SocialType.APPLE, sub).orElseThrow(AppleNeedAddSignUpException::new);
+        log.info("[AUTH] apple login : idToken sub(고유 id) = {} email = {}",sub,email);
+
+        //Member member = memberRepository.findBySocialTypeAndSocialId(SocialType.APPLE, sub).orElseThrow(AppleNeedAddSignUpException::new);
         // 회원 존재 시 jwt 토큰 발행 로직
         //
         //

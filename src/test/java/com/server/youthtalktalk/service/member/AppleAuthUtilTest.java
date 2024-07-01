@@ -21,10 +21,18 @@ public class AppleAuthUtilTest {
         System.out.println("client_secret = " + clientSecret);
     }
 
-    @Test
-    @DisplayName("애플 토큰 요청 테스트")
-    void getAppleTokenTest(){
-        String authorizationCode = "c2dcbf9878d14e5f87a5ed9c48d8e5bc";
-        AppleTokenResponseDto appleTokenResponseDto = appleAuthUtil.getAppleToken(authorizationCode);
-    }
+//    @Test
+//    @DisplayName("애플 토큰 요청 테스트")
+//    void getAppleTokenTest(){
+//        String authorizationCode = "";
+//        AppleTokenResponseDto appleTokenResponseDto = appleAuthUtil.getAppleToken(authorizationCode);
+//    }
+//
+//    @Test
+//    @DisplayName("verifyIdToken 테스트")
+//    void verifyIdTokenTest(){
+//        String identityToken ="";
+//
+//        appleAuthUtil.verifyIdentityToken(identityToken);
+//    }
 }

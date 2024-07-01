@@ -38,6 +38,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.nimbusds.oauth2.sdk.GrantType.AUTHORIZATION_CODE;
 import static com.server.youthtalktalk.dto.member.apple.AppleDto.*;
 
 @Component
@@ -97,11 +98,12 @@ public class AppleAuthUtil {
                 .client_id(clientId)
                 .client_secret(createClientSecret())
                 .code(authorizationCode)
-                .grant_type("authorization_code")
+                .grant_type(String.valueOf(AUTHORIZATION_CODE))
                 .build();
 
         return appleClient.findAppleToken(appleTokenRequest);
     }
+    
     // 회원 탈퇴 애플 서버에 요청
     public void revoke(String accessToken) {
         try {
