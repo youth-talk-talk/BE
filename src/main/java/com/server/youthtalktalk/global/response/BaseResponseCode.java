@@ -16,7 +16,7 @@ public enum BaseResponseCode {
     ENTITY_NOT_FOUND("F03", "리소스를 찾을 수 없습니다.", HttpStatus.NOT_FOUND.value()),
     INTERNAL_SERVER_ERROR("F04", "예기치 못한 서버 에러가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR.value()),
     //Member
-    MEMBER_ACCESS_DENIED("M01", "인증되지 않은 사용자의 접근입니다.", HttpStatus.UNAUTHORIZED.value()),
+    MEMBER_ACCESS_DENIED("M01", "회원이 아닙니다.", HttpStatus.UNAUTHORIZED.value()),
     MEMBER_NOT_FOUND("M02", "사용자를 찾을 수 없습니다.", HttpStatus.BAD_REQUEST.value());
 
     private final String code;

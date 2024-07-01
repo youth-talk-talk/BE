@@ -1,7 +1,13 @@
 package com.server.youthtalktalk.global.login;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.youthtalktalk.domain.member.Member;
+import com.server.youthtalktalk.dto.member.LoginSuccessDto;
 import com.server.youthtalktalk.global.jwt.JwtService;
+import com.server.youthtalktalk.global.response.BaseResponse;
+import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.repository.MemberRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -16,6 +22,9 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 
 import java.io.IOException;
+import java.util.Optional;
+
+import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -23,21 +32,27 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtService jwtService;
     private final MemberRepository memberRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
+        // access token, refresh token 발급
         String username = extractUsername(authentication);
         String accessToken = jwtService.createAccessToken(username);
         String refreshToken = jwtService.createRefreshToken();
 
-        jwtService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
+        // refresh token 업데이트
+        Member findMember = memberRepository.findByUsername(username).orElseThrow(MemberNotFoundException::new);
+        findMember.updateRefreshToken(refreshToken);
+        memberRepository.saveAndFlush(findMember);
 
-        memberRepository.findByUsername(username)
-                .ifPresent(member -> {
-                    member.updateRefreshToken(refreshToken);
-                    memberRepository.saveAndFlush(member);
-                    log.info("로그인에 성공하였습니다. 회원 id={}", member.getId());
-                });
+        // 응답 헤더 및 바디 설정
+        jwtService.sendAccessAndRefreshToken(response, accessToken, refreshToken);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(objectMapper.writeValueAsString(new BaseResponse<>(new LoginSuccessDto(findMember.getId()), SUCCESS)));
+
+        log.info("로그인에 성공하였습니다. 회원 id={}", findMember.getId());
     }
 
     private String extractUsername(Authentication authentication) {

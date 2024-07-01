@@ -42,7 +42,7 @@ public class LoginTest {
     ObjectMapper objectMapper = new ObjectMapper();
 
     private static String KEY_USERNAME = "username";
-    private static String USERNAME = "kakao12345678";
+    private static String USERNAME = "kakao777777";
     private static String LOGIN_URL = "/login";
 
     private void clear(){
@@ -93,14 +93,14 @@ public class LoginTest {
     }
 
     @Test
-    void 로그인_실패_일치하는_회원정보_없음() throws Exception {
+    void 로그인_실패_회원이_아님() throws Exception {
         // given
         Map<String, String> map = getUsernameMap(USERNAME+"111");
 
         // when, then
         perform(LOGIN_URL, APPLICATION_JSON, map)
                 .andDo(print())
-                .andExpect(status().isForbidden())
+                .andExpect(status().isUnauthorized())
                 .andReturn();
     }
 

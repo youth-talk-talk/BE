@@ -1,9 +1,11 @@
 package com.server.youthtalktalk.global.login;
 
 import com.server.youthtalktalk.domain.member.Member;
+import com.server.youthtalktalk.global.response.exception.member.MemberAccessDeniedException;
 import com.server.youthtalktalk.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -24,9 +26,8 @@ public class LoginService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        log.info("loadUserByUsername 진입");
         Member member = memberRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("로그인 정보를 확인해주세요."));
+                .orElseThrow(() -> new UsernameNotFoundException("로그인에 실패했습니다."));
 
         return User.builder()
                 .username(member.getUsername())

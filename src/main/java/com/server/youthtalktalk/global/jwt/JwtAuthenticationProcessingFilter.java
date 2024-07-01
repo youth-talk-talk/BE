@@ -44,16 +44,12 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
-        log.info("JwtAuthenticationProcessingFilter 진입");
-
         if (request.getRequestURI().equals(NO_CHECK_URL)) {
             log.info("NO_CHECK_URL -> return");
             filterChain.doFilter(request, response);
             return;
         }
 
-        log.info("refresh token 검사");
         // 사용자 요청 헤더에서 RefreshToken 추출
         // -> RefreshToken이 없거나 유효하지 않다면(DB에 저장된 RefreshToken과 다르다면) null을 반환
         // 사용자의 요청 헤더에 RefreshToken이 있는 경우는, AccessToken이 만료되어 요청한 경우밖에 없다.
@@ -118,10 +114,9 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      */
 
     private void saveAuthentication(Member member) {
-
         UserDetails userDetailsUser = User.builder()
                 .username(member.getUsername())
-                .password("")
+                .password("password")
                 .roles(member.getRole().name())
                 .build();
 

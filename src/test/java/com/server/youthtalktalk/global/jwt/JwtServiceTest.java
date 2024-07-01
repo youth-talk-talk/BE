@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
@@ -24,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
+@ActiveProfiles("test")
 class JwtServiceTest {
 
     @Autowired
@@ -47,7 +49,7 @@ class JwtServiceTest {
     private static final String USERNAME_CLAIM = "username";
     private static final String BEARER = "Bearer ";
 
-    private String username = "kakao@12345678";
+    private String username = "myUsername";
 
     @BeforeEach
     public void init(){
