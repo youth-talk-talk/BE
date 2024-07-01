@@ -88,6 +88,7 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
             String identityToken = username.substring(5);
             String sub = appleVerification(identityToken,authorizationCode); // 검증 완료된 애플 고유 아이디
             username = "apple"+sub;
+            log.info("[AUTH] apple login sub username = {}",username);
         }
 
         UsernamePasswordAuthenticationToken authRequest =
@@ -112,14 +113,10 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
             throw new BusinessException(BaseResponseCode.APPLE_NEED_SIGN_UP);
         }
         // 유효한 idToken이 있을 경우 -> 애플 회원가입을 완료한 유저
-        Claims idTokenClaims = Jwts.parserBuilder()
-                .build()
-                .parseClaimsJws(idToken)
-                .getBody();
 
         // sub(고유 id) 클레임 추출
-        String sub = idTokenClaims.get("sub", String.class);
-        String email = idTokenClaims.get("email", String.class);
+        String sub = claims.get("sub", String.class);
+        String email = claims.get("email", String.class);
         log.info("[AUTH] apple login token request : idToken sub(고유 id) = {} email = {}",sub,email);
         return sub;
     }
