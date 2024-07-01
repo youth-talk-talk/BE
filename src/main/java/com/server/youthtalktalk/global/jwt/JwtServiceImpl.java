@@ -3,7 +3,7 @@ package com.server.youthtalktalk.global.jwt;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.server.youthtalktalk.domain.member.Member;
-import com.server.youthtalktalk.global.response.error.member.MemberNotFoundException;
+import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.repository.MemberRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

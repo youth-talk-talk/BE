@@ -1,6 +1,5 @@
 package com.server.youthtalktalk.global.login;
 
-import com.server.youthtalktalk.global.response.error.member.MemberUnauthorizedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
