@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,21 +21,19 @@ import java.util.Map;
  * "/login" 요청 왔을 때 JSON 값을 매핑 처리하는 필터
  * 스프링 시큐리티의 폼 기반의 UsernamePasswordAuthenticationFilter를 커스텀하여
  * 폼 로그인 대신 Json Login만 처리하도록 설정함
- * socialType : 소셜 로그인 타입 (kakao, apple)
- * socialId : 소셜 로그인 ID (user identifier)
  */
-
+@Slf4j
 public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
     private static final String DEFAULT_LOGIN_REQUEST_URL = "/login";
     private static final String HTTP_METHOD = "POST";
     private static final String CONTENT_TYPE = "application/json";
     private static final String USERNAME_KEY = "username";
-    private static final String EMAIL_KEY = "email";
+
     private static final AntPathRequestMatcher DEFAULT_LOGIN_PATH_REQUEST_MATCHER =
             new AntPathRequestMatcher(DEFAULT_LOGIN_REQUEST_URL, HTTP_METHOD); // POST "/login" 으로 온 요청
 
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     public CustomJsonUsernamePasswordAuthenticationFilter(ObjectMapper objectMapper) {
         super(DEFAULT_LOGIN_PATH_REQUEST_MATCHER);
@@ -50,11 +48,10 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
      *
      * 요청 JSON Example
      * {
-     *    "username" : "kakao12345678",
-     *    "email" : "example@email.com"
+     *    "username" : "kakao12345678"
      * }
-     * messageBody를 objectMapper.readValue()로 Map으로 변환 (Key : JSON의 키 -> username, email)
-     * Map의 Key로 해당 username, email 추출 후
+     * messageBody를 objectMapper.readValue()로 Map으로 변환 (Key : JSON의 키 -> username)
+     * Map의 Key로 해당 username 추출 후
      * CustomAuthenticationToken의 파라미터 principal, credentials에 대입
      *
      * AbstractAuthenticationProcessingFilter(부모)의 getAuthenticationManager()로 AuthenticationManager 객체를 반환 받은 후
@@ -63,17 +60,16 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
      */
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
-        if (request.getContentType() == null || !request.getContentType().equals(CONTENT_TYPE)) {
+        if(request.getContentType() == null || !request.getContentType().equals(CONTENT_TYPE)) {
             throw new AuthenticationServiceException("Authentication Content-Type not supported: " + request.getContentType());
         }
 
         String messageBody = StreamUtils.copyToString(request.getInputStream(), StandardCharsets.UTF_8);
-
         Map<String, String> loginDataMap = objectMapper.readValue(messageBody, Map.class);
-
         String username = loginDataMap.get(USERNAME_KEY);
 
-        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(username, null);
+        UsernamePasswordAuthenticationToken authRequest =
+                new UsernamePasswordAuthenticationToken(username, "");
 
         return this.getAuthenticationManager().authenticate(authRequest);
     }

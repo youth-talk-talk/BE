@@ -39,7 +39,7 @@ public class JwtServiceImpl implements JwtService {
 
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
-    private static final String EMAIL_CLAIM = "email";
+    private static final String USERNAME_CLAIM = "username";
     private static final String BEARER = "Bearer ";
 
     private final MemberRepository memberRepository;
@@ -48,12 +48,12 @@ public class JwtServiceImpl implements JwtService {
      * access token 생성
      */
     @Override
-    public String createAccessToken(String email) {
+    public String createAccessToken(String username) {
         Date now = new Date();
         return JWT.create()
                 .withSubject(ACCESS_TOKEN_SUBJECT)
                 .withExpiresAt(new Date(now.getTime() + accessTokenExpirationPeriod))
-                .withClaim(EMAIL_CLAIM, email)
+                .withClaim(USERNAME_CLAIM, username)
                 .sign(Algorithm.HMAC512(secret));
     }
 
@@ -73,8 +73,8 @@ public class JwtServiceImpl implements JwtService {
      * refresh token 갱신
      */
     @Override
-    public void updateRefreshToken(String email, String refreshToken) {
-        memberRepository.findByEmail(email).ifPresentOrElse(
+    public void updateRefreshToken(String username, String refreshToken) {
+        memberRepository.findByUsername(username).ifPresentOrElse(
                 member -> member.updateRefreshToken(refreshToken),
                 MemberNotFoundException::new
         );
@@ -84,8 +84,8 @@ public class JwtServiceImpl implements JwtService {
      * refresh token 제거
      */
     @Override
-    public void destroyRefreshToken(String email) {
-        memberRepository.findByEmail(email).ifPresentOrElse(
+    public void destroyRefreshToken(String username) {
+        memberRepository.findByUsername(username).ifPresentOrElse(
                 Member::destroyRefreshToken,
                 MemberNotFoundException::new
         );
@@ -98,7 +98,6 @@ public class JwtServiceImpl implements JwtService {
     public void sendAccessToken(HttpServletResponse response, String accessToken) {
         response.setStatus(HttpServletResponse.SC_OK);
         response.setHeader(accessHeader, accessToken);
-        log.info("access token={}", accessToken);
     }
 
     /**
@@ -109,7 +108,6 @@ public class JwtServiceImpl implements JwtService {
         response.setStatus(HttpServletResponse.SC_OK);
         response.setHeader(accessHeader, accessToken);
         response.setHeader(refreshHeader, refreshToken);
-        log.info("access token={}, refresh token={}", accessToken, refreshToken);
     }
 
     /**
@@ -133,16 +131,16 @@ public class JwtServiceImpl implements JwtService {
     }
 
     /**
-     * access token에서 이메일 추출
-     * access token이 유효하면 이메일 반환, 유효하지 않으면 Optional.empty 반환
+     * access token에서 username 추출
+     * access token이 유효하면 username 반환, 유효하지 않으면 Optional.empty 반환
      */
     @Override
-    public Optional<String> extractEmail(String accessToken) {
+    public Optional<String> extractUsername(String accessToken) {
         try {
             return Optional.ofNullable(JWT.require(Algorithm.HMAC512(secret))
                     .build()
                     .verify(accessToken)
-                    .getClaim(EMAIL_CLAIM)
+                    .getClaim(USERNAME_CLAIM)
                     .asString());
         } catch (Exception e) {
             log.error("액세스 토큰이 유효하지 않습니다.");

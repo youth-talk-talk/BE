@@ -12,24 +12,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 
 import java.io.IOException;
-import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
-public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtService jwtService;
     private final MemberRepository memberRepository;
 
-    @Value("${jwt.access.expiration}")
-    private String accessTokenExpiration;
-
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException, ServletException {
-        String username = extractUsername(authentication); // 인증 정보에서 username 추출
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+        String username = extractUsername(authentication);
         String accessToken = jwtService.createAccessToken(username);
         String refreshToken = jwtService.createRefreshToken();
 
@@ -39,11 +36,8 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
                 .ifPresent(member -> {
                     member.updateRefreshToken(refreshToken);
                     memberRepository.saveAndFlush(member);
-                    log.info("로그인에 성공하였습니다.");
-                    log.info("회원 id={}, access token={}", member.getId(), accessToken);
+                    log.info("로그인에 성공하였습니다. 회원 id={}", member.getId());
                 });
-
-        super.onAuthenticationSuccess(request, response, chain, authentication);
     }
 
     private String extractUsername(Authentication authentication) {

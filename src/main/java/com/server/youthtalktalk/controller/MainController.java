@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class MainController {
 
-    @GetMapping("/")
+    @GetMapping("/test")
     public String showVersion() {
         return "2024-06-01 test"; // 무중단 배포 확인용
     }

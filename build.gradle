@@ -31,6 +31,7 @@ dependencies {
 
 	implementation 'com.h2database:h2' // H2 데이터베이스 의존성 추가 (테스트용)
 	implementation 'com.auth0:java-jwt:4.4.0' // jwt 설정
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client' // oauth2 client
 
 	/* mysql 데이터베이스 설정 */
 	runtimeOnly 'com.mysql:mysql-connector-j'

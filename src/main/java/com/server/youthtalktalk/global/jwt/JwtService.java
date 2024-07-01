@@ -6,14 +6,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.Optional;
 
 public interface JwtService {
-    String createAccessToken(String email);
+    String createAccessToken(String username);
     String createRefreshToken();
-    void updateRefreshToken(String email, String refreshToken);
-    void destroyRefreshToken(String email);
+    void updateRefreshToken(String username, String refreshToken);
+    void destroyRefreshToken(String username);
     void sendAccessToken(HttpServletResponse response, String accessToken);
     void sendAccessAndRefreshToken(HttpServletResponse response, String accessToken, String refreshToken);
     Optional<String> extractAccessToken(HttpServletRequest request);
     Optional<String> extractRefreshToken(HttpServletRequest request);
-    Optional<String> extractEmail(String accessToken);
+    Optional<String> extractUsername(String accessToken);
     boolean isTokenValid(String token);
 }

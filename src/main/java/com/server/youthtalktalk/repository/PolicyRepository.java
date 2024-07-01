@@ -1,4 +1,4 @@
-package com.server.youthtalktalk.repository.policy;
+package com.server.youthtalktalk.repository;
 
 import com.server.youthtalktalk.domain.policy.Policy;
 import org.springframework.data.jpa.repository.JpaRepository;

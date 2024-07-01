@@ -116,9 +116,6 @@ public class PolicyData {
             default -> null;
         };
 
-        /**
-         * TO-DO 신청기간에서 마감일 추출
-         */
         DateExtractor dateExtractor = new DateExtractor();
         String applyTerm = Optional
                 .ofNullable(this.rqutPrdCn)

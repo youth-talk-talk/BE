@@ -44,14 +44,14 @@ class JwtServiceTest {
 
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
-    private static final String EMAIL_CLAIM = "email";
+    private static final String USERNAME_CLAIM = "username";
     private static final String BEARER = "Bearer ";
 
-    private String email = "example@email.com";
+    private String username = "kakao@12345678";
 
     @BeforeEach
     public void init(){
-        Member member = Member.builder().email(email).nickname("nickname1").role(Role.MEMBER).build();
+        Member member = Member.builder().username(username).role(Role.USER).build();
         memberRepository.save(member);
         clear();
     }
@@ -84,14 +84,14 @@ class JwtServiceTest {
     @Test
     void access_token_발급() throws Exception {
         // given, when
-        String accessToken = jwtService.createAccessToken(email);
+        String accessToken = jwtService.createAccessToken(username);
         DecodedJWT verify = getVerify(accessToken);
 
         String subject = verify.getSubject();
-        String findEmail = verify.getClaim(EMAIL_CLAIM).asString();
+        String findUsername = verify.getClaim(USERNAME_CLAIM).asString();
 
         // then
-        assertThat(findEmail).isEqualTo(email);
+        assertThat(findUsername).isEqualTo(username);
         assertThat(subject).isEqualTo(ACCESS_TOKEN_SUBJECT);
     }
 
@@ -102,10 +102,10 @@ class JwtServiceTest {
         DecodedJWT verify = getVerify(refreshToken);
 
         String subject = verify.getSubject();
-        String findEmail = verify.getClaim(EMAIL_CLAIM).asString();
+        String findUsername = verify.getClaim(USERNAME_CLAIM).asString();
 
         // then
-        assertThat(findEmail).isNull();
+        assertThat(findUsername).isNull();
         assertThat(subject).isEqualTo(REFRESH_TOKEN_SUBJECT);
     }
 
@@ -113,13 +113,13 @@ class JwtServiceTest {
     void refresh_token_갱신() throws Exception {
         // given
         String refreshToken = jwtService.createRefreshToken();
-        jwtService.updateRefreshToken(email, refreshToken);
+        jwtService.updateRefreshToken(username, refreshToken);
         clear();
         Thread.sleep(3000);
 
         // when
         String reIssuedRefreshToken = jwtService.createRefreshToken();
-        jwtService.updateRefreshToken(email, reIssuedRefreshToken);
+        jwtService.updateRefreshToken(username, reIssuedRefreshToken);
         clear();
 
         // then
@@ -131,22 +131,22 @@ class JwtServiceTest {
     void refresh_token_제거() throws Exception {
         // given
         String refreshToken = jwtService.createRefreshToken();
-        jwtService.updateRefreshToken(email, refreshToken);
+        jwtService.updateRefreshToken(username, refreshToken);
         clear();
 
         // when
-        jwtService.destroyRefreshToken(email);
+        jwtService.destroyRefreshToken(username);
 
         // then
         assertThat(memberRepository.findByRefreshToken(refreshToken).isEmpty()).isTrue();
-        assertThat(memberRepository.findByEmail(email).get().getRefreshToken()).isNull();
+        assertThat(memberRepository.findByUsername(username).get().getRefreshToken()).isNull();
     }
 
     @Test
     void access_token_헤더에_전송() throws Exception {
         // given
         MockHttpServletResponse mockHttpServletResponse = new MockHttpServletResponse();
-        String accessToken = jwtService.createAccessToken(email);
+        String accessToken = jwtService.createAccessToken(username);
 
         // when
         jwtService.sendAccessToken(mockHttpServletResponse, accessToken);
@@ -160,23 +160,23 @@ class JwtServiceTest {
     void both_token_헤더에_전송() throws Exception {
         // given
         MockHttpServletResponse mockHttpServletResponse = new MockHttpServletResponse();
-        String accessToken = jwtService.createAccessToken(email);
+        String accessToken = jwtService.createAccessToken(username);
         String refreshToken = jwtService.createRefreshToken();
 
         // when
         jwtService.sendAccessAndRefreshToken(mockHttpServletResponse, accessToken, refreshToken);
 
         // then
-        String resultAccessToken = mockHttpServletResponse.getHeader(accessHeader);
-        String resultRefreshToken = mockHttpServletResponse.getHeader(refreshHeader);
-        assertThat(resultAccessToken).isEqualTo(accessToken);
-        assertThat(resultRefreshToken).isEqualTo(refreshToken);
+        String receivedAccessToken = mockHttpServletResponse.getHeader(accessHeader);
+        String receivedRefreshToken = mockHttpServletResponse.getHeader(refreshHeader);
+        assertThat(receivedAccessToken).isEqualTo(accessToken);
+        assertThat(receivedRefreshToken).isEqualTo(refreshToken);
     }
 
     @Test
     void access_token_추출() throws Exception {
         //given
-        String accessToken = jwtService.createAccessToken(email);
+        String accessToken = jwtService.createAccessToken(username);
         String refreshToken = jwtService.createRefreshToken();
         HttpServletRequest request = setRequest(accessToken, refreshToken);
 
@@ -185,13 +185,13 @@ class JwtServiceTest {
 
         //then
         assertThat(extractAccessToken).isEqualTo(accessToken);
-        assertThat(getVerify(extractAccessToken).getClaim(EMAIL_CLAIM).asString()).isEqualTo(email);
+        assertThat(getVerify(extractAccessToken).getClaim(USERNAME_CLAIM).asString()).isEqualTo(username);
     }
 
     @Test
     void refresh_token_추출() throws Exception {
         // given
-        String accessToken = jwtService.createAccessToken(email);
+        String accessToken = jwtService.createAccessToken(username);
         String refreshToken = jwtService.createRefreshToken();
         HttpServletRequest request = setRequest(accessToken, refreshToken);
 
@@ -204,25 +204,25 @@ class JwtServiceTest {
     }
     
     @Test
-    void access_token에서_email_추출() throws Exception {
+    void access_token에서_username_추출() throws Exception {
         // given
-        String accessToken = jwtService.createAccessToken(email);
+        String accessToken = jwtService.createAccessToken(username);
         String refreshToken = jwtService.createRefreshToken();
         HttpServletRequest request = setRequest(accessToken, refreshToken);
         String extractedAccessToken = jwtService.extractAccessToken(request).get();
 
         // when
-        Optional<String> extractedEmail = jwtService.extractEmail(extractedAccessToken);
+        Optional<String> extractedUsername = jwtService.extractUsername(extractedAccessToken);
 
         // then
-        assertThat(extractedEmail.isPresent()).isTrue();
-        assertThat(extractedEmail.get()).isEqualTo(email);
+        assertThat(extractedUsername.isPresent()).isTrue();
+        assertThat(extractedUsername.get()).isEqualTo(username);
     }
 
     @Test
     void 토큰_유효성_검사() throws Exception {
         //given
-        String accessToken = jwtService.createAccessToken(email);
+        String accessToken = jwtService.createAccessToken(username);
         String refreshToken = jwtService.createRefreshToken();
 
         //when, then

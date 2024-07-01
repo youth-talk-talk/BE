@@ -87,9 +87,11 @@ public class Policy extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Category category; // 카테고리
 
+    @Builder.Default
     @OneToMany(mappedBy = "policy")
     private List<Review> reviews = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "policy")
     private List<PolicyComment> policyComments = new ArrayList<>();
 }

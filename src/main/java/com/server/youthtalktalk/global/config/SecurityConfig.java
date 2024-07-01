@@ -11,8 +11,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
@@ -36,11 +41,11 @@ public class SecurityConfig {
                 .httpBasic(basic -> basic.disable()) // HTTP Basic 인증 비활성화
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 정책을 STATELESS로 설정
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/data/fetch").permitAll()
-                        .requestMatchers("/actuator/health").permitAll() // Actuator 헬스 체크 엔드포인트 접근 허용
+                        .requestMatchers("/login", "/signUp").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN") // 관리자 역할 필요 경로
                         .anyRequest().authenticated()); // 나머지 모든 경로 인증 필요
 
+        // LogoutFilter -> JwtAuthenticationProcessingFilter -> CustomJsonUsernamePasswordAuthenticationFilter
         http.addFilterAfter(customJsonUsernamePasswordAuthenticationFilter(), LogoutFilter.class);
         http.addFilterBefore(jwtAuthenticationProcessingFilter(), CustomJsonUsernamePasswordAuthenticationFilter.class);
 
@@ -48,14 +53,18 @@ public class SecurityConfig {
     }
 
     /**
-     * AuthenticationManager 설정 후 등록
+     * AuthenticationManager 등록
      * 커스텀한 CustomAuthenticationProvider 사용
      * UserDetailsService는 커스텀 LoginService로 등록
      */
     @Bean
     public AuthenticationManager authenticationManager() {
-        CustomAuthenticationProvider provider = new CustomAuthenticationProvider(loginService);
-        return new ProviderManager(provider);
+        return new ProviderManager(customAuthenticationProvider());
+    }
+
+    @Bean
+    public CustomAuthenticationProvider customAuthenticationProvider() {
+        return new CustomAuthenticationProvider(loginService);
     }
 
     /**

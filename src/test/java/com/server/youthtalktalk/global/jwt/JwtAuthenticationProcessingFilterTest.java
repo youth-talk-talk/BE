@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,10 +58,12 @@ class JwtAuthenticationProcessingFilterTest {
     private static String LOGIN_URL = "/login";
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
     private static final String BEARER = "Bearer ";
-    private static String KEY_EMAIL = "email";
-    private static String EMAIL = "email@email.com";
+
+    private static String KEY_USERNAME = "username";
+    private static String USERNAME = "kakao12345678";
 
     private ObjectMapper objectMapper = new ObjectMapper();
+    PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
     public void clear(){
         em.flush();
@@ -68,23 +73,22 @@ class JwtAuthenticationProcessingFilterTest {
     @BeforeEach
     public void init(){
         memberRepository.save(Member.builder()
-                .email(EMAIL)
-                .nickname("nickname1")
-                .role(Role.MEMBER)
+                .username(USERNAME)
+                .role(Role.USER)
                 .build());
         clear();
     }
 
-    private Map<String, String> getEmailMap(String email){
+    private Map<String, String> createRequestBodyMap(String username){
         Map<String, String> map = new HashMap<>();
-        map.put(KEY_EMAIL, email);
+        map.put(KEY_USERNAME, username);
         return map;
     }
 
     private Map<String, String> getAccessAndRefreshToken() throws Exception {
-        Map<String, String> map = new HashMap<>();
-        map.put(KEY_EMAIL, EMAIL);
+        Map<String, String> map = createRequestBodyMap(USERNAME);
 
+        System.out.println("로그인 요청 시작");
         MvcResult result = mockMvc.perform(
                         post(LOGIN_URL)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -92,13 +96,13 @@ class JwtAuthenticationProcessingFilterTest {
                 .andReturn();
 
         String accessToken = result.getResponse().getHeader(accessHeader);
-        System.out.println("accessToken = " + accessToken);
         String refreshToken = result.getResponse().getHeader(refreshHeader);
-        System.out.println("refreshToken = " + refreshToken);
 
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put(accessHeader, accessToken);
         tokenMap.put(refreshHeader, refreshToken);
+
+        System.out.println("tokenMap 반환");
 
         return tokenMap;
     }
@@ -121,13 +125,14 @@ class JwtAuthenticationProcessingFilterTest {
     void access_token만_보내서_인증() throws Exception {
         // given
         Map<String, String> accessAndRefreshToken = getAccessAndRefreshToken();
-        String accessToken= accessAndRefreshToken.get(accessHeader);
+        String accessToken = accessAndRefreshToken.get(accessHeader);
+        System.out.println("Received accessToken = " + accessToken);
 
         // when, then
         mockMvc.perform(
                 get(LOGIN_URL+"else")
                         .header(accessHeader,BEARER+ accessToken))
-                .andExpectAll(status().isNotFound());
+                .andExpect(status().isNotFound());
 
     }
 
