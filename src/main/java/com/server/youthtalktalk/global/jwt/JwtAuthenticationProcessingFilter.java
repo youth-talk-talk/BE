@@ -45,7 +45,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         if (request.getRequestURI().equals(NO_CHECK_URL)) {
-            log.info("NO_CHECK_URL -> return");
             filterChain.doFilter(request, response);
             return;
         }
@@ -97,7 +96,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     // 그 유저 객체를 saveAuthentication()으로 인증 처리하여
     // 인증 허가 처리된 객체를 SecurityContextHolder에 담은 후 다음 필터로 넘김
     private void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        log.info("call checkAccessTokenAndAuthentication()");
         jwtService.extractAccessToken(request)
                 .filter(jwtService::isTokenValid)
                 .flatMap(jwtService::extractUsername)

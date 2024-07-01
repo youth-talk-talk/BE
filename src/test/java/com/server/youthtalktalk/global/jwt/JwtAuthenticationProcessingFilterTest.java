@@ -14,9 +14,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -28,6 +25,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -59,10 +57,11 @@ class JwtAuthenticationProcessingFilterTest {
 
     private static String LOGIN_URL = "/login";
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
+    private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
     private static final String BEARER = "Bearer ";
 
     private static String KEY_USERNAME = "username";
-    private static String USERNAME = "kakao12345678";
+    private static String USERNAME = "myUsername";
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -108,19 +107,14 @@ class JwtAuthenticationProcessingFilterTest {
         return tokenMap;
     }
 
-    /**
-     * access token, refresh token 모두 존재하지 않음
-     */
-    @Test
-    void access_refresh_모두_존재_X() throws Exception {
-        // when, then
-        mockMvc.perform(
-                get(LOGIN_URL+"else"))
-                .andExpect(status().isForbidden());
-    }
+//     1. RefreshToken이 없고, AccessToken이 유효한 경우 -> 인증 성공 처리, RefreshToken 재발급 X
+//     2. RefreshToken이 없고, AccessToken이 없거나 유효하지 않은 경우 -> 인증 실패 처리
+//     3. RefreshToken이 있는 경우 -> AccessToken이 만료되어 RefreshToken을 함께 보낸 경우.
+//            *                    DB의 RefreshToken과 비교하여 일치하면
+//                                 AccessToken과 RefreshToken 모두 재발급(RTR 방식), 인증은 실패 처리
 
     /**
-     * access token은 유효하고, refresh token은 존재하지 않음
+     * 1. RefreshToken이 없고, AccessToken이 유효한 경우 -> 인증 성공, RefreshToken 재발급 X
      */
     @Test
     void access_token만_보내서_인증() throws Exception {
@@ -130,15 +124,30 @@ class JwtAuthenticationProcessingFilterTest {
         System.out.println("Received accessToken = " + accessToken);
 
         // when, then
-        mockMvc.perform(
-                get(LOGIN_URL+"else")
-                        .header(accessHeader,BEARER+ accessToken))
-                .andExpect(status().isNotFound());
+        MvcResult result = mockMvc.perform(get("/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(accessHeader, BEARER + accessToken))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String responseRefreshToken = result.getResponse().getHeader(refreshHeader);
+        assertThat(responseRefreshToken).isNull();
 
     }
 
     /**
-     * access token은 유효하지 않고, refresh token은 존재하지 않음
+     * 2-1. RefreshToken이 없고, AccessToken이 없는 경우 -> 인증 실패
+     */
+    @Test
+    void access_refresh_모두_존재_X() throws Exception {
+        // when, then
+        mockMvc.perform(
+                        get("/"))
+                .andDo(print()).andExpect(status().isForbidden());
+    }
+
+    /**
+     * 2-2. RefreshToken이 없고, AccessToken이 유효하지 않은 경우 -> 인증 실패
      */
     @Test
     void 유효하지않은_access_token만_보내서_인증X() throws Exception {
@@ -148,13 +157,13 @@ class JwtAuthenticationProcessingFilterTest {
 
         // when, then
         mockMvc.perform(
-                get(LOGIN_URL+"else")
+                get("/")
                         .header(accessHeader,accessToken+"1"))
                 .andExpectAll(status().isForbidden());
     }
 
     /**
-     * access token은 존재하지 않고, refresh token은 유효함
+     * RefreshToken은 유효하고, AccessToken은 존재하지 않음 -> AccessToken 재발급
      */
     @Test
     void 유효한_refresh_token만_보내서_access_token_재발급() throws Exception {
@@ -164,8 +173,8 @@ class JwtAuthenticationProcessingFilterTest {
 
         // when, then
         MvcResult result = mockMvc.perform(
-                get(LOGIN_URL + "else")
-                        .header(refreshHeader, BEARER + refreshToken))//login이 아닌 다른 임의의 주소
+                get("/")
+                        .header(refreshHeader, BEARER + refreshToken))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -176,7 +185,7 @@ class JwtAuthenticationProcessingFilterTest {
     }
 
     /**
-     * access token은 존재하지 않고, refresh token은 유효하지 않음
+     * RefreshToken은 유효하지 않고, AccessToken은 존재하지 않음 -> 인증 실패
      */
     @Test
     void 유효하지않은_refresh_token만_보냄() throws Exception {
@@ -186,20 +195,20 @@ class JwtAuthenticationProcessingFilterTest {
 
         // when, then
         mockMvc.perform(
-                get(LOGIN_URL + "else")
-                        .header(refreshHeader, refreshToken))
+                get("/")
+                        .header(refreshHeader, refreshToken)) // Bearer을 붙이지 않음
                 .andExpect(status().isForbidden());
 
-        mockMvc.perform(get(LOGIN_URL + "else")
-                        .header(refreshHeader, BEARER + refreshToken+"1"))
+        mockMvc.perform(get("/")
+                        .header(refreshHeader, BEARER + refreshToken+"1")) // 유효하지 않은 refresh token
                 .andExpect(status().isForbidden());
     }
 
     /**
-     * access token과 refresh token 모두 유효함
+     * RefreshToken, AccessToken 모두 유효함 -> 모두 재발급
      */
     @Test
-    void both_token_모두유효하면_access_token_재발급() throws Exception {
+    void both_token_유효하면_모두_재발급() throws Exception {
         // given
         Map<String, String> accessAndRefreshToken = getAccessAndRefreshToken();
         String accessToken= accessAndRefreshToken.get(accessHeader);
@@ -207,7 +216,7 @@ class JwtAuthenticationProcessingFilterTest {
 
         // when, then
         MvcResult result = mockMvc.perform(
-                get(LOGIN_URL + "else")
+                get("/")
                         .header(refreshHeader, BEARER + refreshToken)
                         .header(accessHeader, BEARER + accessToken))
                 .andExpect(status().isOk())
@@ -216,9 +225,11 @@ class JwtAuthenticationProcessingFilterTest {
         String responseAccessToken = result.getResponse().getHeader(accessHeader);
         String responseRefreshToken = result.getResponse().getHeader(refreshHeader);
 
-        String subject = JWT.require(Algorithm.HMAC512(secret)).build().verify(responseAccessToken).getSubject();
+        String accessTokenSubject = JWT.require(Algorithm.HMAC512(secret)).build().verify(responseAccessToken).getSubject();
+        String refreshTokenSubject = JWT.require(Algorithm.HMAC512(secret)).build().verify(responseRefreshToken).getSubject();
 
-        assertThat(subject).isEqualTo(ACCESS_TOKEN_SUBJECT);
-        assertThat(responseRefreshToken).isNull();
+        assertThat(accessTokenSubject).isEqualTo(ACCESS_TOKEN_SUBJECT);
+        assertThat(refreshTokenSubject).isEqualTo(REFRESH_TOKEN_SUBJECT);
     }
+
 }
