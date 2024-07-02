@@ -5,6 +5,9 @@ DEPLOY_SERVER_IP="${DEPLOY_SERVER_IP}"
 IMAGE_NAME="${IMAGE_NAME}"
 IMAGE_VERSION="${IMAGE_VERSION}"
 DEPLOY_PATH="${DEPLOY_PATH}"
+APP_USERNAME="${APP_USERNAME}"
+APP_PASSWORD="${APP_PASSWORD}"
+
 
 # 현재 실행 중인 컨테이너 확인
 CURRENT_CONTAINER=$(docker ps --format '{{.Names}}' | grep -E 'blue|green')
@@ -43,13 +46,9 @@ docker logs $NEW_CONTAINER
 
 # 헬스 체크 URL
 HEALTH_CHECK_URL="http://$DEPLOY_SERVER_IP:$NEW_PORT/actuator/health"
-### 헬스체크 엔드포인트가 보안 걸려있는 경우
-### USERNAME="test-username"
-### PASSWORD="test-password"
 
 echo "Performing health check on $HEALTH_CHECK_URL"
-HEALTH_CHECK_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_CHECK_URL)
-### HEALTH_CHECK_STATUS=$(curl -u $USERNAME:$PASSWORD -s -o /dev/null -w "%{http_code}" $HEALTH_CHECK_URL)
+HEALTH_CHECK_STATUS=$(curl -u $USERNAME:$PASSWORD -s -o /dev/null -w "%{http_code}" $HEALTH_CHECK_URL)
 
 if [ "$HEALTH_CHECK_STATUS" -ne 200 ]; then
     echo "New server health check failed with status code $HEALTH_CHECK_STATUS"
