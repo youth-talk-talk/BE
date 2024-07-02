@@ -48,7 +48,7 @@ docker logs $NEW_CONTAINER
 HEALTH_CHECK_URL="http://$DEPLOY_SERVER_IP:$NEW_PORT/actuator/health"
 
 echo "Performing health check on $HEALTH_CHECK_URL"
-HEALTH_CHECK_STATUS=$(curl -u $USERNAME:$PASSWORD -s -o /dev/null -w "%{http_code}" $HEALTH_CHECK_URL)
+HEALTH_CHECK_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "username: $USERNAME" $HEALTH_CHECK_URL)
 
 if [ "$HEALTH_CHECK_STATUS" -ne 200 ]; then
     echo "New server health check failed with status code $HEALTH_CHECK_STATUS"

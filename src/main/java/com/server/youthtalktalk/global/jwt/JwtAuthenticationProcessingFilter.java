@@ -1,6 +1,7 @@
 package com.server.youthtalktalk.global.jwt;
 
 import com.server.youthtalktalk.domain.member.Member;
+import com.server.youthtalktalk.domain.member.Role;
 import com.server.youthtalktalk.repository.MemberRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,9 +16,12 @@ import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -37,6 +41,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      */
 
     private static final String NO_CHECK_URL = "/login";
+    private static final String HEALTH_CHECK = "/actuator/health";
 
     private final JwtService jwtService;
     private final MemberRepository memberRepository;
@@ -45,6 +50,12 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         if (request.getRequestURI().equals(NO_CHECK_URL)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if(request.getRequestURI().equals(HEALTH_CHECK)) {
+            authenticationForHealthCheck(request);
             filterChain.doFilter(request, response);
             return;
         }
@@ -123,6 +134,15 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                         authoritiesMapper.mapAuthorities(userDetailsUser.getAuthorities()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    private void authenticationForHealthCheck(HttpServletRequest request){
+        String username = request.getHeader("username");
+
+        Member member = memberRepository.findByUsername(username).get();
+        if(member.getRole().equals(Role.ADMIN)){
+            saveAuthentication(member);
+        }
     }
 
 }
