@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class JwtServiceTest {
 
     @Autowired
-    JwtServiceImpl jwtService;
+    JwtService jwtService;
 
     @Autowired
     MemberRepository memberRepository;
