@@ -29,10 +29,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 public class LoginTest {
 
-    @Test
-    void contextLoads() {
-    }
-
     @Autowired
     MockMvc mockMvc;
 

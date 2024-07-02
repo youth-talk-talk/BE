@@ -27,12 +27,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Transactional
 class JwtServiceTest {
 
-    @Test
-    void contextLoads() {
-    }
-
     @Autowired
-    JwtService jwtService;
+    JwtServiceImpl jwtService;
 
     @Autowired
     MemberRepository memberRepository;

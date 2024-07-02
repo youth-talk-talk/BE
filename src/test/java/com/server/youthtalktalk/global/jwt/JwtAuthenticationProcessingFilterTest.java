@@ -33,10 +33,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class JwtAuthenticationProcessingFilterTest {
 
-    @Test
-    void contextLoads() {
-    }
-
     @Autowired
     MockMvc mockMvc;
 
