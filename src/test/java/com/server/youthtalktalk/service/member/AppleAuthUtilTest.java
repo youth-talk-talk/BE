@@ -13,12 +13,12 @@ public class AppleAuthUtilTest {
     @Autowired
     private AppleAuthUtil appleAuthUtil;
 
-    @Test
-    @DisplayName("client_secret 생성 테스트")
-    void getClientSecretTest() {
-        String clientSecret = appleAuthUtil.createClientSecret();
-        System.out.println("client_secret = " + clientSecret);
-    }
+//    @Test
+//    @DisplayName("client_secret 생성 테스트")
+//    void getClientSecretTest() {
+//        String clientSecret = appleAuthUtil.createClientSecret();
+//        System.out.println("client_secret = " + clientSecret);
+//    }
 
 //    @Test
 //    @DisplayName("애플 토큰 요청 테스트")
