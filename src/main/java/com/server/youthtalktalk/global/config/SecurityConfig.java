@@ -44,7 +44,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 정책을 STATELESS로 설정
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/login", "/signUp").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN") // 관리자 역할 필요 경로
+                        .requestMatchers("/admin/**","/actuator/health").hasRole("ADMIN") // 관리자 역할 필요 경로
                         .anyRequest().authenticated()); // 나머지 모든 경로 인증 필요
 
         // LogoutFilter -> JwtAuthenticationProcessingFilter -> CustomJsonUsernamePasswordAuthenticationFilter
