@@ -10,7 +10,6 @@ import org.springframework.test.context.ActiveProfiles;
 import static com.server.youthtalktalk.dto.member.apple.AppleDto.*;
 
 @SpringBootTest
-@ActiveProfiles("test")
 public class MemberServiceImplTest {
 
 //    @Test
