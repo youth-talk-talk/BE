@@ -1,6 +1,8 @@
 package com.server.youthtalktalk.domain.policy;
 
 import com.server.youthtalktalk.domain.member.Member;
+import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -30,5 +32,14 @@ public enum Region {
 
     private final String key;
     private final String name;
+
+    public static Region fromRegionStr(String regionStr) {
+        for (Region region : Region.values()) {
+            if (region.getName().equalsIgnoreCase(regionStr)) {
+                return region;
+            }
+        }
+        throw new InvalidValueException(BaseResponseCode.INVALID_INPUT_VALUE); // 맞는 Region이 없는 경우
+    }
 
 }

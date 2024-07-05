@@ -79,7 +79,7 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
         String username = loginDataMap.get(USERNAME_KEY);
 
         // apple 토큰 검증 과정
-        if(username.substring(0,5).equals("apple")){ // 애플 로그인 요청일 경우
+        if(username.startsWith("apple")){ // 애플 로그인 요청일 경우
             String authorizationCode = loginDataMap.get(AUTHORIZATION_CODE);
             if(authorizationCode.isEmpty()){
                 throw new InvalidValueException(BaseResponseCode.INVALID_INPUT_VALUE);
