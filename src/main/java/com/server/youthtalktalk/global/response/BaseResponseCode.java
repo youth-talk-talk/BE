@@ -23,7 +23,8 @@ public enum BaseResponseCode {
     APPLE_TOKEN_VALIDATION_ERROR("MO4","애플 토큰이 유효하지 않습니다.",HttpStatus.BAD_REQUEST.value()),
     APPLE_NEED_SIGN_UP("M05","애플 최초 회원가입이 필요합니다.",HttpStatus.BAD_REQUEST.value()),
     APPLE_NEED_ADD_SIGN_UP("M06","애플 추가 회원가입이 필요합니다.",HttpStatus.BAD_REQUEST.value()),
-    MEMBER_DUPLICATED("M07", "이미 가입한 회원입니다.", HttpStatus.BAD_REQUEST.value());
+    MEMBER_DUPLICATED("M07", "이미 가입한 회원입니다.", HttpStatus.BAD_REQUEST.value()),
+    APPLE_USER_IDENTIFIER_ERROR("M07","애플 USERIDENTIFIER가 유효하지 않습니다.",HttpStatus.BAD_REQUEST.value());
 
     private final String code;
     private final String message;
