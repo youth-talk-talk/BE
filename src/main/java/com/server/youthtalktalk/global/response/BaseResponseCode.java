@@ -22,7 +22,9 @@ public enum BaseResponseCode {
     APPLE_PUBLIC_KEY_ERROR("M03","애플 공개키를 이용한 서명 검증에 실패했습니다.",HttpStatus.BAD_REQUEST.value()),
     APPLE_TOKEN_VALIDATION_ERROR("MO4","애플 토큰이 유효하지 않습니다.",HttpStatus.BAD_REQUEST.value()),
     APPLE_NEED_SIGN_UP("M05","애플 최초 회원가입이 필요합니다.",HttpStatus.BAD_REQUEST.value()),
-    APPLE_NEED_ADD_SIGN_UP("M06","애플 추가 회원가입이 필요합니다.",HttpStatus.BAD_REQUEST.value());
+    APPLE_NEED_ADD_SIGN_UP("M06","애플 추가 회원가입이 필요합니다.",HttpStatus.BAD_REQUEST.value()),
+    APPLE_USER_IDENTIFIER_ERROR("M07","애플 USERIDENTIFIER가 유효하지 않습니다.",HttpStatus.BAD_REQUEST.value());
+
 
 
     private final String code;

@@ -28,6 +28,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(baseResponse, HttpStatus.valueOf(baseResponseCode.getStatus()));
     }
 
+    @ExceptionHandler(value = InvalidValueException.class)
+    public ResponseEntity<BaseResponse> handleInvalidValueException(BusinessException e, HttpServletRequest request) {
+        log.error("[ERROR] : {}", e.getMessage(), e);
+
+        BaseResponseCode baseResponseCode = e.getBaseResponseCode();
+
+        BaseResponse baseResponse = new BaseResponse(baseResponseCode);
+
+        return new ResponseEntity<>(baseResponse, HttpStatus.valueOf(baseResponseCode.getStatus()));
+    }
+
     @ExceptionHandler(value = EntityNotFoundException.class)
     public ResponseEntity<BaseResponse> handleEntityNotFoundException(EntityNotFoundException e,
                                                                       HttpServletRequest request) {
