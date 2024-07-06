@@ -1,5 +1,6 @@
 package com.server.youthtalktalk.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseTimeEntity {
 
+    @Column(updatable = false)
     @CreatedDate
     private LocalDateTime createdAt;
 
