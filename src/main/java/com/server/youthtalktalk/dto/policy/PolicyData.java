@@ -151,6 +151,7 @@ public class PolicyData {
                 .introduction(cDataConvert(this.polyItcnCn))
                 .operatingOrg(cDataConvert(this.cnsgNmor))
                 .specialization(cDataConvert(this.splzRlmRqisCn))
+                .major(cDataConvert(this.majrRqisCn))
                 .submitDoc(cDataConvert(this.pstnPaprCn))
                 .supportDetail(cDataConvert(this.sporCn))
                 .build();

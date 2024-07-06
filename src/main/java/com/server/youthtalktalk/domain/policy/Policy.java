@@ -51,6 +51,8 @@ public class Policy extends BaseTimeEntity {
 
     private String specialization; // 특화 분야
 
+    private String major; // 전공 요건
+
     private String education; // 학력 요건
 
     @Column(columnDefinition = "TEXT")
