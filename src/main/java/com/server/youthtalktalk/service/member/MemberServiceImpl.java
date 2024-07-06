@@ -6,10 +6,13 @@ import com.server.youthtalktalk.domain.policy.Region;
 import com.server.youthtalktalk.dto.member.SignUpRequestDto;
 import com.server.youthtalktalk.global.jwt.JwtService;
 import com.server.youthtalktalk.global.response.exception.member.MemberDuplicatedException;
+import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.global.util.AppleAuthUtil;
 import com.server.youthtalktalk.repository.MemberRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +50,16 @@ public class MemberServiceImpl implements MemberService {
         String accessToken = jwtService.createAccessToken(username);
         jwtService.sendAccessToken(httpServletResponse, accessToken);
         return member.getId();
+    }
+
+    /**
+     * 현재 로그인한 사용자 정보 가져오기
+     */
+    @Override
+    public Member getCurrentMember() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getPrincipal().toString();
+        return memberRepository.findByUsername(username).orElseThrow(MemberNotFoundException::new);
     }
 
     private void checkIfDuplicatedMember(String username) {

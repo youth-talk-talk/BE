@@ -4,5 +4,6 @@ import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.dto.member.SignUpRequestDto;
 
 public interface MemberService {
-    public Long signUp(SignUpRequestDto signUpRequestDto);
+    Long signUp(SignUpRequestDto signUpRequestDto);
+    Member getCurrentMember();
 }
