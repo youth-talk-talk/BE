@@ -53,7 +53,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /**
-     * 현재 로그인한 사용자 정보 가져오기
+     * 현재 로그인한 사용자 조회
      */
     @Override
     public Member getCurrentMember() {
