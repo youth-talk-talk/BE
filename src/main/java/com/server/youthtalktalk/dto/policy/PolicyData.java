@@ -1,9 +1,6 @@
 package com.server.youthtalktalk.dto.policy;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.server.youthtalktalk.domain.policy.Category;
-import com.server.youthtalktalk.domain.policy.Policy;
-import com.server.youthtalktalk.domain.policy.Region;
-import com.server.youthtalktalk.domain.policy.RepeatCode;
+import com.server.youthtalktalk.domain.policy.*;
 import com.server.youthtalktalk.global.util.DateExtractor;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -116,6 +113,7 @@ public class PolicyData {
             default -> null;
         };
 
+        // 날짜 데이터 전처리
         DateExtractor dateExtractor = new DateExtractor();
         String applyTerm = Optional
                 .ofNullable(this.rqutPrdCn)
@@ -124,6 +122,32 @@ public class PolicyData {
         LocalDate applyDue = dateExtractor.extractDue(applyTerm);
         log.info("applyTerm={}", applyTerm);
         log.info("applyDue={}", applyDue);
+
+        // 취업상태 코드 분류
+        String employment = this.empmSttsCn;
+        EmploymentCode employmentCode;
+        if (employment.contains("제한없음") || employment.equals("-")) {
+            employmentCode = EmploymentCode.NO_RESTRICTION;
+        } else if (employment.contains("재직자")) {
+            employmentCode = EmploymentCode.EMPLOYED;
+        } else if (employment.contains("자영업자")) {
+            employmentCode = EmploymentCode.SELF_EMPLOYED;
+        } else if (employment.contains("미취업자")) {
+            employmentCode = EmploymentCode.UNEMPLOYED;
+        } else if (employment.contains("프리랜서")) {
+            employmentCode = EmploymentCode.FREELANCER;
+        } else if (employment.contains("일용근로자")) {
+            employmentCode = EmploymentCode.DAILY_WORKER;
+        } else if (employment.contains("예비창업자")||employment.contains("(예비)창업자")) {
+            employmentCode = EmploymentCode.PROSPECTIVE_ENTREPRENEUR;
+        } else if (employment.contains("단기근로자")) {
+            employmentCode = EmploymentCode.TEMPORARY_WORKER;
+        } else if (employment.contains("영농종사자") || employment.contains("농업인")) {
+            employmentCode = EmploymentCode.FARMER;
+        } else {
+            employmentCode = EmploymentCode.OTHER;
+        }
+
 
         return Policy.builder()
                 .policyId(cDataConvert(this.bizId))
@@ -143,7 +167,8 @@ public class PolicyData {
                 .applUrl(cDataConvert(this.rqutUrla))
                 .category(category)
                 .education(cDataConvert(this.accrRqisCn))
-                .employment(extractEmployment(cDataConvert(this.empmSttsCn)))
+                .employment(cDataConvert(this.empmSttsCn))
+                .employmentCode(employmentCode)
                 .hostDep(cDataConvert(this.mngtMson))
                 .refUrl1(cDataConvert(this.rfcSiteUrla1))
                 .refUrl2(cDataConvert(this.rfcSiteUrla2))
@@ -162,10 +187,5 @@ public class PolicyData {
             return value.substring(9, value.length() - 3);
         }
         return value;
-    }
-
-    public List<String> extractEmployment(String employment){
-        // 쉼표 기준으로 문자열을 분리하고, 양쪽 공백 제거
-        return Arrays.asList(employment.split("\\s*,\\s*"));
     }
 }

@@ -46,8 +46,10 @@ public class Policy extends BaseTimeEntity {
 
     private int maxAge; // 최대 연령
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    private List<String> employment; // 취업 상태
+    private String employment; // 취업 상태
+
+    @Enumerated(EnumType.STRING)
+    private EmploymentCode employmentCode; // 취업 상태 코드
 
     private String specialization; // 특화 분야
 
