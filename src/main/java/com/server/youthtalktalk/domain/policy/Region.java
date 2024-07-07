@@ -28,7 +28,8 @@ public enum Region {
     GYEONGBUK("003002014","경북"),
     GYEONGNAM("003002015","경남"),
     JEJU("003002016","제주"),
-    SEJONG("003002017","세종");
+    SEJONG("003002017","세종"),
+    ALL("중앙부처","전국");
 
     private final String key;
     private final String name;
@@ -36,6 +37,15 @@ public enum Region {
     public static Region fromRegionStr(String regionStr) {
         for (Region region : Region.values()) {
             if (region.getName().equalsIgnoreCase(regionStr)) {
+                return region;
+            }
+        }
+        throw new InvalidValueException(BaseResponseCode.INVALID_INPUT_VALUE); // 맞는 Region이 없는 경우
+    }
+
+    public static Region fromKey(String key) {
+        for (Region region : Region.values()) {
+            if (region.getKey().equals(key)) {
                 return region;
             }
         }

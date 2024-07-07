@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -34,24 +35,17 @@ public class PolicyDataServiceImpl implements PolicyDataService {
     @Override
     @Transactional
     public void saveData() {
-        Region[] regions = Region.values();
-        List<Policy> policyList = new ArrayList<>();
-        // 지역별로 데이터 저장
-        for(Region region : regions) {
-            log.info("region={}", region.getName());
-            List<PolicyData> dataList = fetchData(region.getKey());
-            for(PolicyData data : dataList)
-                policyList.add(data.toPolicy(region));
-        }
-
+        List<PolicyData> policyDataList = fetchData();
+        List<Policy> policyList = policyDataList.stream().map(PolicyData::toPolicy).toList();
         policyRepository.saveAll(policyList);
     }
 
     @Override
-    public List<PolicyData> fetchData(String regionCode) {
+    public List<PolicyData> fetchData() {
         List<PolicyData> dataList = new ArrayList<>();
         WebClient webClient = WebClient.builder().baseUrl("https://www.youthcenter.go.kr/").build();
-        int pageIndex = 1;
+
+        int pageIndex = 1; // 페이지 인덱스는 1부터 시작
         boolean hasMoreData = true;
         while(hasMoreData){
             // api 호출 response 받기
@@ -62,7 +56,6 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                             .queryParam("openApiVlak", secretKey)
                             .queryParam("display", pageSize)
                             .queryParam("pageIndex", page)
-                            .queryParam("srchPolyBizSecd", regionCode)
                             .build())
                     .retrieve()
                     .bodyToMono(String.class);
@@ -78,7 +71,6 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                     hasMoreData=false;
                 }
                 dataList.addAll(youthPolicies);
-                log.info("pageIndex={}", pageIndex);
                 pageIndex++;
             } catch (JsonProcessingException e) {
                 e.printStackTrace();

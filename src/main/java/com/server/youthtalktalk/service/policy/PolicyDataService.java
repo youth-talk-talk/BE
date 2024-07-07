@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface PolicyDataService {
     public void saveData();
-    public List<PolicyData> fetchData(String regionCode);
+    public List<PolicyData> fetchData();
 }

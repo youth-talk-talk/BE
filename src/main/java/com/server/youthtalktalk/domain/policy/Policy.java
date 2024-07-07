@@ -46,6 +46,7 @@ public class Policy extends BaseTimeEntity {
 
     private int maxAge; // 최대 연령
 
+    @Column(columnDefinition = "TEXT")
     private String employment; // 취업 상태
 
     @Enumerated(EnumType.STRING)
@@ -75,10 +76,13 @@ public class Policy extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String evaluation; // 심사 발표
 
+    @Column(length = 500)
     private String applUrl; // 신청 사이트
 
+    @Column(length = 500)
     private String refUrl1; // 참고 사이트 1
 
+    @Column(length = 500)
     private String refUrl2; // 참고 사이트 2
 
     private String hostDep; // 주관 부처명

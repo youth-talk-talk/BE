@@ -83,7 +83,15 @@ public class PolicyData {
     @JacksonXmlProperty(localName = "polyRlmCd")
     private String polyRlmCd;
 
-    public Policy toPolicy(Region region) {
+    public Policy toPolicy() {
+        Region region = null;
+        // 지역 구분 (중앙부처 타입일 경우 지역 : 전국)
+        if(this.polyBizTy.equals("중앙부처")){
+            region = Region.ALL;
+        }
+        else{ // 지자체일 경우
+            region = Region.fromKey(this.polyBizSecd.substring(0,9));
+        }
         // 카테고리 분류
         Category category = switch (this.polyRlmCd) {
             case "023010" -> Category.JOB;

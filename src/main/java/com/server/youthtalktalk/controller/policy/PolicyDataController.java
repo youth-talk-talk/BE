@@ -1,6 +1,7 @@
 package com.server.youthtalktalk.controller.policy;
 
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
+import com.server.youthtalktalk.service.policy.PolicyDataService;
 import com.server.youthtalktalk.service.policy.PolicyDataServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,21 +12,12 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RequiredArgsConstructor
 public class PolicyDataController {
-    private final PolicyDataServiceImpl dataService;
+    private final PolicyDataService policyDataService;
 
     @GetMapping("/data/fetch")
     public String fetchData() {
         log.info("fetch data");
-        dataService.saveData();
+        policyDataService.saveData();
         return "success";
-    }
-
-    @GetMapping("/test")
-    public String test() {
-        boolean result = true;
-        if(result)
-            throw new MemberNotFoundException();
-        else
-            return "test";
     }
 }
