@@ -1,19 +1,18 @@
-package com.server.youthtalktalk.service.policy;
+package com.server.youthtalktalk.service.policy.data;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.server.youthtalktalk.domain.policy.Policy;
-import com.server.youthtalktalk.domain.policy.Region;
-import com.server.youthtalktalk.dto.policy.PolicyData;
-import com.server.youthtalktalk.dto.policy.PolicyDataListResponse;
+import com.server.youthtalktalk.dto.policy.data.PolicyData;
+import com.server.youthtalktalk.dto.policy.data.PolicyDataListResponse;
 import com.server.youthtalktalk.repository.PolicyRepository;
+import com.server.youthtalktalk.service.policy.data.PolicyDataService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 

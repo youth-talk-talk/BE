@@ -1,8 +1,6 @@
-package com.server.youthtalktalk.controller.policy;
+package com.server.youthtalktalk.controller.policy.data;
 
-import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
-import com.server.youthtalktalk.service.policy.PolicyDataService;
-import com.server.youthtalktalk.service.policy.PolicyDataServiceImpl;
+import com.server.youthtalktalk.service.policy.data.PolicyDataService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;

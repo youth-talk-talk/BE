@@ -1,12 +1,12 @@
-package com.server.youthtalktalk.dto.policy;
+package com.server.youthtalktalk.dto.policy.data;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.server.youthtalktalk.dto.policy.data.PolicyData;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter

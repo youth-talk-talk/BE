@@ -1,6 +1,6 @@
-package com.server.youthtalktalk.service.policy;
+package com.server.youthtalktalk.service.policy.data;
 
-import com.server.youthtalktalk.dto.policy.PolicyData;
+import com.server.youthtalktalk.dto.policy.data.PolicyData;
 
 import java.util.List;
 

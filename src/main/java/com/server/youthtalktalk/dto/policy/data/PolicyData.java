@@ -1,4 +1,4 @@
-package com.server.youthtalktalk.dto.policy;
+package com.server.youthtalktalk.dto.policy.data;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.server.youthtalktalk.domain.policy.*;
 import com.server.youthtalktalk.global.util.DateExtractor;
