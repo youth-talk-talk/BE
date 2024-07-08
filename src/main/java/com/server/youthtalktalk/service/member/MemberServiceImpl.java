@@ -5,17 +5,24 @@ import com.server.youthtalktalk.domain.member.Role;
 import com.server.youthtalktalk.domain.policy.Region;
 import com.server.youthtalktalk.dto.member.SignUpRequestDto;
 import com.server.youthtalktalk.global.jwt.JwtService;
+import com.server.youthtalktalk.global.response.exception.member.MemberAccessDeniedException;
 import com.server.youthtalktalk.global.response.exception.member.MemberDuplicatedException;
+import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.global.util.AppleAuthUtil;
 import com.server.youthtalktalk.repository.MemberRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Service
+@Slf4j
 @Transactional
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
@@ -47,6 +54,19 @@ public class MemberServiceImpl implements MemberService {
         String accessToken = jwtService.createAccessToken(username);
         jwtService.sendAccessToken(httpServletResponse, accessToken);
         return member.getId();
+    }
+
+    /**
+     * 현재 로그인한 사용자 조회
+     */
+    @Override
+    public Member getCurrentMember() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new MemberAccessDeniedException();
+        }
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        return memberRepository.findByUsername(userDetails.getUsername()).orElseThrow(MemberNotFoundException::new);
     }
 
     private void checkIfDuplicatedMember(String username) {
