@@ -7,10 +7,7 @@ import com.server.youthtalktalk.global.response.BaseResponse;
 import com.server.youthtalktalk.service.member.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static com.server.youthtalktalk.global.response.BaseResponseCode.SUCCESS;
 
@@ -33,4 +30,10 @@ public class MemberController {
         MemberInfoDto memberInfoDto = new MemberInfoDto(me.getNickname(), me.getEmail(), me.getRegion().getName());
         return new BaseResponse<>(memberInfoDto, SUCCESS);
     }
+
+//    TO-DO
+//    @PatchMapping("/me")
+//    public BaseResponse<String> updateMyInfo(@Valid @RequestBody MemberInfoDto memberInfoDto) {
+//
+//    }
 }

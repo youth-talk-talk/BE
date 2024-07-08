@@ -69,4 +69,13 @@ public class Member extends BaseTimeEntity {
         this.refreshToken = null;
     }
 
+    // nickname 업데이트
+    public void updateNickname(String updateNickname) {
+        this.nickname = updateNickname;
+    }
+
+    // region 업데이트
+    public void updateRegion(Region updateRegion) {
+        this.region = updateRegion;
+    }
 }

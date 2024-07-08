@@ -3,6 +3,7 @@ package com.server.youthtalktalk.service.member;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.member.Role;
 import com.server.youthtalktalk.domain.policy.Region;
+import com.server.youthtalktalk.dto.member.MemberUpdateDto;
 import com.server.youthtalktalk.dto.member.SignUpRequestDto;
 import com.server.youthtalktalk.global.jwt.JwtService;
 import com.server.youthtalktalk.global.response.exception.member.MemberAccessDeniedException;
@@ -74,6 +75,16 @@ public class MemberServiceImpl implements MemberService {
         if (findMember.isPresent()) {
             throw new MemberDuplicatedException();
         }
+    }
+
+    /**
+     * 내 정보 수정
+     */
+    @Override
+    public void updateMemberInfo(MemberUpdateDto memberUpdateDto, String username) {
+        Member member = memberRepository.findByUsername(username).orElseThrow(MemberNotFoundException::new);
+        memberUpdateDto.nickname().ifPresent(member::updateNickname);
+        memberUpdateDto.region().ifPresent(regionStr -> member.updateRegion(Region.fromRegionStr(regionStr)));
     }
 
 }
