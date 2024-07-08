@@ -2,6 +2,7 @@ package com.server.youthtalktalk.dto.policy.data;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.server.youthtalktalk.domain.policy.*;
 import com.server.youthtalktalk.global.util.DateExtractor;
+import com.server.youthtalktalk.global.util.EmploymentStatusClassifier;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
 import java.util.Optional;
+
 
 @Slf4j
 @Getter
@@ -138,31 +140,11 @@ public class PolicyData {
         log.info("applyDue={}", applyDue);
 
         // 취업상태 코드 분류
-        String employment = this.empmSttsCn;
-        EmploymentCode employmentCode;
-        if (employment.contains("제한없음") || employment.equals("-")) {
-            employmentCode = EmploymentCode.NO_RESTRICTION;
-        } else if (employment.contains("재직자")) {
-            employmentCode = EmploymentCode.EMPLOYED;
-        } else if (employment.contains("자영업자")) {
-            employmentCode = EmploymentCode.SELF_EMPLOYED;
-        } else if (employment.contains("미취업자")) {
-            employmentCode = EmploymentCode.UNEMPLOYED;
-        } else if (employment.contains("프리랜서")) {
-            employmentCode = EmploymentCode.FREELANCER;
-        } else if (employment.contains("일용근로자")) {
-            employmentCode = EmploymentCode.DAILY_WORKER;
-        } else if (employment.contains("예비창업자")||employment.contains("(예비)창업자")) {
-            employmentCode = EmploymentCode.ENTREPRENEUR;
-        } else if (employment.contains("단기근로자")) {
-            employmentCode = EmploymentCode.TEMPORARY_WORKER;
-        } else if (employment.contains("영농종사자") || employment.contains("농업인")) {
-            employmentCode = EmploymentCode.FARMER;
-        } else {
-            employmentCode = EmploymentCode.OTHER;
-        }
+        String employment = this.empmSttsCn != null ? this.empmSttsCn : "";
+        String employmentCode = EmploymentStatusClassifier.classify(employment);
 
 
+        // Policy 객체 생성
         return Policy.builder()
                 .policyId(cDataConvert(this.bizId))
                 .region(region)
@@ -202,4 +184,5 @@ public class PolicyData {
         }
         return value;
     }
+
 }

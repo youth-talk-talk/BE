@@ -49,8 +49,7 @@ public class Policy extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String employment; // 취업 상태
 
-    @Enumerated(EnumType.STRING)
-    private EmploymentCode employmentCode; // 취업 상태 코드
+    private String employmentCode; // 취업 상태 코드 리스트
 
     private String specialization; // 특화 분야
 
