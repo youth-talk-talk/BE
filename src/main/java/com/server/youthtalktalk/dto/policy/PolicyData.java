@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -147,7 +145,7 @@ public class PolicyData {
         } else if (employment.contains("일용근로자")) {
             employmentCode = EmploymentCode.DAILY_WORKER;
         } else if (employment.contains("예비창업자")||employment.contains("(예비)창업자")) {
-            employmentCode = EmploymentCode.PROSPECTIVE_ENTREPRENEUR;
+            employmentCode = EmploymentCode.ENTREPRENEUR;
         } else if (employment.contains("단기근로자")) {
             employmentCode = EmploymentCode.TEMPORARY_WORKER;
         } else if (employment.contains("영농종사자") || employment.contains("농업인")) {
