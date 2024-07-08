@@ -27,7 +27,6 @@ public abstract class Comment {
     private String content;
     private LocalDate createdAt;
     private LocalDate updatedAt;
-    private Long view;
 
     @OneToMany(mappedBy = "comment")
     private List<Likes> commentLikes = new ArrayList<>();
