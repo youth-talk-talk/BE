@@ -101,12 +101,20 @@ public class PolicyData {
 
         // 연령정보 분류
         int minAge = 0;
-        int maxAge = 0;
+        int maxAge = 100;
         String ageInfo = cDataConvert(this.ageInfo);
-        if(ageInfo!=null&&!ageInfo.equals("제한없음")){
+        if(ageInfo!=null){
             String[] ages = ageInfo.replaceAll("[^0-9~]", "").split("~");
-            minAge = Integer.parseInt(ages[0].trim());
-            if(ages.length>=2) maxAge = Integer.parseInt(ages[1].trim());
+            if (ages.length == 1 && ageInfo.contains("이상")){
+                minAge = Integer.parseInt(ages[0].trim());
+            }
+            else if (ages.length == 1 && ageInfo.contains("이하")){
+                maxAge = Integer.parseInt(ages[0].trim());
+            }
+            else if (ages.length == 2){
+                minAge = Integer.parseInt(ages[0].trim());
+                maxAge = Integer.parseInt(ages[1].trim());
+            }
         }
 
         // 반복코드 분류
