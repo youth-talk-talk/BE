@@ -6,16 +6,18 @@ import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.comment.PostComment;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
+@SuperBuilder // 상속관계에서는 @SuperBuilder를 사용해야하는데 이 부분에서 문제가 생김
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "post_type")
-public abstract class Post extends BaseTimeEntity {
+public class Post extends BaseTimeEntity {
 
     @Id
     @GeneratedValue
@@ -41,5 +43,4 @@ public abstract class Post extends BaseTimeEntity {
         this.writer = member;
         member.getPosts().add(this);
     }
-
 }

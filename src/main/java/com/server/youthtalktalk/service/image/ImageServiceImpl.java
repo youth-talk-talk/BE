@@ -4,6 +4,8 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.server.youthtalktalk.domain.Image;
+import com.server.youthtalktalk.domain.post.Post;
 import com.server.youthtalktalk.repository.ImageRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -31,42 +35,65 @@ public class ImageServiceImpl implements ImageService{
 
     @Override
     @Transactional
-    public String uploadFile(MultipartFile file) throws IOException {
+    public List<String> uploadMultiFile(List<MultipartFile> multipartFileList) throws IOException {
+        List<String> fileList = new ArrayList<>();
         try {
-            // 파일 이름의 중복을 막기 위해 "UUID(랜덤 값) + 원본파일이름"로 연결함
-            String s3FileName = UUID.randomUUID() + "-" + file.getOriginalFilename();
+            for (MultipartFile file : multipartFileList) {
+                // 파일 이름의 중복을 막기 위해 "UUID(랜덤 값) + 원본파일이름"로 연결함
+                String s3FileName = UUID.randomUUID() + "-" + file.getOriginalFilename();
 
-            // 파일 사이즈를 ContentLength를 이용하여 S3에 알려줌
-            ObjectMetadata objMeta = new ObjectMetadata();
-            // url을 클릭 시 사진이 웹에서 보이는 것이 아닌 바로 다운되는 현상을 해결하기 위해 메타데이터 타입 설정
-            objMeta.setContentType(file.getContentType());
-            InputStream inputStream = file.getInputStream();
-            objMeta.setContentLength(inputStream.available());
+                // 파일 사이즈를 ContentLength를 이용하여 S3에 알려줌
+                ObjectMetadata objMeta = new ObjectMetadata();
+                // url을 클릭 시 사진이 웹에서 보이는 것이 아닌 바로 다운되는 현상을 해결하기 위해 메타데이터 타입 설정
+                objMeta.setContentType(file.getContentType());
+                InputStream inputStream = file.getInputStream();
+                objMeta.setContentLength(inputStream.available());
 
-            // 파일 stream을 열어서 S3에 파일을 업로드
-            amazonS3.putObject(bucket, s3FileName, inputStream, objMeta);
-            inputStream.close();
+                // 파일 stream을 열어서 S3에 파일을 업로드
+                amazonS3.putObject(bucket, s3FileName, inputStream, objMeta);
+                inputStream.close();
 
-            // Url 가져와서 반환
-            log.info("S3 upload file name = {}", s3FileName);
-            return amazonS3.getUrl(bucket, s3FileName).toString();
+                // Url 가져와서 반환
+                log.info("S3 upload file name = {}", s3FileName);
+                fileList.add(amazonS3.getUrl(bucket, s3FileName).toString());
+            }
         }
         catch (AmazonS3Exception e) {
-            throw new AmazonS3Exception("Failed to upload file", e);
+            throw new AmazonS3Exception("Failed to upload multiple files", e);
+        }
+        return fileList;
+    }
+
+
+    @Override
+    @Transactional
+    public void deleteMultiFile(List<String> fileUrlList) {
+        try {
+            String bucketUrl = "https://s3."+region+".amazonaws.com/"+bucket;
+            imageRepository.deleteAllByImgUrlIn(fileUrlList);
+            for (String fileUrl : fileUrlList) {
+                log.info("delete imgUrl = {}",fileUrl);
+                String fileName = fileUrl.substring(bucketUrl.length() + 1);
+                DeleteObjectRequest request = new DeleteObjectRequest(bucket, fileName);
+                amazonS3.deleteObject(request);
+            }
+        }
+        catch (AmazonS3Exception e) {
+            throw new AmazonS3Exception("Failed to delete multiple files", e);
         }
     }
 
     @Override
-    @Transactional
-    public void deleteFile(String fileUrl) {
-        try {
-            String bucketUrl = "https://s3."+region+".amazonaws.com/"+bucket;
-            imageRepository.deleteAllByImgUrl(fileUrl);
-            String fileName = fileUrl.substring(bucketUrl.length() + 1);
-            DeleteObjectRequest request = new DeleteObjectRequest(bucket, fileName);
-            amazonS3.deleteObject(request);
-        }catch (AmazonS3Exception e) {
-            throw new AmazonS3Exception("Failed to delete file", e);
+    public List<Image> saveImageList(List<String> imageUrlList, Post post) {
+        List<Image> imageList = new ArrayList<>();
+        for (String imageUrl : imageUrlList) {
+            Image image = Image.builder()
+                    .imgUrl(imageUrl)
+                    .post(post)
+                    .build();
+            image.setPost(post);
+            imageList.add(image);
         }
+        return imageRepository.saveAll(imageList);
     }
 }
