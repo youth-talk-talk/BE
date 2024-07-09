@@ -11,4 +11,5 @@ import java.util.List;
 public interface ImageRepository extends JpaRepository<Image, Long> {
     List<Image> findAllByPost(Post post);
     void deleteAllByImgUrl(String imgUrl);
+    void deleteAllByImgUrlIn(List<String> imgUrls);
 }
