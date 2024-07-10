@@ -13,14 +13,14 @@ import java.util.List;
 
 @Entity
 @Getter
-@SuperBuilder // 상속관계에서는 @SuperBuilder를 사용해야하는데 이 부분에서 문제가 생김
+@SuperBuilder(toBuilder = true) // 상속관계에서는 @SuperBuilder를 사용해야하는데 이 부분에서 문제가 생김
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "post_type")
 public class Post extends BaseTimeEntity {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JoinColumn(name =  "post_id")
     private Long id;
 
@@ -32,9 +32,11 @@ public class Post extends BaseTimeEntity {
     @JoinColumn(name = "member_id")
     private Member writer;
 
+    @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<Image> images = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<PostComment> postComments = new ArrayList<>();
 

@@ -8,8 +8,10 @@ import com.server.youthtalktalk.domain.post.Post;
 import com.server.youthtalktalk.domain.post.Review;
 import com.server.youthtalktalk.dto.post.PostCreateReqDto;
 import com.server.youthtalktalk.dto.post.PostRepDto;
+import com.server.youthtalktalk.dto.post.PostUpdateReqDto;
 import com.server.youthtalktalk.repository.MemberRepository;
 import com.server.youthtalktalk.repository.PolicyRepository;
+import com.server.youthtalktalk.repository.PostRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +41,9 @@ class PostServiceImplTest {
 
     private Member member;
     private Policy policy;
+    private Long postId;
+    @Autowired
+    private PostRepository postRepository;
 
     private void clear(){
         em.flush();
@@ -72,13 +77,15 @@ class PostServiceImplTest {
                 .content("test")
                 .view(0L)
                 .build();
+        review.setPolicy(policy);
+        Post post = review;
+        Post savedPost = postRepository.save(post);
         Post free = Post.builder()
                 .title("post")
                 .build();
 
-        review.setPolicy(policy);
-        Post post = review;
-        assertThat(((Review)post).getPolicy().getTitle()).isEqualTo("test");
+        assertThat(((Review)savedPost).getPolicy().getTitle()).isEqualTo("test");
+        System.out.println("instance : "+(savedPost instanceof Review));
     }
 
     @Test
@@ -86,12 +93,12 @@ class PostServiceImplTest {
     void createPostTest() throws IOException {
         PostCreateReqDto postCreateReqDto = PostCreateReqDto.builder()
                 .policyId(null)
-                .postType("free")
+                .postType("post")
                 .content("test")
                 .title("test")
                 .build();
         PostRepDto result = postService.createPost(postCreateReqDto,null,this.member);
-        assertThat(result.getPostType()).isEqualTo("free");
+        assertThat(result.getPostType()).isEqualTo("post");
         assertThat(result.getContent()).isEqualTo("test");
     }
 
@@ -108,5 +115,16 @@ class PostServiceImplTest {
         assertThat(result.getPostType()).isEqualTo("review");
         assertThat(result.getContent()).isEqualTo("test");
     }
+
+//    @Test
+//    @DisplayName("리뷰 수정 성공 테스트")
+//    void updateReviewTest() throws IOException {
+//        PostUpdateReqDto postUpdateReqDto = PostUpdateReqDto.builder()
+//                .title("update")
+//                .content("test")
+//                .build();
+//        PostRepDto postRepDto = postService.updatePost(752L,postUpdateReqDto,null,this.member);
+//        assertThat(postRepDto.getTitle()).isEqualTo("update");
+//    }
 
 }

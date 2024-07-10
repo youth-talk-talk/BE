@@ -9,7 +9,7 @@ import lombok.Getter;
 public class Scrap {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "scrap_id")
     private Long id;
 

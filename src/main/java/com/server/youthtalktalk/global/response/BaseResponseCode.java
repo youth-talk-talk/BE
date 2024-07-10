@@ -27,7 +27,11 @@ public enum BaseResponseCode {
     APPLE_USER_IDENTIFIER_ERROR("M07","애플 USERIDENTIFIER가 유효하지 않습니다.",HttpStatus.BAD_REQUEST.value()),
 
     // Policy
-    POLICY_NOT_FOUND("P01","해당 정책을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value());
+    POLICY_NOT_FOUND("PC01","해당 정책을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),
+
+    // Post
+    POST_NOT_FOUND("PS01","해당 게시글을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),
+    POST_ACCESS_DENIED("PS02","해당 게시글에 대한 권한이 없습니다.",HttpStatus.FORBIDDEN.value());
 
     private final String code;
     private final String message;

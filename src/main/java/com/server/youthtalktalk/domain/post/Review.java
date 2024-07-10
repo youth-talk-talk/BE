@@ -8,7 +8,7 @@ import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
-@SuperBuilder
+@SuperBuilder(toBuilder = true)
 @DiscriminatorValue("review")
 @NoArgsConstructor(access=AccessLevel.PROTECTED)
 public class Review extends Post {
@@ -23,3 +23,4 @@ public class Review extends Post {
         policy.getReviews().add(this);
     }
 }
+

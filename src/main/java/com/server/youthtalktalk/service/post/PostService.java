@@ -11,6 +11,6 @@ import java.util.List;
 
 public interface PostService {
     PostRepDto createPost(PostCreateReqDto postCreateReqDto, List<MultipartFile> fileList, Member writer) throws IOException;
-    PostRepDto updatePost(PostUpdateReqDto postUpdateReqDto, List<MultipartFile> fileList, Member writer);
+    PostRepDto updatePost(Long postId,PostUpdateReqDto postUpdateReqDto, List<MultipartFile> fileList, Member writer) throws IOException;
     void deletePost(Long postId, Member writer);
 }
