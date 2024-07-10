@@ -16,7 +16,7 @@ public class Scrap {
     @Enumerated(EnumType.STRING)
     private ItemType itemType;
 
-    private Long itemId;
+    private String itemId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
