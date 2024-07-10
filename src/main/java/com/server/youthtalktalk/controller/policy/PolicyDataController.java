@@ -18,6 +18,6 @@ public class PolicyDataController {
     public String fetchData() {
         log.info("fetch data");
         policyDataService.saveData();
-        return "success!!!";
+        return "success";
     }
 }
