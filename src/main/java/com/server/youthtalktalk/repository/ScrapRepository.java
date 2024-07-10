@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface ScrapRepository extends JpaRepository<Scrap, Long> {
-    //List<Scrap> findAllByItemId(Long itemId, ItemType itemType);
+    List<Scrap> findAllByItemIdAndItemType(Long itemId, ItemType itemType);
 }

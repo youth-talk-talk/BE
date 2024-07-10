@@ -73,10 +73,11 @@ public class PostReadServiceImpl implements PostReadService {
 //                    .policyId(post instanceof Review ? ((Review) post).getPolicy().getPolicyId() : null)
 //                    .policyTitle(post instanceof Review ? ((Review)post).getPolicy().getTitle() : null )
 //                    .comments(post.getPostComments().size())
-//                    //.scrap()
-//                    .scraps(scrapRepository.findAllByItemId(post.getId(), ItemType.POST).size())
+//                    .scrap()
+//                    .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST).size())
 //                    .build());
 //        }
+//        return null;
         return null;
     }
 }
