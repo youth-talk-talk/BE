@@ -17,7 +17,7 @@ import java.util.List;
 public abstract class Comment {
 
     @Id
-    @Generated
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

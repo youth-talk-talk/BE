@@ -4,21 +4,24 @@ import com.server.youthtalktalk.domain.BaseTimeEntity;
 import com.server.youthtalktalk.domain.Image;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.comment.PostComment;
+import com.server.youthtalktalk.dto.post.PostRepDto;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
+@SuperBuilder(toBuilder = true) // 상속관계에서는 @SuperBuilder를 사용해야하는데 이 부분에서 문제가 생김
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "post_type")
-public abstract class Post extends BaseTimeEntity {
+public class Post extends BaseTimeEntity {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JoinColumn(name =  "post_id")
     private Long id;
 
@@ -30,9 +33,11 @@ public abstract class Post extends BaseTimeEntity {
     @JoinColumn(name = "member_id")
     private Member writer;
 
+    @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<Image> images = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<PostComment> postComments = new ArrayList<>();
 
@@ -42,4 +47,16 @@ public abstract class Post extends BaseTimeEntity {
         member.getPosts().add(this);
     }
 
+    public PostRepDto toPostRepDto() {
+        return PostRepDto.builder()
+                .postId(this.getId())
+                .title(this.getTitle())
+                .content(this.getContent())
+                .policyId(this instanceof Review ? ((Review)this).getPolicy().getPolicyId() : null)
+                .policyTitle(this instanceof Review ? ((Review)this).getPolicy().getTitle() : null)
+                .postType(this instanceof Review ? "review" : "post")
+                .writerId(this.getWriter().getId())
+                .images(this.getImages())
+                .build();
+    }
 }

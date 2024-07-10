@@ -13,6 +13,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
@@ -96,8 +101,13 @@ public class GlobalExceptionHandler {
         log.error("[ERROR] : {}", e.getMessage(), e);
 
         BaseResponseCode baseResponseCode = BaseResponseCode.INVALID_INPUT_VALUE;
-
-        BaseResponse baseResponse = new BaseResponse(baseResponseCode);
+        Map<String, Object> body = new HashMap<>();
+        List<String> errors = e.getBindingResult().getFieldErrors()
+                .stream()
+                .map(error -> error.getDefaultMessage())
+                .collect(Collectors.toList());
+        body.put("messages", errors);
+        BaseResponse baseResponse = new BaseResponse(body,baseResponseCode);
 
         return new ResponseEntity<>(baseResponse, HttpStatus.valueOf(baseResponseCode.getStatus()));
     }

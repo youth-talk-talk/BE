@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,8 +17,8 @@ public class ImageController {
     private final ImageServiceImpl imageService;
 
     @PostMapping("/images")
-    public BaseResponse<String> uploadImage(@RequestParam("image") MultipartFile image) throws IOException {
-        String imgUrl = imageService.uploadFile(image);
+    public BaseResponse<List<String>> uploadImage(@RequestParam("images") List<MultipartFile> images) throws IOException {
+        List<String> imgUrl = imageService.uploadMultiFile(images);
         return new BaseResponse<>(imgUrl, BaseResponseCode.SUCCESS);
     }
 }
