@@ -72,18 +72,16 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /**
-     * 내 정보 수정
+     * 회원정보 수정
      */
     @Override
-    public MemberInfoDto updateMemberInfo(MemberUpdateDto memberUpdateDto) {
-        Member member = this.getCurrentMember();
+    public void updateMemberInfo(MemberUpdateDto memberUpdateDto, Member member) {
         String updateNickname = memberUpdateDto.nickname();
         String updateRegion = memberUpdateDto.region();
         if (updateNickname != null)
             member.updateNickname(updateNickname);
         if (updateRegion != null)
             member.updateRegion(Region.fromRegionStr(updateRegion));
-        return new MemberInfoDto(member.getId(), member.getNickname(), member.getRegion().getName());
     }
 
     private void checkIfDuplicatedMember(String username) {

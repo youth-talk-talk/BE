@@ -34,7 +34,9 @@ public class MemberController {
 
     @PatchMapping("/members/me")
     public BaseResponse<MemberInfoDto> updateMemberInfo(@Valid @RequestBody MemberUpdateDto memberUpdateDto) {
-        MemberInfoDto updatedMemberInfo = memberService.updateMemberInfo(memberUpdateDto);
+        Member member = memberService.getCurrentMember();
+        memberService.updateMemberInfo(memberUpdateDto, member);
+        MemberInfoDto updatedMemberInfo = new MemberInfoDto(member.getId(), member.getNickname(), member.getRegion().getName());
         return new BaseResponse<>(updatedMemberInfo, SUCCESS);
     }
 

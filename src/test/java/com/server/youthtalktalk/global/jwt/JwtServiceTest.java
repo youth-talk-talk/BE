@@ -48,7 +48,7 @@ class JwtServiceTest {
     private static final String USERNAME_CLAIM = "username";
     private static final String BEARER = "Bearer ";
 
-    private String username = "myUsername";
+    private final String username = "myUsername";
 
     @BeforeEach
     public void init(){
