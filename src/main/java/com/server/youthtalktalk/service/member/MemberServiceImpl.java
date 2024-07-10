@@ -3,6 +3,7 @@ package com.server.youthtalktalk.service.member;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.member.Role;
 import com.server.youthtalktalk.domain.policy.Region;
+import com.server.youthtalktalk.dto.member.MemberInfoDto;
 import com.server.youthtalktalk.dto.member.MemberUpdateDto;
 import com.server.youthtalktalk.dto.member.SignUpRequestDto;
 import com.server.youthtalktalk.global.jwt.JwtService;
@@ -70,21 +71,26 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.findByUsername(userDetails.getUsername()).orElseThrow(MemberNotFoundException::new);
     }
 
+    /**
+     * 내 정보 수정
+     */
+    @Override
+    public MemberInfoDto updateMemberInfo(MemberUpdateDto memberUpdateDto) {
+        Member member = this.getCurrentMember();
+        String updateNickname = memberUpdateDto.nickname();
+        String updateRegion = memberUpdateDto.region();
+        if (updateNickname != null)
+            member.updateNickname(updateNickname);
+        if (updateRegion != null)
+            member.updateRegion(Region.fromRegionStr(updateRegion));
+        return new MemberInfoDto(member.getId(), member.getNickname(), member.getRegion().getName());
+    }
+
     private void checkIfDuplicatedMember(String username) {
         Optional<Member> findMember = memberRepository.findByUsername(username);
         if (findMember.isPresent()) {
             throw new MemberDuplicatedException();
         }
-    }
-
-    /**
-     * 내 정보 수정
-     */
-    @Override
-    public void updateMemberInfo(MemberUpdateDto memberUpdateDto, String username) {
-        Member member = memberRepository.findByUsername(username).orElseThrow(MemberNotFoundException::new);
-        memberUpdateDto.nickname().ifPresent(member::updateNickname);
-        memberUpdateDto.region().ifPresent(regionStr -> member.updateRegion(Region.fromRegionStr(regionStr)));
     }
 
 }

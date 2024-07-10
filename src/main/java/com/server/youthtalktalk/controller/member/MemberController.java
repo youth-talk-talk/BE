@@ -2,6 +2,7 @@ package com.server.youthtalktalk.controller.member;
 
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.dto.member.MemberInfoDto;
+import com.server.youthtalktalk.dto.member.MemberUpdateDto;
 import com.server.youthtalktalk.dto.member.SignUpRequestDto;
 import com.server.youthtalktalk.global.response.BaseResponse;
 import com.server.youthtalktalk.service.member.MemberService;
@@ -24,16 +25,17 @@ public class MemberController {
         return new BaseResponse<>(memberId, SUCCESS);
     }
 
-    @GetMapping("/me")
-    public BaseResponse<MemberInfoDto> getMyInfo() {
-        Member me = memberService.getCurrentMember();
-        MemberInfoDto memberInfoDto = new MemberInfoDto(me.getNickname(), me.getEmail(), me.getRegion().getName());
+    @GetMapping("/members/me")
+    public BaseResponse<MemberInfoDto> getMemberInfo() {
+        Member member = memberService.getCurrentMember();
+        MemberInfoDto memberInfoDto = new MemberInfoDto(member.getId(), member.getNickname(), member.getRegion().getName());
         return new BaseResponse<>(memberInfoDto, SUCCESS);
     }
 
-//    TO-DO
-//    @PatchMapping("/me")
-//    public BaseResponse<String> updateMyInfo(@Valid @RequestBody MemberInfoDto memberInfoDto) {
-//
-//    }
+    @PatchMapping("/members/me")
+    public BaseResponse<MemberInfoDto> updateMemberInfo(@Valid @RequestBody MemberUpdateDto memberUpdateDto) {
+        MemberInfoDto updatedMemberInfo = memberService.updateMemberInfo(memberUpdateDto);
+        return new BaseResponse<>(updatedMemberInfo, SUCCESS);
+    }
+
 }
