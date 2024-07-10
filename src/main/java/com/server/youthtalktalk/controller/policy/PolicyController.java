@@ -31,7 +31,7 @@ public class PolicyController {
      * 홈 화면 - 정책 조회 (top5 + allByCategory)
      */
     @GetMapping("/policies")
-    public BaseResponse<Map<String, List<PolicyListResponseDto>>> getPoliciesByCategories(@RequestParam(required = false) List<Category> categories,
+    public BaseResponse<Map<String, List<PolicyListResponseDto>>> getTop5AndCategoryPolicies(@RequestParam List<Category> categories,
                                                                                           @RequestParam(defaultValue = "1") int page,
                                                                                           @RequestParam(defaultValue = "10") int size) {
         if (page < 1) {
@@ -40,7 +40,7 @@ public class PolicyController {
 
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        List<PolicyListResponseDto> top5Policies = policyService.getTop5Policies(); // 모든 정책에 조회수가 하나도 없으면 빈 리스트 반환
+        List<PolicyListResponseDto> top5Policies = policyService.getTop5Policies();
 
         List<PolicyListResponseDto> allPolicies = policyService.getPoliciesByCategories(categories, pageable);
 
