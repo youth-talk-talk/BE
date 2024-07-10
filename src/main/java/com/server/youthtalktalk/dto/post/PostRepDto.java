@@ -17,4 +17,5 @@ public class PostRepDto {
     private String policyTitle; // 자유글 null
     private Long writerId;
     private List<Image> images;
+
 }

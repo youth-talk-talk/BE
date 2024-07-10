@@ -13,7 +13,7 @@ public class PostListRepDto {
 
     @Getter
     @Builder
-    static class PostDto{
+    public static class PostDto{
         private Long postId;
         private String title;
         private String content;

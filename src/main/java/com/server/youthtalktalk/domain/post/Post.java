@@ -4,6 +4,7 @@ import com.server.youthtalktalk.domain.BaseTimeEntity;
 import com.server.youthtalktalk.domain.Image;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.comment.PostComment;
+import com.server.youthtalktalk.dto.post.PostRepDto;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -44,5 +45,18 @@ public class Post extends BaseTimeEntity {
     public void setWriter(Member member) {
         this.writer = member;
         member.getPosts().add(this);
+    }
+
+    public PostRepDto toPostRepDto() {
+        return PostRepDto.builder()
+                .postId(this.getId())
+                .title(this.getTitle())
+                .content(this.getContent())
+                .policyId(this instanceof Review ? ((Review)this).getPolicy().getPolicyId() : null)
+                .policyTitle(this instanceof Review ? ((Review)this).getPolicy().getTitle() : null)
+                .postType(this instanceof Review ? "review" : "post")
+                .writerId(this.getWriter().getId())
+                .images(this.getImages())
+                .build();
     }
 }

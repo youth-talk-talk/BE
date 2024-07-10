@@ -63,7 +63,7 @@ public class PostServiceImpl implements PostService{
             List<String> imageUrlList = imageService.uploadMultiFile(fileList);
             imageService.saveImageList(imageUrlList, savedPost);
         }
-        return toPostRepDto(savedPost);
+        return savedPost.toPostRepDto();
     }
 
     @Override
@@ -94,7 +94,7 @@ public class PostServiceImpl implements PostService{
             imageService.deleteMultiFile(postUpdateReqDto.getDeletedImgUrlList());
         }
 
-        return toPostRepDto(savedPost);
+        return savedPost.toPostRepDto();
     }
 
     @Override
@@ -105,18 +105,5 @@ public class PostServiceImpl implements PostService{
             throw new BusinessException(BaseResponseCode.POST_ACCESS_DENIED);
         }
         postRepository.delete(post);
-    }
-
-    private PostRepDto toPostRepDto(Post post) {
-        return PostRepDto.builder()
-                .postId(post.getId())
-                .title(post.getTitle())
-                .content(post.getContent())
-                .policyId(post instanceof Review ? ((Review)post).getPolicy().getPolicyId() : null)
-                .policyTitle(post instanceof Review ? ((Review)post).getPolicy().getTitle() : null)
-                .postType(post instanceof Review ? "review" : "post")
-                .writerId(post.getWriter().getId())
-                .images(post.getImages())
-                .build();
     }
 }
