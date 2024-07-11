@@ -8,12 +8,12 @@ import java.util.List;
 @Getter
 @Builder
 public class PostListRepDto {
-    private List<PostDto> top5_posts;
-    private List<PostDto> other_posts;
+    private List<PostListDto> top5_posts;
+    private List<PostListDto> other_posts;
 
     @Getter
     @Builder
-    public static class PostDto{
+    public static class PostListDto {
         private Long postId;
         private String title;
         private String content;

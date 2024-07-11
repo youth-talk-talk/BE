@@ -63,6 +63,7 @@ public class PostServiceImpl implements PostService{
             List<String> imageUrlList = imageService.uploadMultiFile(fileList);
             imageService.saveImageList(imageUrlList, savedPost);
         }
+        log.info("게시글 생성 성공, postId = {}", savedPost.getId());
         return savedPost.toPostRepDto();
     }
 
@@ -93,7 +94,7 @@ public class PostServiceImpl implements PostService{
         if(postUpdateReqDto.getDeletedImgUrlList()!=null&&!postUpdateReqDto.getDeletedImgUrlList().isEmpty()){
             imageService.deleteMultiFile(postUpdateReqDto.getDeletedImgUrlList());
         }
-
+        log.info("게시글 수정 성공, postId = {}", savedPost.getId());
         return savedPost.toPostRepDto();
     }
 
@@ -105,5 +106,6 @@ public class PostServiceImpl implements PostService{
             throw new BusinessException(BaseResponseCode.POST_ACCESS_DENIED);
         }
         postRepository.delete(post);
+        log.info("게시글 삭제 성공, postId = {}", postId);
     }
 }
