@@ -4,6 +4,9 @@ import com.server.youthtalktalk.domain.ItemType;
 import com.server.youthtalktalk.domain.policy.Category;
 import com.server.youthtalktalk.domain.policy.Policy;
 import com.server.youthtalktalk.dto.policy.PolicyListResponseDto;
+import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
+import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
 import com.server.youthtalktalk.repository.PolicyRepository;
 import com.server.youthtalktalk.repository.ScrapRepository;
 import com.server.youthtalktalk.service.member.MemberService;
@@ -16,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.server.youthtalktalk.global.response.BaseResponseCode.POLICY_NOT_FOUND;
 
 @Service
 @Slf4j
@@ -32,14 +37,26 @@ public class PolicyServiceImpl implements PolicyService {
      */
     @Override
     public List<PolicyListResponseDto> getTop5Policies() {
-        Long memberId = memberService.getCurrentMember().getId();
+        Long memberId;
+        try {
+            memberId = memberService.getCurrentMember().getId();
+        } catch (Exception e) {
+            throw new MemberNotFoundException();
+        }
+
         List<Policy> policies = policyRepository.findTop5ByOrderByViewDesc();
-        return policies.stream()
+        if (policies.isEmpty()) {
+            throw new PolicyNotFoundException();
+        }
+
+        List<PolicyListResponseDto> result = policies.stream()
                 .map(policy -> {
                     boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), ItemType.POLICY);
                     return PolicyListResponseDto.toListDto(policy, isScrap);
                 })
                 .collect(Collectors.toList());
+        log.info("상위 5개 정책 조회 성공");
+        return result;
     }
 
     /**
@@ -47,26 +64,53 @@ public class PolicyServiceImpl implements PolicyService {
      */
     @Override
     public List<PolicyListResponseDto> getAllPolicies(Pageable pageable) {
-        Long memberId = memberService.getCurrentMember().getId();
+        Long memberId;
+        try {
+            memberId = memberService.getCurrentMember().getId();
+        } catch (Exception e) {
+            throw new MemberNotFoundException();
+        }
+
         List<Policy> policies = policyRepository.findAll(pageable).getContent();
-        return policies.stream()
+        if (policies.isEmpty()) {
+            throw new PolicyNotFoundException();
+        }
+
+        List<PolicyListResponseDto> result = policies.stream()
                 .map(policy -> {
                     boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), ItemType.POLICY);
                     return PolicyListResponseDto.toListDto(policy, isScrap);
                 })
                 .collect(Collectors.toList());
+        log.info("모든 정책 조회 성공");
+        return result;
     }
 
+
+    /**
+     * 카테고리 별 정책 조회
+     */
     @Override
     public List<PolicyListResponseDto> getPoliciesByCategories(List<Category> categories, Pageable pageable) {
-        Long memberId = memberService.getCurrentMember().getId();
+        Long memberId;
+        try {
+            memberId = memberService.getCurrentMember().getId();
+        } catch (Exception e) {
+            throw new MemberNotFoundException();
+        }
+
         List<Policy> policies = policyRepository.findByCategoryIn(categories, pageable).getContent();
-        return policies.stream()
+        if (policies.isEmpty()) {
+            throw new PolicyNotFoundException();
+        }
+        List<PolicyListResponseDto> result =  policies.stream()
                 .map(policy -> {
                     boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), ItemType.POLICY);
                     return PolicyListResponseDto.toListDto(policy, isScrap);
                 })
                 .collect(Collectors.toList());
+        log.info("카테고리별 정책 조회 성공");
+        return result;
     }
 
 }

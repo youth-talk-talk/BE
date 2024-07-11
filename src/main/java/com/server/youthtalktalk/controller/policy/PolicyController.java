@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,22 +27,14 @@ import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_
 public class PolicyController {
     private final PolicyService policyService;
 
-
     /**
      * 홈 화면 - 정책 조회 (top5 + allByCategory)
      */
     @GetMapping("/policies")
     public BaseResponse<Map<String, List<PolicyListResponseDto>>> getTop5AndCategoryPolicies(@RequestParam List<Category> categories,
-                                                                                          @RequestParam(defaultValue = "1") int page,
-                                                                                          @RequestParam(defaultValue = "10") int size) {
-        if (page < 1) {
-            return new BaseResponse<>(INVALID_INPUT_VALUE);
-        }
-
-        Pageable pageable = PageRequest.of(page - 1, size);
+                                                                                             @PageableDefault(size = 10) Pageable pageable) {
 
         List<PolicyListResponseDto> top5Policies = policyService.getTop5Policies();
-
         List<PolicyListResponseDto> allPolicies = policyService.getPoliciesByCategories(categories, pageable);
 
         Map<String, List<PolicyListResponseDto>> responseMap = new LinkedHashMap<>();
