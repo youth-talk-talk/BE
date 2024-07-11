@@ -3,6 +3,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.server.youthtalktalk.domain.policy.*;
 import com.server.youthtalktalk.global.util.DateExtractor;
 import com.server.youthtalktalk.global.util.EmploymentStatusClassifier;
+import com.server.youthtalktalk.global.util.UrlFormatter;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -143,6 +144,17 @@ public class PolicyData {
         String employment = this.empmSttsCn != null ? this.empmSttsCn : "";
         String employmentCode = EmploymentStatusClassifier.classify(employment);
 
+        // 지원 사이트 전처리
+        String applUrl = this.rqutUrla;
+        String formattedApplUrl = UrlFormatter.fomatlUrl(applUrl);
+
+        // 참고 사이트 전처리
+        String refUrl1 = this.rfcSiteUrla1;
+        String formattedRefUrl1 = UrlFormatter.fomatlUrl(refUrl1);
+
+        String refUrl2 = this.rfcSiteUrla2;
+        String formattedRefUrl2 = UrlFormatter.fomatlUrl(refUrl2);
+
 
         // Policy 객체 생성
         return Policy.builder()
@@ -161,13 +173,14 @@ public class PolicyData {
                 .applLimit(cDataConvert(this.prcpLmttTrgtCn))
                 .applStep(cDataConvert(this.rqutProcCn))
                 .applUrl(cDataConvert(this.rqutUrla))
+                .formattedApplUrl(cDataConvert(formattedApplUrl))
                 .category(category)
                 .education(cDataConvert(this.accrRqisCn))
                 .employment(cDataConvert(this.empmSttsCn))
                 .employmentCode(employmentCode)
                 .hostDep(cDataConvert(this.mngtMson))
-                .refUrl1(cDataConvert(this.rfcSiteUrla1))
-                .refUrl2(cDataConvert(this.rfcSiteUrla2))
+                .refUrl1(cDataConvert(formattedRefUrl1))
+                .refUrl2(cDataConvert(formattedRefUrl2))
                 .evaluation(cDataConvert(this.jdgnPresCn))
                 .introduction(cDataConvert(this.polyItcnCn))
                 .operatingOrg(cDataConvert(this.cnsgNmor))

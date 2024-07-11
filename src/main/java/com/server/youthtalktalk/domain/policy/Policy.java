@@ -79,6 +79,9 @@ public class Policy extends BaseTimeEntity {
     private String applUrl; // 신청 사이트
 
     @Column(length = 500)
+    private String formattedApplUrl; // 신청 사이트 (전처리)
+
+    @Column(length = 500)
     private String refUrl1; // 참고 사이트 1
 
     @Column(length = 500)
