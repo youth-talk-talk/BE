@@ -56,6 +56,8 @@ public class Post extends BaseTimeEntity {
                 .policyTitle(this instanceof Review ? ((Review)this).getPolicy().getTitle() : null)
                 .postType(this instanceof Review ? "review" : "post")
                 .writerId(this.getWriter().getId())
+                .nickname(this.getWriter().getNickname())
+                .view(this.getView())
                 .images(this.getImages())
                 .build();
     }
