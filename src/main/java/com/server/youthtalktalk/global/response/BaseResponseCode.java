@@ -24,7 +24,7 @@ public enum BaseResponseCode {
     APPLE_NEED_SIGN_UP("M05","애플 최초 회원가입이 필요합니다.",HttpStatus.BAD_REQUEST.value()),
     APPLE_NEED_ADD_SIGN_UP("M06","애플 추가 회원가입이 필요합니다.",HttpStatus.BAD_REQUEST.value()),
     MEMBER_DUPLICATED("M07", "이미 가입한 회원입니다.", HttpStatus.BAD_REQUEST.value()),
-    APPLE_USER_IDENTIFIER_ERROR("M07","애플 USERIDENTIFIER가 유효하지 않습니다.",HttpStatus.BAD_REQUEST.value()),
+    APPLE_USER_IDENTIFIER_ERROR("M08","애플 USERIDENTIFIER가 유효하지 않습니다.",HttpStatus.BAD_REQUEST.value()),
 
     // Policy
     POLICY_NOT_FOUND("PC01","해당 정책을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),
