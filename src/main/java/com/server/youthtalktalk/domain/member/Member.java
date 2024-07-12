@@ -28,7 +28,6 @@ public class Member extends BaseTimeEntity {
     @Column(unique = true, nullable = false)
     private String username;
 
-    private String email;
     private String nickname;
     private String refreshToken;
 
@@ -54,11 +53,6 @@ public class Member extends BaseTimeEntity {
     @OneToMany(mappedBy = "member")
     private List<Likes> likes = new ArrayList<>();
 
-    // 회원 권한 부여
-    public void authorizeMember() {
-        this.role = Role.USER;
-    }
-
     // refresh token 업데이트
     public void updateRefreshToken(String updateRefreshToken) {
         this.refreshToken = updateRefreshToken;
@@ -69,4 +63,13 @@ public class Member extends BaseTimeEntity {
         this.refreshToken = null;
     }
 
+    // nickname 업데이트
+    public void updateNickname(String updateNickname) {
+        this.nickname = updateNickname;
+    }
+
+    // region 업데이트
+    public void updateRegion(Region updateRegion) {
+        this.region = updateRegion;
+    }
 }
