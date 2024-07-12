@@ -1,6 +1,8 @@
 package com.server.youthtalktalk.service.policy;
 
 import com.server.youthtalktalk.domain.policy.Category;
+import com.server.youthtalktalk.domain.policy.Policy;
+import com.server.youthtalktalk.dto.policy.PolicyDetailResponseDto;
 import com.server.youthtalktalk.dto.policy.PolicyListResponseDto;
 import org.springframework.data.domain.Pageable;
 
@@ -13,7 +15,7 @@ public interface PolicyService {
     public List<PolicyListResponseDto> getAllPolicies(Pageable pageable);
     public List<PolicyListResponseDto> getPoliciesByCategories(List<Category> categories, Pageable pageable);
 
-
+    public PolicyDetailResponseDto getPolicyDetail(String policyId);
 
 
 

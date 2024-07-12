@@ -3,8 +3,8 @@ package com.server.youthtalktalk.service.policy;
 import com.server.youthtalktalk.domain.ItemType;
 import com.server.youthtalktalk.domain.policy.Category;
 import com.server.youthtalktalk.domain.policy.Policy;
+import com.server.youthtalktalk.dto.policy.PolicyDetailResponseDto;
 import com.server.youthtalktalk.dto.policy.PolicyListResponseDto;
-import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
 import com.server.youthtalktalk.repository.PolicyRepository;
@@ -12,7 +12,6 @@ import com.server.youthtalktalk.repository.ScrapRepository;
 import com.server.youthtalktalk.service.member.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.server.youthtalktalk.global.response.BaseResponseCode.POLICY_NOT_FOUND;
 
 @Service
 @Slf4j
@@ -112,6 +110,29 @@ public class PolicyServiceImpl implements PolicyService {
         log.info("카테고리별 정책 조회 성공");
         return result;
     }
+
+
+    /**
+     * 특정 정책 세부 조회
+     */
+    @Override
+    public PolicyDetailResponseDto getPolicyDetail(String policyId){
+        Long memberId;
+        try {
+            memberId = memberService.getCurrentMember().getId();
+        } catch (Exception e) {
+            throw new MemberNotFoundException();
+        }
+
+        Policy policy = policyRepository.findById(policyId)
+                .orElseThrow(PolicyNotFoundException::new);
+
+        boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), ItemType.POLICY);
+        PolicyDetailResponseDto result = PolicyDetailResponseDto.toDto(policy, isScrap);
+        log.info("특정 정책 세부 조회 성공");
+        return result;
+    }
+
 
 }
 

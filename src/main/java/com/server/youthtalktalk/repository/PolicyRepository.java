@@ -28,4 +28,10 @@ public interface PolicyRepository extends JpaRepository<Policy,String> {
      * 카테고리별 정책 조회 (최신순) - 중복 가능
      */
     Page<Policy> findByCategoryIn(List<Category> categories, Pageable pageable);
+
+
+    /**
+     * 특정 정책 조회
+     */
+    Policy findByPolicyId(String policyId);
 }
