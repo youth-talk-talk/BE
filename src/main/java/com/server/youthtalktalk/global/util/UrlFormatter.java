@@ -16,14 +16,13 @@ public class UrlFormatter {
         // 한글, 공백, 괄호, 쉼표 제거
         fomattedUrl = fomattedUrl.replaceAll("[\\p{IsHangul}\\s(),]", "");
 
-        // 영어 문자가 없는 경우, .이 없는 경우, @가 포함된 경우에 대해 null 처리 (@포함 여부로 이메일인지 링크인지 판단)
+        // 영어 문자가 없는 경우, .이 없는 경우, @가 포함된 경우에 대해 "" 처리 (@포함 여부로 이메일인지 링크인지 판단)
         if (!(fomattedUrl.matches(".*[a-zA-Z]+.*")) || !(fomattedUrl.contains(".")) || fomattedUrl.contains("@")) {
-            return null;
+            return "";
         }
-
-        // 링크가 없는 경우에 대해 null 처리
+        // 링크가 없는 경우에 대해 "" 처리
         if (fomattedUrl == null || fomattedUrl.isEmpty() || fomattedUrl.equals("-") || fomattedUrl.equals("null")) {
-            return null;
+            return "";
         }
 
         return fomattedUrl;
