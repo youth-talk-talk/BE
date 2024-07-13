@@ -8,4 +8,5 @@ public interface MemberService {
     Long signUp(SignUpRequestDto signUpRequestDto);
     Member getCurrentMember();
     void updateMemberInfo(MemberUpdateDto memberUpdateDto, Member member);
+    void deleteMember(Member member);
 }

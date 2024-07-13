@@ -1,8 +1,10 @@
 package com.server.youthtalktalk.service.member;
 
+import com.server.youthtalktalk.domain.comment.Comment;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.member.Role;
 import com.server.youthtalktalk.domain.policy.Region;
+import com.server.youthtalktalk.domain.post.Post;
 import com.server.youthtalktalk.dto.member.MemberInfoDto;
 import com.server.youthtalktalk.dto.member.MemberUpdateDto;
 import com.server.youthtalktalk.dto.member.SignUpRequestDto;
@@ -11,7 +13,9 @@ import com.server.youthtalktalk.global.response.exception.member.MemberAccessDen
 import com.server.youthtalktalk.global.response.exception.member.MemberDuplicatedException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.global.util.AppleAuthUtil;
+import com.server.youthtalktalk.repository.CommentRepository;
 import com.server.youthtalktalk.repository.MemberRepository;
+import com.server.youthtalktalk.repository.PostRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +25,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -30,6 +35,9 @@ import java.util.Optional;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+
     private final JwtService jwtService;
     private final HttpServletResponse httpServletResponse;
     private final AppleAuthUtil appleAuthUtil;
@@ -82,6 +90,26 @@ public class MemberServiceImpl implements MemberService {
             member.updateNickname(updateNickname);
         if (updateRegion != null)
             member.updateRegion(Region.fromRegionStr(updateRegion));
+    }
+
+    /**
+     * 회원 탈퇴
+     */
+    @Override
+    public void deleteMember(Member member) {
+        List<Post> posts = member.getPosts();
+        List<Comment> comments = member.getComments();
+
+        for (Post post : posts) {
+            post.setWriter(null);
+        }
+        for (Comment comment : comments) {
+            comment.setWriter(null);
+        }
+
+        postRepository.saveAll(posts);
+        commentRepository.saveAll(comments);
+        memberRepository.delete(member);
     }
 
     private void checkIfDuplicatedMember(String username) {

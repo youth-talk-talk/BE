@@ -44,7 +44,9 @@ public class Post extends BaseTimeEntity {
     /* 연관관계 메서드 */
     public void setWriter(Member member) {
         this.writer = member;
-        member.getPosts().add(this);
+        if (member != null) {
+            member.getPosts().add(this);
+        }
     }
 
     public PostRepDto toPostRepDto() {

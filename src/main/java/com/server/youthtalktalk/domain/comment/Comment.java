@@ -30,4 +30,12 @@ public abstract class Comment {
 
     @OneToMany(mappedBy = "comment")
     private List<Likes> commentLikes = new ArrayList<>();
+
+    /* 연관관계 메서드 */
+    public void setWriter(Member member) {
+        this.writer = member;
+        if (member != null) {
+            member.getComments().add(this);
+        }
+    }
 }

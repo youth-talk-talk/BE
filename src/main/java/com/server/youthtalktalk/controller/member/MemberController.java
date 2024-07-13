@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import static com.server.youthtalktalk.global.response.BaseResponseCode.SUCCESS;
 
-
 @RestController
 @RequiredArgsConstructor
 public class MemberController {
@@ -38,6 +37,13 @@ public class MemberController {
         memberService.updateMemberInfo(memberUpdateDto, member);
         MemberInfoDto updatedMemberInfo = new MemberInfoDto(member.getId(), member.getNickname(), member.getRegion().getName());
         return new BaseResponse<>(updatedMemberInfo, SUCCESS);
+    }
+
+    @DeleteMapping("/members/me")
+    public BaseResponse<String> deleteMember() {
+        Member member = memberService.getCurrentMember();
+        memberService.deleteMember(member);
+        return new BaseResponse<>(SUCCESS);
     }
 
 }
