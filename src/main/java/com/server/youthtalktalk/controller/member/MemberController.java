@@ -18,12 +18,18 @@ public class MemberController {
 
     private final MemberService memberService;
 
+    /**
+     * 회원가입 api
+     */
     @PostMapping("/signUp")
     public BaseResponse<Long> signUp(@Valid @RequestBody SignUpRequestDto signUpRequestDto) {
         Long memberId = memberService.signUp(signUpRequestDto);
         return new BaseResponse<>(memberId, SUCCESS);
     }
 
+    /**
+     * 회원정보 조회 api
+     */
     @GetMapping("/members/me")
     public BaseResponse<MemberInfoDto> getMemberInfo() {
         Member member = memberService.getCurrentMember();
@@ -31,6 +37,9 @@ public class MemberController {
         return new BaseResponse<>(memberInfoDto, SUCCESS);
     }
 
+    /**
+     * 회원정보 수정 api
+     */
     @PatchMapping("/members/me")
     public BaseResponse<MemberInfoDto> updateMemberInfo(@Valid @RequestBody MemberUpdateDto memberUpdateDto) {
         Member member = memberService.getCurrentMember();
@@ -39,6 +48,9 @@ public class MemberController {
         return new BaseResponse<>(updatedMemberInfo, SUCCESS);
     }
 
+    /**
+     * 회원탈퇴 api
+     */
     @DeleteMapping("/members/me")
     public BaseResponse<String> deleteMember() {
         Member member = memberService.getCurrentMember();
