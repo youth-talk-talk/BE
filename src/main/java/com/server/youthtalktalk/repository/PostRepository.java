@@ -40,7 +40,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findAllReviewsByCategoryAndView(@Param("categories") List<Category> categories, Pageable pageable);
 
     /** 모든 리뷰 키워드 검색 */
-    @Query("SELECT r FROM Review r WHERE TYPE(r) = Review AND REPLACE(r.title, ' ', '') LIKE %:keyword%")
+    @Query("SELECT r FROM Review r WHERE TYPE(r) = Review AND REPLACE(r.title, ' ', '') LIKE %:keyword% OR REPLACE(r.policy.title,' ','') LIKE %:keyword%")
     Page<Post> findAllReviewsByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
 }
