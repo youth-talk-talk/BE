@@ -57,32 +57,7 @@ public class PolicyServiceImpl implements PolicyService {
         return result;
     }
 
-    /**
-     * 모든 정책 조회
-     */
-    @Override
-    public List<PolicyListResponseDto> getAllPolicies(Pageable pageable) {
-        Long memberId;
-        try {
-            memberId = memberService.getCurrentMember().getId();
-        } catch (Exception e) {
-            throw new MemberNotFoundException();
-        }
 
-        List<Policy> policies = policyRepository.findAll(pageable).getContent();
-        if (policies.isEmpty()) {
-            throw new PolicyNotFoundException();
-        }
-
-        List<PolicyListResponseDto> result = policies.stream()
-                .map(policy -> {
-                    boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), ItemType.POLICY);
-                    return PolicyListResponseDto.toListDto(policy, isScrap);
-                })
-                .collect(Collectors.toList());
-        log.info("모든 정책 조회 성공");
-        return result;
-    }
 
 
     /**

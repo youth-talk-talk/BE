@@ -12,7 +12,6 @@ public interface PolicyService {
 
 
     public List<PolicyListResponseDto> getTop5Policies();
-    public List<PolicyListResponseDto> getAllPolicies(Pageable pageable);
     public List<PolicyListResponseDto> getPoliciesByCategories(List<Category> categories, Pageable pageable);
 
     public PolicyDetailResponseDto getPolicyDetail(String policyId);
