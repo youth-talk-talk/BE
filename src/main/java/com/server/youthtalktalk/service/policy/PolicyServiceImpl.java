@@ -77,7 +77,7 @@ public class PolicyServiceImpl implements PolicyService {
             throw new MemberNotFoundException();
         }
 
-        List<Policy> policies = policyRepository.find5ByRegionAndCategory(region, categories, pageable).getContent();
+        List<Policy> policies = policyRepository.findByRegionAndCategory(region, categories, pageable).getContent();
         if (policies.isEmpty()) {
             throw new PolicyNotFoundException();
         }
