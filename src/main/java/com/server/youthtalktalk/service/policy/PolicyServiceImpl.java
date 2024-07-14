@@ -3,6 +3,7 @@ package com.server.youthtalktalk.service.policy;
 import com.server.youthtalktalk.domain.ItemType;
 import com.server.youthtalktalk.domain.policy.Category;
 import com.server.youthtalktalk.domain.policy.Policy;
+import com.server.youthtalktalk.domain.policy.Region;
 import com.server.youthtalktalk.dto.policy.PolicyDetailResponseDto;
 import com.server.youthtalktalk.dto.policy.PolicyListResponseDto;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
@@ -36,13 +37,15 @@ public class PolicyServiceImpl implements PolicyService {
     @Override
     public List<PolicyListResponseDto> getTop5Policies() {
         Long memberId;
+        Region region;
         try {
             memberId = memberService.getCurrentMember().getId();
+            region = memberService.getCurrentMember().getRegion();
         } catch (Exception e) {
             throw new MemberNotFoundException();
         }
 
-        List<Policy> policies = policyRepository.findTop5ByOrderByViewDesc();
+        List<Policy> policies = policyRepository.findTop5ByRegionOrderByViewsDesc(region);
         if (policies.isEmpty()) {
             throw new PolicyNotFoundException();
         }
@@ -66,13 +69,15 @@ public class PolicyServiceImpl implements PolicyService {
     @Override
     public List<PolicyListResponseDto> getPoliciesByCategories(List<Category> categories, Pageable pageable) {
         Long memberId;
+        Region region;
         try {
             memberId = memberService.getCurrentMember().getId();
+            region = memberService.getCurrentMember().getRegion();
         } catch (Exception e) {
             throw new MemberNotFoundException();
         }
 
-        List<Policy> policies = policyRepository.findByCategoryIn(categories, pageable).getContent();
+        List<Policy> policies = policyRepository.find5ByRegionAndCategory(region, categories, pageable).getContent();
         if (policies.isEmpty()) {
             throw new PolicyNotFoundException();
         }
