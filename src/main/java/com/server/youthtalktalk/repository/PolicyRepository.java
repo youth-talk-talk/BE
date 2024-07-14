@@ -26,7 +26,7 @@ public interface PolicyRepository extends JpaRepository<Policy,String> {
     /**
      * 카테고리별 정책 조회 (최신순) - 카테고리 중복 선택 가능
      */
-    @Query("SELECT p FROM Policy p WHERE (p.region = :region OR p.region = 'ALL') AND (p.category IN :categories)")
+    @Query("SELECT p FROM Policy p WHERE (p.region = :region OR p.region = 'ALL') AND (p.category IN :categories) ORDER BY p.policyId DESC")
     Page<Policy> findByRegionAndCategory(@Param("region") Region region, @Param("categories") List<Category> categories, Pageable pageable);
 
 
