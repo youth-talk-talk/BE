@@ -13,6 +13,7 @@ import com.server.youthtalktalk.repository.ScrapRepository;
 import com.server.youthtalktalk.service.member.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +46,8 @@ public class PolicyServiceImpl implements PolicyService {
             throw new MemberNotFoundException();
         }
 
-        List<Policy> policies = policyRepository.findTop5ByRegionOrderByViewsDesc(region);
+        PageRequest pageRequest = PageRequest.of(0, 5); // top 5
+        List<Policy> policies = policyRepository.findTop5ByRegionOrderByViewsDesc(region, pageRequest).getContent();
         if (policies.isEmpty()) {
             throw new PolicyNotFoundException();
         }
