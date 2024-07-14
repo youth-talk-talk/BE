@@ -2,10 +2,17 @@ package com.server.youthtalktalk.domain.comment;
 
 import com.server.youthtalktalk.domain.post.Post;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
+@SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @DiscriminatorValue("post")
 public class PostComment extends Comment{
 
