@@ -21,14 +21,14 @@ public interface PolicyRepository extends JpaRepository<Policy,String> {
     /**
      * top5 정책 조회 (조회수순)
      */
-    @Query(value = "SELECT * FROM policy p WHERE p.region = :region OR p.region = 'ALL' ORDER BY p.view DESC LIMIT 5", nativeQuery = true)
-    List<Policy> findTop5ByRegionOrderByViewsDesc(@Param("region") Region region);
+    @Query("SELECT p FROM Policy p WHERE p.region = :region OR p.region = 'ALL' ORDER BY p.view DESC")
+    Page<Policy> findTop5ByRegionOrderByViewsDesc(@Param("region") Region region, Pageable pageable);
 
     /**
      * 카테고리별 정책 조회 (최신순) - 카테고리 중복 선택 가능
      */
-    @Query("SELECT p FROM Policy p WHERE (p.region = :region OR p.region = 'ALL') AND p.category IN :categories ORDER BY p.view DESC")
-    Page<Policy> find5ByRegionAndCategory(@Param("region") Region region, @Param("categories") List<Category> categories, Pageable pageable);
+    @Query("SELECT p FROM Policy p WHERE (p.region = :region OR p.region = 'ALL') AND (p.category IN :categories) ORDER BY p.policyId DESC")
+    Page<Policy> findByRegionAndCategory(@Param("region") Region region, @Param("categories") List<Category> categories, Pageable pageable);
 
 
     /**
