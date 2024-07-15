@@ -10,7 +10,11 @@ public enum BaseResponseCode {
     SUCCESS("S01","요청에 성공하였습니다.",HttpStatus.OK.value()),
     // Scrap
     SUCCESS_SCRAP("S02","스크랩에 성공하였습니다.",HttpStatus.OK.value()),
-    SUCCESS_SCRAP_CANCEL("S02","스크랩을 취소하였습니다",HttpStatus.OK.value()),
+    SUCCESS_SCRAP_CANCEL("S03","스크랩을 취소하였습니다",HttpStatus.OK.value()),
+    // Policy
+    SUCCESS_POLICY_FOUND("S04","정책 조회에 성공하였습니다.",HttpStatus.OK.value()),
+    SUCCESS_POLICY_SEARCH_NO_RESULT("S05","조건에 맞는 정책 결과가 없습니다",HttpStatus.OK.value()),
+
 
     /* 요청 실패 시*/
     //공통

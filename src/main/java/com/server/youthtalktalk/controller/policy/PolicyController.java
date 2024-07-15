@@ -1,6 +1,7 @@
 package com.server.youthtalktalk.controller.policy;
 
 import com.server.youthtalktalk.domain.policy.Category;
+import com.server.youthtalktalk.dto.policy.SearchConditionRequestDto;
 import com.server.youthtalktalk.dto.policy.PolicyDetailResponseDto;
 import com.server.youthtalktalk.dto.policy.PolicyListResponseDto;
 import com.server.youthtalktalk.global.response.BaseResponse;
@@ -9,6 +10,7 @@ import com.server.youthtalktalk.service.member.MemberService;
 import com.server.youthtalktalk.service.policy.PolicyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_INPUT_VALUE;
 
 @RestController
 @Slf4j
@@ -71,6 +71,22 @@ public class PolicyController {
         List<PolicyListResponseDto> listResponseDto = policyService.getScrapPolicies(pageable,memberService.getCurrentMember());
         return new BaseResponse<>(listResponseDto, BaseResponseCode.SUCCESS);
     }
+
+    /**
+     * 조건 적용 정책 조회
+     */
+    @PostMapping("/policies/search")
+    public BaseResponse<List<PolicyListResponseDto>> getPoliciesByCondition(@RequestBody SearchConditionRequestDto request,
+                                                                            @RequestParam(defaultValue = "10") int size,
+                                                                            @RequestParam(defaultValue = "0") int page) {
+        Pageable pageable = PageRequest.of(page, size);
+        List<PolicyListResponseDto> policies = policyService.getPoliciesByCondition(request, pageable);
+        if(policies.isEmpty())
+            return new BaseResponse<>(policies, BaseResponseCode.SUCCESS_POLICY_SEARCH_NO_RESULT);
+        return new BaseResponse<>(policies, BaseResponseCode.SUCCESS_POLICY_FOUND);
+    }
+
+
 
 
 }
