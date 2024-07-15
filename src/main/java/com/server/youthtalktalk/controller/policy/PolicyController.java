@@ -40,7 +40,7 @@ public class PolicyController {
         responseMap.put("top5Policies", top5Policies);
         responseMap.put("allPolicies", allPolicies);
 
-        return new BaseResponse<>(responseMap, BaseResponseCode.SUCCESS);
+        return new BaseResponse<>(responseMap, BaseResponseCode.SUCCESS_POLICY_FOUND);
     }
 
     /**
@@ -49,7 +49,7 @@ public class PolicyController {
     @GetMapping("/policies/{id}")
     public BaseResponse<PolicyDetailResponseDto> getPolicyDetail(@PathVariable String id) {
         PolicyDetailResponseDto policyDetail = policyService.getPolicyDetail(id);
-        return new BaseResponse<>(policyDetail, BaseResponseCode.SUCCESS);
+        return new BaseResponse<>(policyDetail, BaseResponseCode.SUCCESS_POLICY_FOUND);
     }
 
     /**
