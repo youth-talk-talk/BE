@@ -1,5 +1,7 @@
 package com.server.youthtalktalk.controller.post;
 
+import com.server.youthtalktalk.domain.Scrap;
+import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.dto.post.*;
 import com.server.youthtalktalk.global.response.BaseResponse;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
@@ -51,6 +53,15 @@ public class PostController {
         return new BaseResponse<>(BaseResponseCode.SUCCESS);
     }
 
+    /** 게시글 스크랩 API */
+    @PostMapping("/{id}/scrap")
+    public BaseResponse<String> scrap(@PathVariable Long id){
+        if(postService.scrapPost(id,memberService.getCurrentMember()) != null)
+            return new BaseResponse<>(BaseResponseCode.SUCCESS_SCRAP);
+        else
+            return new BaseResponse<>(BaseResponseCode.SUCCESS_SCRAP_CANCEL);
+    }
+
     // READ
     /** 게시글 상세 조회 API */
     @GetMapping("/{id}")
@@ -84,6 +95,13 @@ public class PostController {
     @GetMapping("/me")
     public BaseResponse<List<PostListDto>> getAllMyPost(@PageableDefault(size = 10) Pageable pageable){
         List<PostListDto> postListDto = postReadService.getAllMyPost(pageable,memberService.getCurrentMember());
+        return new BaseResponse<>(postListDto,BaseResponseCode.SUCCESS);
+    }
+
+    /** 나의 스크랩한 게시글 조회 API */
+    @GetMapping("/scrap")
+    public BaseResponse<List<PostListDto>> getAllMyScrapedPost(@PageableDefault(size = 10) Pageable pageable){
+        List<PostListDto> postListDto = postReadService.getScrapPostList(pageable,memberService.getCurrentMember());
         return new BaseResponse<>(postListDto,BaseResponseCode.SUCCESS);
     }
 }

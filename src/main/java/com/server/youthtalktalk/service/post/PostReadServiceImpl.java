@@ -1,6 +1,7 @@
 package com.server.youthtalktalk.service.post;
 
 import com.server.youthtalktalk.domain.ItemType;
+import com.server.youthtalktalk.domain.Scrap;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.policy.Category;
 import com.server.youthtalktalk.domain.post.Post;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.server.youthtalktalk.dto.post.PostListRepDto.*;
 
@@ -74,12 +76,11 @@ public class PostReadServiceImpl implements PostReadService {
     @Transactional
     public List<PostListDto> getAllMyPost(Pageable pageable, Member member) {
         Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC,"id"));
-        Page<Post> postPage= postRepository.findAllPostsByWriter(pageRequest, member);
+        List<Post> postList= postRepository.findAllPostsByWriter(pageRequest, member).getContent();
 
         List<PostListDto> result = new ArrayList<>();
-        for(Post post : postPage.getContent()) {
-            result.add(toPostDto(post,member));
-        }
+        postList.forEach(post->result.add(toPostDto(post,member)));
+
         log.info("나의 게시글 조회 memberId = {}", member.getId());
         return result;
     }
@@ -89,33 +90,36 @@ public class PostReadServiceImpl implements PostReadService {
     @Transactional
     public List<PostListDto> getAllPostByKeyword(Pageable pageable, String type, String keyword, Member member) {
         Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC,"id"));
-        Page<Post> postPage=null;
+        List<Post> postList=null;
         keyword = keyword.replaceAll("\\s", ""); // 키워드 공백 제거
         if(type.equals("post")){
-            postPage = postRepository.findAllPostsByKeyword(keyword,pageRequest);
+            postList = postRepository.findAllPostsByKeyword(keyword,pageRequest).getContent();
         }
         else if(type.equals("review")){
-            postPage = postRepository.findAllReviewsByKeyword(keyword,pageRequest);
+            postList = postRepository.findAllReviewsByKeyword(keyword,pageRequest).getContent();
         }
         else throw new InvalidValueException(BaseResponseCode.INVALID_INPUT_VALUE);
 
         List<PostListDto> result = new ArrayList<>();
-        for(Post post : postPage.getContent()) {
-            result.add(toPostDto(post,member));
-        }
+        postList.forEach(post -> result.add(toPostDto(post,member)));
+
         log.info("게시글 키워드 검색 성공 keyword = {} type = {}", keyword, type);
         return result;
     }
 
+    @Override
+    @Transactional
+    public List<PostListDto> getScrapPostList(Pageable pageable,Member member) {
+        List<Post> postList = postRepository.findAllByScrap(member, pageable).getContent();
+        return postList.stream().map(post -> toPostDto(post,member)).toList();
+    }
+
     public PostListRepDto toPostListRepDto(List<Post> topList,List<Post> postList, Member member) {
         List<PostListDto> top5_posts = new ArrayList<>();
+        topList.forEach(post -> top5_posts.add(toPostDto(post, member)));
         List<PostListDto> other_posts = new ArrayList<>();
-        for(Post post : topList) {
-            top5_posts.add(toPostDto(post,member));
-        }
-        for(Post post : postList) {
-            other_posts.add(toPostDto(post,member));
-        }
+        postList.forEach(post -> other_posts.add(toPostDto(post, member)));
+
         return PostListRepDto.builder()
                 .top5_posts(top5_posts)
                 .other_posts(other_posts)

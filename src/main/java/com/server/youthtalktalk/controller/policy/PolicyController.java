@@ -5,6 +5,7 @@ import com.server.youthtalktalk.dto.policy.PolicyDetailResponseDto;
 import com.server.youthtalktalk.dto.policy.PolicyListResponseDto;
 import com.server.youthtalktalk.global.response.BaseResponse;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.service.member.MemberService;
 import com.server.youthtalktalk.service.policy.PolicyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_
 @RequiredArgsConstructor
 public class PolicyController {
     private final PolicyService policyService;
+    private final MemberService memberService;
 
     /**
      * 홈 화면 정책 조회 (top5 + allByCategory)
@@ -50,8 +52,25 @@ public class PolicyController {
         return new BaseResponse<>(policyDetail, BaseResponseCode.SUCCESS);
     }
 
+    /**
+     * 정책 스크랩 API
+     */
+    @PostMapping("/policies/{id}/scrap")
+    public BaseResponse<String> scrap(@PathVariable String id){
+        if(policyService.scrapPolicy(id,memberService.getCurrentMember())!=null)
+            return new BaseResponse<>(BaseResponseCode.SUCCESS_SCRAP);
+        else
+            return new BaseResponse<>(BaseResponseCode.SUCCESS_SCRAP_CANCEL);
+    }
 
-
+    /**
+     * 스크랩한 정책 조회 API
+     */
+    @GetMapping("/policies/scrap")
+    public BaseResponse<List<PolicyListResponseDto>> getMyScrapedPolicies(@PageableDefault(size = 10) Pageable pageable){
+        List<PolicyListResponseDto> listResponseDto = policyService.getScrapPolicies(pageable,memberService.getCurrentMember());
+        return new BaseResponse<>(listResponseDto, BaseResponseCode.SUCCESS);
+    }
 
 
 }

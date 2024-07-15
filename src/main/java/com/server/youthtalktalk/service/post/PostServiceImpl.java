@@ -1,5 +1,7 @@
 package com.server.youthtalktalk.service.post;
 
+import com.server.youthtalktalk.domain.ItemType;
+import com.server.youthtalktalk.domain.Scrap;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.policy.Policy;
 import com.server.youthtalktalk.domain.post.Post;
@@ -14,6 +16,7 @@ import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundE
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
 import com.server.youthtalktalk.repository.PolicyRepository;
 import com.server.youthtalktalk.repository.PostRepository;
+import com.server.youthtalktalk.repository.ScrapRepository;
 import com.server.youthtalktalk.service.image.ImageService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,19 +25,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class PostServiceImpl implements PostService{
     private final PostRepository postRepository;
     private final PolicyRepository policyRepository;
     private final ImageService imageService;
+    private final ScrapRepository scrapRepository;
 
     @Override
-    @Transactional
     public PostRepDto createPost(PostCreateReqDto postCreateReqDto, List<MultipartFile> fileList, Member writer) throws IOException {
         Post post;
         if(postCreateReqDto.getPostType().equals("post")){ // 자유글
@@ -68,7 +71,6 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    @Transactional
     public PostRepDto updatePost(Long postId,PostUpdateReqDto postUpdateReqDto, List<MultipartFile> fileList, Member writer) throws IOException {
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
         if(post.getWriter().getId()!=writer.getId()){ // 작성자가 아닐 경우
@@ -99,7 +101,6 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    @Transactional
     public void deletePost(Long postId, Member writer) {
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
         if(post.getWriter().getId()!=writer.getId()){ // 작성자가 아닐 경우
@@ -107,5 +108,22 @@ public class PostServiceImpl implements PostService{
         }
         postRepository.delete(post);
         log.info("게시글 삭제 성공, postId = {}", postId);
+    }
+
+    @Override
+    public Scrap scrapPost(Long postId, Member member) {
+        postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
+        Scrap scrap = scrapRepository.findByMemberAndItemIdAndItemType(member,postId.toString(), ItemType.POST).orElse(null);
+        if(scrap!=null){
+            scrapRepository.delete(scrap);
+            return null;
+        }
+        else{
+            return scrapRepository.save(Scrap.builder() // 스크랩할 경우
+                    .itemId(postId.toString())
+                    .itemType(ItemType.POST)
+                    .member(member)
+                    .build());
+        }
     }
 }

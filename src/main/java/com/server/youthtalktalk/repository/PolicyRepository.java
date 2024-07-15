@@ -1,5 +1,6 @@
 package com.server.youthtalktalk.repository;
 
+import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.policy.Category;
 import com.server.youthtalktalk.domain.policy.Policy;
 import com.server.youthtalktalk.domain.policy.Region;
@@ -34,4 +35,10 @@ public interface PolicyRepository extends JpaRepository<Policy,String> {
      * 특정 정책 조회
      */
     Optional<Policy> findById(String policyId);
+
+    /**
+     * 스크랩한 정책 조회(최신순)
+     */
+    @Query("select p from Policy p join Scrap s on s.itemId = p.policyId where s.member = :member order by s.id DESC ")
+    Page<Policy> findAllByScrap(@Param("member") Member member, Pageable pageable);
 }
