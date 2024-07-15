@@ -1,4 +1,4 @@
-package com.server.youthtalktalk.service.post;
+package com.server.youthtalktalk.service;
 
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.member.Role;
@@ -8,12 +8,11 @@ import com.server.youthtalktalk.domain.post.Post;
 import com.server.youthtalktalk.domain.post.Review;
 import com.server.youthtalktalk.dto.post.PostCreateReqDto;
 import com.server.youthtalktalk.dto.post.PostRepDto;
-import com.server.youthtalktalk.dto.post.PostUpdateReqDto;
 import com.server.youthtalktalk.repository.MemberRepository;
 import com.server.youthtalktalk.repository.PolicyRepository;
 import com.server.youthtalktalk.repository.PostRepository;
+import com.server.youthtalktalk.service.post.PostService;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,11 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
-class PostServiceImplTest {
+class PostServiceTest {
 
     @Autowired
     private PostService postService;

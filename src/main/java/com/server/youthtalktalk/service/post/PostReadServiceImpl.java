@@ -1,6 +1,7 @@
 package com.server.youthtalktalk.service.post;
 
 import com.server.youthtalktalk.domain.ItemType;
+import com.server.youthtalktalk.domain.Scrap;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.policy.Category;
 import com.server.youthtalktalk.domain.post.Post;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.server.youthtalktalk.dto.post.PostListRepDto.*;
 
@@ -105,6 +107,13 @@ public class PostReadServiceImpl implements PostReadService {
         }
         log.info("게시글 키워드 검색 성공 keyword = {} type = {}", keyword, type);
         return result;
+    }
+
+    @Override
+    @Transactional
+    public List<PostListDto> getScrapPostList(Pageable pageable,Member member) {
+        List<Post> postList = postRepository.findAllByScrap(member, pageable).getContent();
+        return postList.stream().map(post -> toPostDto(post,member)).toList();
     }
 
     public PostListRepDto toPostListRepDto(List<Post> topList,List<Post> postList, Member member) {

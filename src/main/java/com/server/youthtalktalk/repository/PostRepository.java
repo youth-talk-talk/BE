@@ -1,5 +1,6 @@
 package com.server.youthtalktalk.repository;
 
+import com.server.youthtalktalk.domain.Scrap;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.policy.Category;
 import com.server.youthtalktalk.domain.post.Post;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -43,4 +45,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT r FROM Review r WHERE TYPE(r) = Review AND REPLACE(r.title, ' ', '') LIKE %:keyword% OR REPLACE(r.policy.title,' ','') LIKE %:keyword%")
     Page<Post> findAllReviewsByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
+    /** 스크랩한 게시글 검색*/
+    @Query("SELECT p FROM Post p JOIN Scrap s ON CONCAT(p.id,'') = s.itemId WHERE s.member = :member ORDER BY s.id DESC")
+    Page<Post> findAllByScrap(@Param("member") Member member, Pageable pageable);
 }

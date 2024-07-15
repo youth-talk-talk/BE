@@ -8,6 +8,9 @@ public enum BaseResponseCode {
     /* 요청 성공 시*/
     //공통
     SUCCESS("S01","요청에 성공하였습니다.",HttpStatus.OK.value()),
+    // Scrap
+    SUCCESS_SCRAP("S02","스크랩에 성공하였습니다.",HttpStatus.OK.value()),
+    SUCCESS_SCRAP_CANCEL("S02","스크랩을 취소하였습니다",HttpStatus.OK.value()),
 
     /* 요청 실패 시*/
     //공통
