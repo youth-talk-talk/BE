@@ -1,6 +1,7 @@
 package com.server.youthtalktalk.controller.post;
 
 import com.server.youthtalktalk.domain.Scrap;
+import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.dto.post.*;
 import com.server.youthtalktalk.global.response.BaseResponse;
 import com.server.youthtalktalk.global.response.BaseResponseCode;

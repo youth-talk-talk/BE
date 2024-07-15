@@ -1,5 +1,6 @@
-package com.server.youthtalktalk.service;
+package com.server.youthtalktalk.service.post;
 
+import com.server.youthtalktalk.domain.ItemType;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.member.Role;
 import com.server.youthtalktalk.domain.policy.Category;
@@ -11,7 +12,7 @@ import com.server.youthtalktalk.dto.post.PostRepDto;
 import com.server.youthtalktalk.repository.MemberRepository;
 import com.server.youthtalktalk.repository.PolicyRepository;
 import com.server.youthtalktalk.repository.PostRepository;
-import com.server.youthtalktalk.service.post.PostService;
+import com.server.youthtalktalk.repository.ScrapRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -39,9 +40,11 @@ class PostServiceTest {
 
     private Member member;
     private Policy policy;
-    private Long postId;
+    private Post post;
     @Autowired
     private PostRepository postRepository;
+    @Autowired
+    private ScrapRepository scrapRepository;
 
     private void clear(){
         em.flush();
@@ -59,6 +62,10 @@ class PostServiceTest {
                         .title("testPolicy")
                         .category(Category.JOB)
                         .build());
+        this.post = postRepository.save(Post.builder()
+                .title("test")
+                .writer(member)
+                .build());
         clear();
     }
 
@@ -125,4 +132,13 @@ class PostServiceTest {
 //        assertThat(postRepDto.getTitle()).isEqualTo("update");
 //    }
 
+    @Test
+    @DisplayName("게시글 스크랩 테스트")
+    void scrapPostTest(){
+        postService.scrapPost(post.getId(), member); // 스크랩
+        assertThat(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(), post.getId().toString(), ItemType.POST)).isTrue();
+
+        postService.scrapPost(post.getId(), member); // 스크랩 취소
+        assertThat(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(), post.getId().toString(), ItemType.POST)).isFalse();
+    }
 }
