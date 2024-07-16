@@ -107,6 +107,7 @@ public class PostServiceImpl implements PostService{
             throw new BusinessException(BaseResponseCode.POST_ACCESS_DENIED);
         }
         postRepository.delete(post);
+        scrapRepository.deleteAllByItemIdAndItemType(post.getId().toString(),ItemType.POST);
         log.info("게시글 삭제 성공, postId = {}", postId);
     }
 
