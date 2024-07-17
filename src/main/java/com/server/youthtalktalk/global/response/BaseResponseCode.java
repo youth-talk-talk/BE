@@ -31,7 +31,10 @@ public enum BaseResponseCode {
 
     // Post
     POST_NOT_FOUND("PS01","해당 게시글을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),
-    POST_ACCESS_DENIED("PS02","해당 게시글에 대한 권한이 없습니다.",HttpStatus.FORBIDDEN.value());
+    POST_ACCESS_DENIED("PS02","해당 게시글에 대한 권한이 없습니다.",HttpStatus.FORBIDDEN.value()),
+
+    // Comment
+    COMMENT_TYPE_NOT_CORRECT("C01", "댓글 종류를 다시 확인해주세요.", HttpStatus.BAD_REQUEST.value());
 
     private final String code;
     private final String message;
