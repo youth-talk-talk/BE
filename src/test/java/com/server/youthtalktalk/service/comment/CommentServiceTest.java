@@ -47,6 +47,60 @@ class CommentServiceTest {
     PolicyRepository policyRepository;
 
     @Test
+    void 게시글_댓글_생성_성공() throws Exception {
+        // given
+        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
+        memberRepository.save(member);
+
+        Post post = Post.builder().title("post1").content("post1_content").build();
+        postRepository.save(post);
+
+        String content = "postComment_content";
+
+        // when
+        commentService.createPostComment(post.getId(), content, member);
+
+        // then
+        assertThat(commentRepository.count()).isEqualTo(1);
+        PostComment comment = (PostComment) commentRepository.findAll().get(0);
+        assertThat(comment.getWriter()).isEqualTo(member);
+        assertThat(comment.getContent()).isEqualTo(content);
+        assertThat(comment.getPost()).isEqualTo(post);
+
+        assertThat(member.getComments().size()).isEqualTo(1);
+        assertThat(member.getComments().get(0).getId()).isEqualTo(comment.getId());
+        assertThat(post.getPostComments().size()).isEqualTo(1);
+        assertThat(post.getPostComments().get(0).getId()).isEqualTo(comment.getId());
+    }
+
+    @Test
+    void 정책_댓글_생성_성공() throws Exception {
+        // given
+        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
+        memberRepository.save(member);
+
+        Policy policy = Policy.builder().policyId("policy1").build();
+        policyRepository.save(policy);
+
+        String content = "policyComment_content";
+
+        // when
+        commentService.createPolicyComment(policy.getPolicyId(), content, member);
+
+        // then
+        assertThat(commentRepository.count()).isEqualTo(1);
+        PolicyComment comment = (PolicyComment) commentRepository.findAll().get(0);
+        assertThat(comment.getWriter()).isEqualTo(member);
+        assertThat(comment.getContent()).isEqualTo(content);
+        assertThat(comment.getPolicy()).isEqualTo(policy);
+
+        assertThat(member.getComments().size()).isEqualTo(1);
+        assertThat(member.getComments().get(0).getId()).isEqualTo(comment.getId());
+        assertThat(policy.getPolicyComments().size()).isEqualTo(1);
+        assertThat(policy.getPolicyComments().get(0).getId()).isEqualTo(comment.getId());
+    }
+
+    @Test
     void 게시글_댓글_조회_성공() throws Exception {
         // given
         Post post = Post.builder().title("post1").content("post1_content").build();
