@@ -3,6 +3,7 @@ package com.server.youthtalktalk.service.comment;
 import com.server.youthtalktalk.domain.comment.Comment;
 import com.server.youthtalktalk.dto.comment.CommentDto;
 import com.server.youthtalktalk.dto.comment.CommentTypeDto;
+import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.repository.CommentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_INPUT_VALUE;
 
 @Slf4j
 @Service
@@ -26,15 +30,22 @@ public class CommentServiceImpl implements CommentService {
      */
     @Override
     public List<Comment> getAllComments(CommentTypeDto commentTypeDto) {
-        return commentTypeDto.policyId()
-                .map(commentRepository::findByPolicyIdOrderByCreatedAtAsc)
-                .orElseGet(() -> commentTypeDto.postId()
-                        .map(commentRepository::findByPostIdOrderByCreatedAtAsc)
-                        .orElse(Collections.emptyList()));
+        Optional<String> policyId = commentTypeDto.policyId();
+        Optional<Long> postId = commentTypeDto.postId();
+
+        if (policyId.isPresent() && postId.isPresent())
+            throw new InvalidValueException(INVALID_INPUT_VALUE);
+
+        return policyId
+                .map(commentRepository::findPolicyCommentsByPolicyIdOrderByCreatedAtAsc)
+                .orElseGet(() -> postId
+                        .map(commentRepository::findPostCommentsByPostIdOrderByCreatedAtAsc)
+                        .orElseThrow(() -> new InvalidValueException(INVALID_INPUT_VALUE)));
+
     }
 
     /**
-     * 작성자 없는 댓글 처리 및 dto 변환
+     * 작성자 없는 댓글 처리 및 dto로 변환
      */
     @Override
     public List<CommentDto> convertToDto(List<Comment> comments) {

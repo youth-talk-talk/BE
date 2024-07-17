@@ -22,8 +22,7 @@ public class CommentController {
 
     @GetMapping("/comments")
     public BaseResponse<List<CommentDto>> getAllComments(@RequestBody CommentTypeDto commentTypeDto) {
-        List<Comment> commentList = commentService.getAllComments(commentTypeDto);
-        List<CommentDto> commentDtoList = commentService.convertToDto(commentList); // 작성자 없는 경우 null 처리 포함
+        List<CommentDto> commentDtoList = commentService.convertToDto(commentService.getAllComments(commentTypeDto)); // 작성자 없는 경우 null 처리 포함
         return new BaseResponse<>(commentDtoList, SUCCESS);
     }
 
