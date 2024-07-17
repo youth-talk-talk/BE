@@ -9,6 +9,7 @@ import com.server.youthtalktalk.domain.post.Post;
 import com.server.youthtalktalk.dto.comment.CommentDto;
 import com.server.youthtalktalk.dto.comment.CommentTypeDto;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
+import com.server.youthtalktalk.global.response.exception.comment.CommentTypeException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
 import com.server.youthtalktalk.repository.CommentRepository;
@@ -39,57 +40,66 @@ public class CommentServiceImpl implements CommentService {
      * 정책 댓글 생성
      */
     @Override
-    public CommentDto createPolicyComment(String policyId, String content, Member member) {
+    public PolicyComment createPolicyComment(String policyId, String content, Member member) {
         Policy policy = policyRepository.findById(policyId).orElseThrow(PolicyNotFoundException::new);
-        PolicyComment comment = PolicyComment.builder().content(content).build();
-        comment.setPolicy(policy);
-        comment.setWriter(member);
-        commentRepository.save(comment);
-        return new CommentDto(comment.getWriter().getNickname(), comment.getContent());
+        PolicyComment policyComment = PolicyComment.builder().content(content).build();
+        policyComment.setPolicy(policy);
+        policyComment.setWriter(member);
+        commentRepository.save(policyComment);
+        log.info("createPolicyComment policyId={}, content={}", policyComment.getPolicy().getPolicyId(), policyComment.getContent());
+        return policyComment;
     }
 
     /**
      * 게시글 댓글 생성
      */
     @Override
-    public CommentDto createPostComment(Long postId, String content, Member member) {
+    public PostComment createPostComment(Long postId, String content, Member member) {
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
-        PostComment comment = PostComment.builder().content(content).build();
-        comment.setPost(post);
-        comment.setWriter(member);
-        commentRepository.save(comment);
-        return new CommentDto(comment.getWriter().getNickname(), comment.getContent());
+        PostComment postComment = PostComment.builder().content(content).build();
+        postComment.setPost(post);
+        postComment.setWriter(member);
+        commentRepository.save(postComment);
+        return postComment;
     }
 
     /**
-     * 댓글 조회
+     * 정책 댓글 조회
      */
     @Override
-    public List<Comment> getAllComments(CommentTypeDto commentTypeDto) {
-        Optional<String> policyId = commentTypeDto.policyId();
-        Optional<Long> postId = commentTypeDto.postId();
-
-        if (policyId.isPresent() && postId.isPresent())
-            throw new InvalidValueException(INVALID_INPUT_VALUE);
-
-        return policyId
-                .map(commentRepository::findPolicyCommentsByPolicyIdOrderByCreatedAtAsc)
-                .orElseGet(() -> postId
-                        .map(commentRepository::findPostCommentsByPostIdOrderByCreatedAtAsc)
-                        .orElseThrow(() -> new InvalidValueException(INVALID_INPUT_VALUE)));
-
-    }
-
-    /**
-     * 작성자 없는 댓글 처리 및 dto로 변환
-     */
-    @Override
-    public List<CommentDto> convertToDto(List<Comment> comments) {
-        return comments.stream()
+    public List<CommentDto> getPolicyComments(String policyId) {
+        List<PolicyComment> policyComments = commentRepository.findPolicyCommentsByPolicyIdOrderByCreatedAtAsc(policyId);
+        return policyComments.stream()
                 .map(comment -> {
                     String nickname = (comment.getWriter() != null) ? comment.getWriter().getNickname() : "null";
                     return new CommentDto(nickname, comment.getContent());
                 })
                 .collect(Collectors.toList());
+    }
+
+
+    /**
+     * 게시글 댓글 조회
+     */
+    @Override
+    public List<CommentDto> getPostComments(Long postId) {
+        List<PostComment> postComments = commentRepository.findPostCommentsByPostIdOrderByCreatedAtAsc(postId);
+        return postComments.stream()
+                .map(comment -> {
+                    String nickname = (comment.getWriter() != null) ? comment.getWriter().getNickname() : "null";
+                    return new CommentDto(nickname, comment.getContent());
+                })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean validateCommentType(String policyId, Long postId) {
+        if (policyId != null && postId == null) { // policy 댓글인 경우
+            return true;
+        } else if (policyId == null && postId != null) { // post 댓글인 경우
+            return false;
+        } else {
+            throw new CommentTypeException();
+        }
     }
 }

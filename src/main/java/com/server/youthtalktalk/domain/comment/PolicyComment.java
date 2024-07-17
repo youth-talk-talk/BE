@@ -1,7 +1,6 @@
 package com.server.youthtalktalk.domain.comment;
 
 import com.server.youthtalktalk.domain.policy.Policy;
-import com.server.youthtalktalk.domain.post.Post;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
