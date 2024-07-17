@@ -2,6 +2,7 @@ package com.server.youthtalktalk.repository;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.server.youthtalktalk.domain.policy.Category;
 import com.server.youthtalktalk.domain.policy.Policy;
@@ -64,8 +65,11 @@ public class PolicyQueryRepositoryImpl implements PolicyQueryRepository {
 
         // 키워드 필터
         if (keyword != null && !keyword.isEmpty()) {
-            predicate.and(policy.title.containsIgnoreCase(keyword)
-                    .or(policy.introduction.containsIgnoreCase(keyword)));
+            keyword = keyword.replaceAll(" ", "");
+            BooleanBuilder keywordPredicate = new BooleanBuilder();
+            keywordPredicate.or(Expressions.stringTemplate("replace({0}, ' ', '')", policy.title).containsIgnoreCase(keyword));
+            keywordPredicate.or(Expressions.stringTemplate("replace({0}, ' ', '')", policy.introduction).containsIgnoreCase(keyword));
+            predicate.and(keywordPredicate);
         }
 
         // 정렬 (policyId 기준)
