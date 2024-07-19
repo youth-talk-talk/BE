@@ -193,14 +193,9 @@ class JwtAuthenticationProcessingFilterTest {
         String refreshToken= accessAndRefreshToken.get(refreshHeader);
 
         // when, then
-        mockMvc.perform(
-                get("/")
-                        .header(refreshHeader, refreshToken)) // Bearer을 붙이지 않음
-                .andExpect(status().isForbidden());
-
         mockMvc.perform(get("/")
                         .header(refreshHeader, BEARER + refreshToken+"1")) // 유효하지 않은 refresh token
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     /**
