@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.server.youthtalktalk.global.response.BaseResponseCode.SUCCESS;
+import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -73,7 +73,7 @@ public class CommentController {
     @PatchMapping("/comments")
     public BaseResponse<Void> updateComment(@Valid @RequestBody CommentUpdateDto commentUpdateDto) {
         commentService.updateComment(commentUpdateDto.commentId(), commentUpdateDto.content());
-        return new BaseResponse<>(BaseResponseCode.SUCCESS_COMMENT_UPDATE);
+        return new BaseResponse<>(SUCCESS_COMMENT_UPDATE);
     }
 
     /**
@@ -82,7 +82,7 @@ public class CommentController {
     @DeleteMapping("/comments/{commentId}")
     public BaseResponse<Void> deleteComment(@NotNull @PathVariable Long commentId) {
         commentService.deleteComment(commentId);
-        return new BaseResponse<>(BaseResponseCode.SUCCESS_COMMENT_DELETE);
+        return new BaseResponse<>(SUCCESS_COMMENT_DELETE);
     }
 
 }

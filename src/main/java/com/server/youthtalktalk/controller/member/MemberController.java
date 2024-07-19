@@ -10,7 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import static com.server.youthtalktalk.global.response.BaseResponseCode.SUCCESS;
+import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -45,7 +45,7 @@ public class MemberController {
         Member member = memberService.getCurrentMember();
         memberService.updateMemberInfo(memberUpdateDto, member);
         MemberInfoDto updatedMemberInfo = new MemberInfoDto(member.getId(), member.getNickname(), member.getRegion().getName());
-        return new BaseResponse<>(updatedMemberInfo, SUCCESS);
+        return new BaseResponse<>(updatedMemberInfo, SUCCESS_MEMBER_UPDATE);
     }
 
     /**
@@ -55,7 +55,7 @@ public class MemberController {
     public BaseResponse<String> deleteMember() {
         Member member = memberService.getCurrentMember();
         memberService.deleteMember(member);
-        return new BaseResponse<>(SUCCESS);
+        return new BaseResponse<>(SUCCESS_MEMBER_DELETE);
     }
 
 }
