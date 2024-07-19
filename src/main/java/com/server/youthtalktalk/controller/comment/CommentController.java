@@ -28,7 +28,7 @@ public class CommentController {
     private final MemberService memberService;
 
     /**
-     * 정책 댓글 생성
+     * 정책 댓글 등록 api
      */
     @PostMapping("/policies/comments")
     public BaseResponse<CommentDto> createPolicyComment(@Valid @RequestBody PolicyCommentCreateDto policyCommentCreateDto) {
@@ -38,7 +38,7 @@ public class CommentController {
     }
 
     /**
-     * 게시글 댓글 생성
+     * 게시글 댓글 등록 api
      */
     @PostMapping("/posts/comments")
     public BaseResponse<CommentDto> createPostComment(@Valid @RequestBody PostCommentCreateDto postCommentCreateDto) {
@@ -48,7 +48,7 @@ public class CommentController {
     }
 
     /**
-     * 정책 댓글 조회
+     * 정책 댓글 조회 api
      */
     @GetMapping("/policies/{policyId}/comments")
     public BaseResponse<List<CommentDto>> getPolicyComments(@NotBlank @PathVariable String policyId) {
@@ -58,7 +58,7 @@ public class CommentController {
     }
 
     /**
-     * 게시글 댓글 조회
+     * 게시글 댓글 조회 api
      */
     @GetMapping("/posts/{postId}/comments")
     public BaseResponse<List<CommentDto>> getPostComments(@NotNull @PathVariable Long postId) {
@@ -68,7 +68,7 @@ public class CommentController {
     }
 
     /**
-     * 댓글 수정
+     * 댓글 수정 api
      */
     @PatchMapping("/comments")
     public BaseResponse<Void> updateComment(@Valid @RequestBody CommentUpdateDto commentUpdateDto) {
@@ -77,10 +77,10 @@ public class CommentController {
     }
 
     /**
-     * 댓글 삭제
+     * 댓글 삭제 api
      */
     @DeleteMapping("/comments/{commentId}")
-    public BaseResponse<Void> deleteComment(@NotNull Long commentId) {
+    public BaseResponse<Void> deleteComment(@NotNull @PathVariable Long commentId) {
         commentService.deleteComment(commentId);
         return new BaseResponse<>(BaseResponseCode.SUCCESS_COMMENT_DELETE);
     }
