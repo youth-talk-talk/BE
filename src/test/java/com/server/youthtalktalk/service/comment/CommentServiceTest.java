@@ -12,6 +12,7 @@ import com.server.youthtalktalk.repository.CommentRepository;
 import com.server.youthtalktalk.repository.MemberRepository;
 import com.server.youthtalktalk.repository.PolicyRepository;
 import com.server.youthtalktalk.repository.PostRepository;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,6 +39,9 @@ class CommentServiceTest {
     @Autowired
     CommentService commentService;
 
+    @Autowired
+    EntityManager em;
+
     @Test
     void 정책_댓글_생성_성공() {
         // given
@@ -48,24 +52,26 @@ class CommentServiceTest {
         policyRepository.save(policy);
 
         String content = "policyComment_content";
-        Policy savedPolicy = policyRepository.findById("newPolicy").orElseThrow();
 
         // when
-        PolicyComment policyComment = commentService.createPolicyComment(savedPolicy.getPolicyId(), content, member);
+        PolicyComment policyComment = commentService.createPolicyComment(policy.getPolicyId(), content, member);
+
+        em.flush();
+        em.clear();
 
         // then
         assertThat(commentRepository.findById(policyComment.getId())).isPresent();
         assertThat(policyComment.getWriter()).isEqualTo(member);
         assertThat(policyComment.getContent()).isEqualTo(content);
-        assertThat(policyComment.getPolicy()).isEqualTo(savedPolicy);
+        assertThat(policyComment.getPolicy().getPolicyId()).isEqualTo(policy.getPolicyId());
 
-//        assertThat(member.getComments().contains(policyComment)).isTrue();
-//        assertThat(policy.getPolicyComments().contains(policyComment)).isTrue();
-
+        Policy reloadedPolicy = policyRepository.findById(policy.getPolicyId()).orElseThrow();
+        assertThat(reloadedPolicy.getPolicyComments().size()).isEqualTo(1);
+        assertThat(member.getComments().size()).isEqualTo(1);
     }
 
     @Test
-    void 게시글_댓글_생성_성공() throws Exception {
+    void 게시글_댓글_생성_성공() {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
         memberRepository.save(member);
@@ -78,113 +84,18 @@ class CommentServiceTest {
         // when
         PostComment postComment = commentService.createPostComment(post.getId(), content, member);
 
+        em.flush();
+        em.clear();
+
         // then
         assertThat(commentRepository.findById(postComment.getId())).isPresent();
         assertThat(postComment.getWriter()).isEqualTo(member);
         assertThat(postComment.getContent()).isEqualTo(content);
-        assertThat(postComment.getPost()).isEqualTo(post);
+        assertThat(postComment.getPost().getId()).isEqualTo(post.getId());
 
-        assertThat(member.getComments().contains(postComment)).isTrue();
-        assertThat(post.getPostComments().contains(postComment)).isTrue();
+        Post reloadPost = postRepository.findById(post.getId()).orElseThrow();
+        assertThat(reloadPost.getPostComments().size()).isEqualTo(1);
+        assertThat(member.getComments().size()).isEqualTo(1);
     }
 
-/*    @Test
-    void 게시글_댓글_조회_성공() throws Exception {
-        // given
-        Post post = Post.builder().title("post1").content("post1_content").build();
-
-        Member member1 = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
-        Member member2 = Member.builder().username("member2").nickname("member2").region(Region.SEOUL).role(Role.USER).build();
-        List<Member> members = Arrays.asList(member1, member2);
-
-        PostComment comment1 = PostComment.builder().content("comment1").build();
-        PostComment comment2 = PostComment.builder().content("comment2").build();
-        PostComment comment3 = PostComment.builder().content("comment3").build();
-        List<Comment> comments = Arrays.asList(comment1, comment2, comment3);
-
-        comment1.setWriter(member1);
-        comment2.setWriter(member2);
-
-        comment1.setPost(post);
-        comment2.setPost(post);
-        comment3.setPost(post);
-
-        postRepository.save(post);
-        memberRepository.saveAll(members);
-        commentRepository.saveAll(comments);
-
-        // when
-        List<Comment> commentList = commentService.getAllComments(
-                new CommentTypeDto(Optional.empty(), Optional.ofNullable(post.getId())));
-        List<CommentDto> commentDtoList = commentService.convertToDto(commentList);
-
-        // then
-        assertThat(commentList).hasSize(3);
-        assertThat(commentDtoList).hasSize(3);
-        assertThat(commentDtoList.get(0).nickname()).isEqualTo(comment1.getWriter().getNickname());
-        assertThat(commentDtoList.get(0).content()).isEqualTo(comment1.getContent());
-        assertThat(commentDtoList.get(1).nickname()).isEqualTo(comment2.getWriter().getNickname());
-        assertThat(commentDtoList.get(1).content()).isEqualTo(comment2.getContent());
-        assertThat(commentDtoList.get(2).nickname()).isEqualTo("null"); // (알수없음) 댓글
-        assertThat(commentDtoList.get(2).content()).isEqualTo(comment3.getContent());
-    }
-
-    @Test
-    void 정책_댓글_조회_성공() {
-        // given
-        Policy policy = Policy.builder().policyId("policy1").build();
-
-        Member member1 = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
-        Member member2 = Member.builder().username("member2").nickname("member2").region(Region.SEOUL).role(Role.USER).build();
-        List<Member> members = Arrays.asList(member1, member2);
-
-        PolicyComment comment1 = PolicyComment.builder().content("comment1").build();
-        PolicyComment comment2 = PolicyComment.builder().content("comment2").build();
-        PolicyComment comment3 = PolicyComment.builder().content("comment3").build();
-        List<Comment> comments = Arrays.asList(comment1, comment2, comment3);
-
-        comment1.setWriter(member1);
-        comment2.setWriter(member2);
-
-        comment1.setPolicy(policy);
-        comment2.setPolicy(policy);
-        comment3.setPolicy(policy);
-
-        policyRepository.save(policy);
-        memberRepository.saveAll(members);
-        commentRepository.saveAll(comments);
-
-        // when
-        List<Comment> commentList = commentService.getAllComments(
-                new CommentTypeDto(Optional.ofNullable(policy.getPolicyId()), Optional.empty()));
-        List<CommentDto> commentDtoList = commentService.convertToDto(commentList);
-
-        // then
-        assertThat(commentList).hasSize(3);
-        assertThat(commentDtoList).hasSize(3);
-        assertThat(commentDtoList.get(0).nickname()).isEqualTo(comment1.getWriter().getNickname());
-        assertThat(commentDtoList.get(0).content()).isEqualTo(comment1.getContent());
-        assertThat(commentDtoList.get(1).nickname()).isEqualTo(comment2.getWriter().getNickname());
-        assertThat(commentDtoList.get(1).content()).isEqualTo(comment2.getContent());
-        assertThat(commentDtoList.get(2).nickname()).isEqualTo("null"); // (알수없음) 댓글
-        assertThat(commentDtoList.get(2).content()).isEqualTo(comment3.getContent());
-    }
-
-    @Test
-    public void postId_policyId_모두_없으면_400() throws Exception {
-        // given
-        CommentTypeDto commentTypeDto = new CommentTypeDto(Optional.empty(), Optional.empty());
-
-        // when, then
-        assertThrows(InvalidValueException.class, () -> commentService.getAllComments(commentTypeDto));
-    }
-
-    @Test
-    public void postId_policyId_모두_있으면_400() throws Exception {
-        // given
-        CommentTypeDto commentTypeDto = new CommentTypeDto(Optional.of("policyId"), Optional.of(1L));
-
-        // when, then
-        assertThrows(InvalidValueException.class, () -> commentService.getAllComments(commentTypeDto));
-    }*/
 }
