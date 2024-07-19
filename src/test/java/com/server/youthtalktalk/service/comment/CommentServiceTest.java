@@ -195,4 +195,23 @@ class CommentServiceTest {
         assertThat(member.getComments().get(0).getContent().equals("new_content")).isTrue();
     }
 
+    @Test
+    void 댓글_삭제_성공() throws Exception {
+        // given
+        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
+        Comment comment = Comment.builder().content("content").build();
+        comment.setWriter(member);
+
+        memberRepository.save(member);
+        commentRepository.save(comment);
+
+        // when
+        commentService.deleteComment(comment.getId());
+
+        // then
+        assertThat(commentRepository.findById(comment.getId())).isEmpty();
+        assertThat(member.getComments().contains(comment)).isFalse();
+
+    }
+
 }
