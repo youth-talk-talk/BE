@@ -1,5 +1,6 @@
 package com.server.youthtalktalk.service.comment;
 
+import com.server.youthtalktalk.domain.comment.Comment;
 import com.server.youthtalktalk.domain.comment.PolicyComment;
 import com.server.youthtalktalk.domain.comment.PostComment;
 import com.server.youthtalktalk.domain.member.Member;
@@ -170,6 +171,28 @@ class CommentServiceTest {
         // then
         assertThat(postComments.size()).isEqualTo(3);
         assertThat(postComments.get(1).getId()).isEqualTo(postComment3.getId()); // 시간순 정렬 검증
+    }
+
+    @Test
+    void 댓글_수정_성공() throws Exception {
+        // given
+        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
+        Comment comment = Comment.builder().content("content").build();
+        comment.setWriter(member);
+
+        memberRepository.save(member);
+        commentRepository.save(comment);
+
+        // when
+        commentService.updateComment(comment.getId(), "new_content");
+
+        // then
+        Comment savedComment = commentRepository.findById(comment.getId()).orElseThrow();
+        assertThat(savedComment.getWriter()).isEqualTo(member);
+        assertThat(savedComment.getContent().equals("new_content")).isTrue();
+        assertThat(member.getComments().size()).isEqualTo(1);
+        assertThat(member.getComments().get(0).getId()).isEqualTo(savedComment.getId());
+        assertThat(member.getComments().get(0).getContent().equals("new_content")).isTrue();
     }
 
 }
