@@ -4,7 +4,6 @@ import com.server.youthtalktalk.domain.comment.Comment;
 import com.server.youthtalktalk.domain.comment.PolicyComment;
 import com.server.youthtalktalk.domain.comment.PostComment;
 import com.server.youthtalktalk.domain.member.Member;
-import com.server.youthtalktalk.domain.post.Post;
 import com.server.youthtalktalk.dto.comment.CommentDto;
 
 import java.util.List;
@@ -15,4 +14,5 @@ public interface CommentService {
     List<PolicyComment> getPolicyComments(String policyId);
     List<PostComment> getPostComments(Long postId);
     List<CommentDto> convertToCommentDtoList(List<? extends Comment> comments);
+    void updateComment(Long commentId, String content);
 }

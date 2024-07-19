@@ -2,10 +2,12 @@ package com.server.youthtalktalk.controller.comment;
 
 import com.server.youthtalktalk.domain.comment.PolicyComment;
 import com.server.youthtalktalk.domain.comment.PostComment;
+import com.server.youthtalktalk.dto.comment.CommentUpdateDto;
 import com.server.youthtalktalk.dto.comment.PolicyCommentCreateDto;
 import com.server.youthtalktalk.dto.comment.CommentDto;
 import com.server.youthtalktalk.dto.comment.PostCommentCreateDto;
 import com.server.youthtalktalk.global.response.BaseResponse;
+import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.service.comment.CommentService;
 import com.server.youthtalktalk.service.member.MemberService;
 import jakarta.validation.Valid;
@@ -48,8 +50,8 @@ public class CommentController {
     /**
      * 정책 댓글 조회
      */
-    @GetMapping("/policies/comments")
-    public BaseResponse<List<CommentDto>> getPolicyComments(@NotBlank @RequestParam String policyId) {
+    @GetMapping("/policies/{policyId}/comments")
+    public BaseResponse<List<CommentDto>> getPolicyComments(@NotBlank @PathVariable String policyId) {
         List<PolicyComment> policyComments = commentService.getPolicyComments(policyId);
         List<CommentDto> commentDtoList = commentService.convertToCommentDtoList(policyComments);
         return new BaseResponse<>(commentDtoList, SUCCESS);
@@ -58,8 +60,8 @@ public class CommentController {
     /**
      * 게시글 댓글 조회
      */
-    @GetMapping("/posts/comments")
-    public BaseResponse<List<CommentDto>> getPostComments(@NotNull @RequestParam Long postId) {
+    @GetMapping("/posts/{postId}/comments")
+    public BaseResponse<List<CommentDto>> getPostComments(@NotNull @PathVariable Long postId) {
         List<PostComment> postComments = commentService.getPostComments(postId);
         List<CommentDto> commentDtoList = commentService.convertToCommentDtoList(postComments);
         return new BaseResponse<>(commentDtoList, SUCCESS);
@@ -68,6 +70,11 @@ public class CommentController {
     /**
      * 댓글 수정
      */
+    @PatchMapping("/comments")
+    public BaseResponse<Void> updateComment(@Valid @RequestBody CommentUpdateDto commentUpdateDto) {
+        commentService.updateComment(commentUpdateDto.commentId(), commentUpdateDto.content());
+        return new BaseResponse<>(BaseResponseCode.SUCCESS_COMMENT_UPDATE);
+    }
 
     /**
      * 댓글 삭제

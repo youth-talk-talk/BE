@@ -14,7 +14,8 @@ public enum BaseResponseCode {
     // Policy
     SUCCESS_POLICY_FOUND("S04","정책 조회에 성공하였습니다.",HttpStatus.OK.value()),
     SUCCESS_POLICY_SEARCH_NO_RESULT("S05","조건에 맞는 정책 결과가 없습니다",HttpStatus.OK.value()),
-
+    // Comment
+    SUCCESS_COMMENT_UPDATE("S06", "댓글 수정을 완료했습니다.",HttpStatus.OK.value()),
 
     /* 요청 실패 시*/
     //공통
@@ -41,7 +42,7 @@ public enum BaseResponseCode {
     POST_ACCESS_DENIED("PS02","해당 게시글에 대한 권한이 없습니다.",HttpStatus.BAD_REQUEST.value()),
 
     // Comment
-    COMMENT_TYPE_NOT_CORRECT("C01", "댓글 종류를 다시 확인해주세요.", HttpStatus.BAD_REQUEST.value());
+    COMMENT_NOT_FOUND("C01", "해당 댓글을 찾을 수 없습니다.", HttpStatus.BAD_REQUEST.value());
 
     private final String code;
     private final String message;

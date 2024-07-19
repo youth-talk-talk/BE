@@ -7,6 +7,7 @@ import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.policy.Policy;
 import com.server.youthtalktalk.domain.post.Post;
 import com.server.youthtalktalk.dto.comment.CommentDto;
+import com.server.youthtalktalk.global.response.exception.comment.CommentNotFoundException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
 import com.server.youthtalktalk.repository.CommentRepository;
@@ -87,4 +88,10 @@ public class CommentServiceImpl implements CommentService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public void updateComment(Long commentId, String content) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
+        comment.updateContent(content);
+        commentRepository.save(comment);
+    }
 }
