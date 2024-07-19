@@ -16,6 +16,7 @@ public enum BaseResponseCode {
     SUCCESS_POLICY_SEARCH_NO_RESULT("S05","조건에 맞는 정책 결과가 없습니다",HttpStatus.OK.value()),
     // Comment
     SUCCESS_COMMENT_UPDATE("S06", "댓글 수정을 완료했습니다.",HttpStatus.OK.value()),
+    SUCCESS_COMMENT_DELETE("S07", "댓글 삭제를 완료했습니다.",HttpStatus.OK.value()),
 
     /* 요청 실패 시*/
     //공통

@@ -88,10 +88,27 @@ public class CommentServiceImpl implements CommentService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 댓글 수정
+     */
     @Override
     public void updateComment(Long commentId, String content) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
         comment.updateContent(content);
         commentRepository.save(comment);
     }
+
+    /**
+     * 댓글 삭제
+     */
+    @Override
+    public void deleteComment(Long commentId) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
+        Member writer = comment.getWriter();
+        if (writer != null) {
+            writer.getComments().remove(comment);
+        }
+        commentRepository.delete(comment);
+    }
+
 }

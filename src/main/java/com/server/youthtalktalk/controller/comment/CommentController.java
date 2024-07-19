@@ -79,5 +79,10 @@ public class CommentController {
     /**
      * 댓글 삭제
      */
+    @DeleteMapping("/comments/{commentId}")
+    public BaseResponse<Void> deleteComment(@NotNull Long commentId) {
+        commentService.deleteComment(commentId);
+        return new BaseResponse<>(BaseResponseCode.SUCCESS_COMMENT_DELETE);
+    }
 
 }
