@@ -5,7 +5,6 @@ import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.member.Role;
 import com.server.youthtalktalk.domain.policy.Region;
 import com.server.youthtalktalk.domain.post.Post;
-import com.server.youthtalktalk.dto.member.MemberInfoDto;
 import com.server.youthtalktalk.dto.member.MemberUpdateDto;
 import com.server.youthtalktalk.dto.member.SignUpRequestDto;
 import com.server.youthtalktalk.global.jwt.JwtService;
