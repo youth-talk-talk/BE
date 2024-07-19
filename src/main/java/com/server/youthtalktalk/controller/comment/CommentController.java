@@ -2,20 +2,18 @@ package com.server.youthtalktalk.controller.comment;
 
 import com.server.youthtalktalk.domain.comment.PolicyComment;
 import com.server.youthtalktalk.domain.comment.PostComment;
-import com.server.youthtalktalk.domain.member.Member;
-import com.server.youthtalktalk.dto.comment.CommentCreateDto;
+import com.server.youthtalktalk.dto.comment.PolicyCommentCreateDto;
 import com.server.youthtalktalk.dto.comment.CommentDto;
-import com.server.youthtalktalk.dto.comment.CommentTypeDto;
+import com.server.youthtalktalk.dto.comment.PostCommentCreateDto;
 import com.server.youthtalktalk.global.response.BaseResponse;
-import com.server.youthtalktalk.global.response.exception.comment.CommentTypeException;
-import com.server.youthtalktalk.repository.MemberRepository;
 import com.server.youthtalktalk.service.comment.CommentService;
 import com.server.youthtalktalk.service.member.MemberService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.server.youthtalktalk.global.response.BaseResponseCode.SUCCESS;
@@ -28,38 +26,42 @@ public class CommentController {
     private final MemberService memberService;
 
     /**
-     * 댓글 생성
+     * 정책 댓글 생성
      */
-    @PostMapping("/comments")
-    public BaseResponse<CommentDto> createComment(@Valid @RequestBody CommentCreateDto commentCreateDto) {
-        Member member = memberService.getCurrentMember();
-        String policyId = commentCreateDto.policyId();
-        Long postId = commentCreateDto.postId();
-        String content = commentCreateDto.content();
-        CommentDto commentDto;
-
-        if (commentService.validateCommentType(policyId, postId)) {
-            PolicyComment policyComment = commentService.createPolicyComment(policyId, content, member);
-            commentDto = new CommentDto(policyComment.getWriter().getNickname(), policyComment.getContent());
-        } else {
-            PostComment postComment = commentService.createPostComment(postId, content, member);
-            commentDto = new CommentDto(postComment.getWriter().getNickname(), postComment.getContent());
-        }
+    @PostMapping("/policies/comments")
+    public BaseResponse<CommentDto> createPolicyComment(@Valid @RequestBody PolicyCommentCreateDto policyCommentCreateDto) {
+        PolicyComment policyComment = commentService.createPolicyComment(policyCommentCreateDto.policyId(), policyCommentCreateDto.content(), memberService.getCurrentMember());
+        CommentDto commentDto = new CommentDto(policyComment.getWriter().getNickname(), policyComment.getContent());
         return new BaseResponse<>(commentDto, SUCCESS);
     }
 
     /**
-     * 댓글 조회
+     * 게시글 댓글 생성
      */
-    @GetMapping("/comments")
-    public BaseResponse<List<CommentDto>> getComments(@RequestParam(required = false) String policyId,
-                                                      @RequestParam(required = false) Long postId) {
-        List<CommentDto> commentDtoList;
-        if (commentService.validateCommentType(policyId, postId)) {
-            commentDtoList = commentService.getPolicyComments(policyId);
-        } else {
-            commentDtoList = commentService.getPostComments(postId);
-        }
+    @PostMapping("/posts/comments")
+    public BaseResponse<CommentDto> createPostComment(@Valid @RequestBody PostCommentCreateDto postCommentCreateDto) {
+        PostComment postComment = commentService.createPostComment(postCommentCreateDto.postId(), postCommentCreateDto.content(), memberService.getCurrentMember());
+        CommentDto commentDto = new CommentDto(postComment.getWriter().getNickname(), postComment.getContent());
+        return new BaseResponse<>(commentDto, SUCCESS);
+    }
+
+    /**
+     * 정책 댓글 조회
+     */
+    @GetMapping("/policies/comments")
+    public BaseResponse<List<CommentDto>> getPolicyComments(@NotBlank @RequestParam String policyId) {
+        List<PolicyComment> policyComments = commentService.getPolicyComments(policyId);
+        List<CommentDto> commentDtoList = commentService.convertToCommentDtoList(policyComments);
+        return new BaseResponse<>(commentDtoList, SUCCESS);
+    }
+
+    /**
+     * 게시글 댓글 조회
+     */
+    @GetMapping("/posts/comments")
+    public BaseResponse<List<CommentDto>> getPostComments(@NotNull @RequestParam Long postId) {
+        List<PostComment> postComments = commentService.getPostComments(postId);
+        List<CommentDto> commentDtoList = commentService.convertToCommentDtoList(postComments);
         return new BaseResponse<>(commentDtoList, SUCCESS);
     }
 

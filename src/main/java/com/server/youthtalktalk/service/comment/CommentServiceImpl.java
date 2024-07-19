@@ -7,9 +7,6 @@ import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.policy.Policy;
 import com.server.youthtalktalk.domain.post.Post;
 import com.server.youthtalktalk.dto.comment.CommentDto;
-import com.server.youthtalktalk.dto.comment.CommentTypeDto;
-import com.server.youthtalktalk.global.response.exception.InvalidValueException;
-import com.server.youthtalktalk.global.response.exception.comment.CommentTypeException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
 import com.server.youthtalktalk.repository.CommentRepository;
@@ -21,10 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_INPUT_VALUE;
 
 @Slf4j
 @Service
@@ -46,7 +40,6 @@ public class CommentServiceImpl implements CommentService {
         policyComment.setPolicy(policy);
         policyComment.setWriter(member);
         commentRepository.save(policyComment);
-        log.info("createPolicyComment policyId={}, content={}", policyComment.getPolicy().getPolicyId(), policyComment.getContent());
         return policyComment;
     }
 
@@ -67,39 +60,31 @@ public class CommentServiceImpl implements CommentService {
      * 정책 댓글 조회
      */
     @Override
-    public List<CommentDto> getPolicyComments(String policyId) {
-        List<PolicyComment> policyComments = commentRepository.findPolicyCommentsByPolicyIdOrderByCreatedAtAsc(policyId);
-        return policyComments.stream()
-                .map(comment -> {
-                    String nickname = (comment.getWriter() != null) ? comment.getWriter().getNickname() : "null";
-                    return new CommentDto(nickname, comment.getContent());
-                })
-                .collect(Collectors.toList());
+    public List<PolicyComment> getPolicyComments(String policyId) {
+        policyRepository.findById(policyId).orElseThrow(PolicyNotFoundException::new);
+        return commentRepository.findPolicyCommentsByPolicyIdOrderByCreatedAtAsc(policyId);
     }
-
 
     /**
      * 게시글 댓글 조회
      */
     @Override
-    public List<CommentDto> getPostComments(Long postId) {
-        List<PostComment> postComments = commentRepository.findPostCommentsByPostIdOrderByCreatedAtAsc(postId);
-        return postComments.stream()
-                .map(comment -> {
-                    String nickname = (comment.getWriter() != null) ? comment.getWriter().getNickname() : "null";
-                    return new CommentDto(nickname, comment.getContent());
+    public List<PostComment> getPostComments(Long postId) {
+        postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
+        return commentRepository.findPostCommentsByPostIdOrderByCreatedAtAsc(postId);
+    }
+
+    /**
+     * 작성자 없는 경우 처리 후 CommentDto 리스트로 변환
+     */
+    @Override
+    public List<CommentDto> convertToCommentDtoList(List<? extends Comment> comments) {
+        return comments.stream()
+                .map(comment -> { // writer null인 경우 닉네임 치환
+                    String writerNickname = (comment.getWriter() != null) ? comment.getWriter().getNickname() : "null";
+                    return new CommentDto(writerNickname, comment.getContent());
                 })
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public boolean validateCommentType(String policyId, Long postId) {
-        if (policyId != null && postId == null) { // policy 댓글인 경우
-            return true;
-        } else if (policyId == null && postId != null) { // post 댓글인 경우
-            return false;
-        } else {
-            throw new CommentTypeException();
-        }
-    }
 }

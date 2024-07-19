@@ -8,25 +8,16 @@ import com.server.youthtalktalk.domain.member.Role;
 import com.server.youthtalktalk.domain.policy.Policy;
 import com.server.youthtalktalk.domain.policy.Region;
 import com.server.youthtalktalk.domain.post.Post;
-import com.server.youthtalktalk.dto.comment.CommentDto;
-import com.server.youthtalktalk.dto.comment.CommentTypeDto;
-import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.repository.CommentRepository;
 import com.server.youthtalktalk.repository.MemberRepository;
 import com.server.youthtalktalk.repository.PolicyRepository;
 import com.server.youthtalktalk.repository.PostRepository;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -41,40 +32,36 @@ class CommentServiceTest {
     @Autowired
     PostRepository postRepository;
 
-
     @Autowired
     PolicyRepository policyRepository;
 
     @Autowired
     CommentService commentService;
 
-    @Autowired
-    EntityManager em;
-
     @Test
-    void 정책_댓글_생성_성공() throws Exception {
+    void 정책_댓글_생성_성공() {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
         memberRepository.save(member);
 
-        Policy policy = Policy.builder().policyId("policy1").build();
+        Policy policy = Policy.builder().policyId("newPolicy").build();
         policyRepository.save(policy);
 
         String content = "policyComment_content";
+        Policy savedPolicy = policyRepository.findById("newPolicy").orElseThrow();
 
         // when
-        PolicyComment policyComment = commentService.createPolicyComment(policy.getPolicyId(), content, member);
+        PolicyComment policyComment = commentService.createPolicyComment(savedPolicy.getPolicyId(), content, member);
 
         // then
         assertThat(commentRepository.findById(policyComment.getId())).isPresent();
         assertThat(policyComment.getWriter()).isEqualTo(member);
         assertThat(policyComment.getContent()).isEqualTo(content);
-        System.out.println("policyComment.getPolicy().getPolicyId() = " + policyComment.getPolicy().getPolicyId());
-        System.out.println("policy.getPolicyId() = " + policy.getPolicyId());
-//        assertThat(policyComment.getPolicy()).isEqualTo(policy);
+        assertThat(policyComment.getPolicy()).isEqualTo(savedPolicy);
 
 //        assertThat(member.getComments().contains(policyComment)).isTrue();
 //        assertThat(policy.getPolicyComments().contains(policyComment)).isTrue();
+
     }
 
     @Test

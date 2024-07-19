@@ -7,7 +7,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +29,7 @@ public class Comment extends BaseTimeEntity {
 
     private String content;
 
+    @Builder.Default
     @OneToMany(mappedBy = "comment")
     private List<Likes> commentLikes = new ArrayList<>();
 

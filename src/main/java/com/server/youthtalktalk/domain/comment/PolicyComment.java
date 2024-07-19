@@ -20,7 +20,8 @@ public class PolicyComment extends Comment{
     /* 연관관계 메서드 */
     public void setPolicy(Policy policy) {
         this.policy = policy;
-        policy.getPolicyComments().add(this);
+        if (policy != null)
+            policy.getPolicyComments().add(this);
     }
 
 }
