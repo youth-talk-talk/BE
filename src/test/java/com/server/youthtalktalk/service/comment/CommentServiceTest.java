@@ -174,7 +174,7 @@ class CommentServiceTest {
     }
 
     @Test
-    void 댓글_수정_성공() throws Exception {
+    void 댓글_수정_성공() {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
         Comment comment = Comment.builder().content("content").build();
@@ -196,7 +196,7 @@ class CommentServiceTest {
     }
 
     @Test
-    void 댓글_삭제_성공() throws Exception {
+    void 댓글_삭제_성공() {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
         Comment comment = Comment.builder().content("content").build();
@@ -211,6 +211,43 @@ class CommentServiceTest {
         // then
         assertThat(commentRepository.findById(comment.getId())).isEmpty();
         assertThat(member.getComments().contains(comment)).isFalse();
+
+    }
+
+    @Test
+    void 회원이_작성한_댓글_조회_성공() {
+        // given
+        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
+        memberRepository.save(member);
+
+        Comment comment1 = Comment.builder().content("content1").build();
+        Comment comment2 = Comment.builder().content("content2").build();
+        comment1.setWriter(member);
+        comment2.setWriter(member);
+        commentRepository.save(comment1);
+        commentRepository.save(comment2);
+
+        // when
+        List<Comment> comments = commentService.getMemberComments(member);
+
+        // then
+        assertThat(comments.size()).isEqualTo(2);
+        assertThat(comments.contains(comment1)).isTrue();
+        assertThat(comments.contains(comment2)).isTrue();
+        assertThat(comments.get(0).getId()).isEqualTo(comment2.getId()); // 최신순 정렬 검증
+    }
+
+    @Test
+    void 회원이_작성한_댓글_조회_성공_작성한_댓글이_없음() {
+        // given
+        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
+        memberRepository.save(member);
+
+        // when
+        List<Comment> comments = commentService.getMemberComments(member);
+
+        // then
+        assertThat(comments.isEmpty()).isTrue();
 
     }
 
