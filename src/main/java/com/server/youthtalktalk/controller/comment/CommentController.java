@@ -33,7 +33,7 @@ public class CommentController {
     @PostMapping("/policies/comments")
     public BaseResponse<CommentDto> createPolicyComment(@Valid @RequestBody PolicyCommentCreateDto policyCommentCreateDto) {
         PolicyComment policyComment = commentService.createPolicyComment(policyCommentCreateDto.policyId(), policyCommentCreateDto.content(), memberService.getCurrentMember());
-        CommentDto commentDto = new CommentDto(policyComment.getWriter().getNickname(), policyComment.getContent());
+        CommentDto commentDto = new CommentDto(policyComment.getId(), policyComment.getWriter().getNickname(), policyComment.getContent());
         return new BaseResponse<>(commentDto, SUCCESS);
     }
 
@@ -43,7 +43,7 @@ public class CommentController {
     @PostMapping("/posts/comments")
     public BaseResponse<CommentDto> createPostComment(@Valid @RequestBody PostCommentCreateDto postCommentCreateDto) {
         PostComment postComment = commentService.createPostComment(postCommentCreateDto.postId(), postCommentCreateDto.content(), memberService.getCurrentMember());
-        CommentDto commentDto = new CommentDto(postComment.getWriter().getNickname(), postComment.getContent());
+        CommentDto commentDto = new CommentDto(postComment.getId(), postComment.getWriter().getNickname(), postComment.getContent());
         return new BaseResponse<>(commentDto, SUCCESS);
     }
 

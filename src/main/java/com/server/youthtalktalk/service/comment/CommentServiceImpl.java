@@ -83,7 +83,7 @@ public class CommentServiceImpl implements CommentService {
         return comments.stream()
                 .map(comment -> { // writer null인 경우 닉네임 치환
                     String writerNickname = (comment.getWriter() != null) ? comment.getWriter().getNickname() : "null";
-                    return new CommentDto(writerNickname, comment.getContent());
+                    return new CommentDto(comment.getId(), writerNickname, comment.getContent());
                 })
                 .collect(Collectors.toList());
     }
