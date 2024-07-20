@@ -71,15 +71,16 @@ public class CommentController {
      * 회원이 작성한 댓글 조회 api
      */
     @GetMapping("/members/me/comments")
-    public BaseResponse<List<MyCommentDto>> getMemberComments() {
+    public BaseResponse<List<CommentDto>> getMemberComments() {
         Member member = memberService.getCurrentMember();
+        String nickname = member.getNickname();
         List<Comment> comments = commentService.getMemberComments(member);
 
         if (comments.isEmpty()) // 회원이 작성한 댓글이 없는 경우
             return new BaseResponse<>(SUCCESS_COMMENT_EMPTY);
 
-        List<MyCommentDto> commentDtoList = comments.stream()
-                .map(comment -> new MyCommentDto(comment.getId(), comment.getContent()))
+        List<CommentDto> commentDtoList = comments.stream()
+                .map(comment -> new CommentDto(comment.getId(), nickname, comment.getContent()))
                 .collect(Collectors.toList());
 
         return new BaseResponse<>(commentDtoList, SUCCESS);
