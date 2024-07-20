@@ -13,6 +13,7 @@ public interface CommentService {
     PostComment createPostComment(Long postId, String content, Member member);
     List<PolicyComment> getPolicyComments(String policyId);
     List<PostComment> getPostComments(Long postId);
+    List<Comment> getMemberComments(Member member);
     List<CommentDto> convertToCommentDtoList(List<? extends Comment> comments);
     void updateComment(Long commentId, String content);
     void deleteComment(Long commentId);

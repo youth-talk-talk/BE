@@ -76,6 +76,14 @@ public class CommentServiceImpl implements CommentService {
     }
 
     /**
+     * 회원이 작성한 댓글 조회
+     */
+    @Override
+    public List<Comment> getMemberComments(Member member) {
+        return commentRepository.findCommentsByWriterOrderByCreatedAtDesc(member);
+    }
+
+    /**
      * 작성자 없는 경우 처리 후 CommentDto 리스트로 변환
      */
     @Override

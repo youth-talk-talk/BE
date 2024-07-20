@@ -1,11 +1,10 @@
 package com.server.youthtalktalk.controller.comment;
 
+import com.server.youthtalktalk.domain.comment.Comment;
 import com.server.youthtalktalk.domain.comment.PolicyComment;
 import com.server.youthtalktalk.domain.comment.PostComment;
-import com.server.youthtalktalk.dto.comment.CommentUpdateDto;
-import com.server.youthtalktalk.dto.comment.PolicyCommentCreateDto;
-import com.server.youthtalktalk.dto.comment.CommentDto;
-import com.server.youthtalktalk.dto.comment.PostCommentCreateDto;
+import com.server.youthtalktalk.domain.member.Member;
+import com.server.youthtalktalk.dto.comment.*;
 import com.server.youthtalktalk.global.response.BaseResponse;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.service.comment.CommentService;
@@ -17,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
@@ -64,6 +64,24 @@ public class CommentController {
     public BaseResponse<List<CommentDto>> getPostComments(@NotNull @PathVariable Long postId) {
         List<PostComment> postComments = commentService.getPostComments(postId);
         List<CommentDto> commentDtoList = commentService.convertToCommentDtoList(postComments);
+        return new BaseResponse<>(commentDtoList, SUCCESS);
+    }
+
+    /**
+     * 회원이 작성한 댓글 조회 api
+     */
+    @GetMapping("/members/me/comments")
+    public BaseResponse<List<MyCommentDto>> getMemberComments() {
+        Member member = memberService.getCurrentMember();
+        List<Comment> comments = commentService.getMemberComments(member);
+
+        if (comments.isEmpty()) // 회원이 작성한 댓글이 없는 경우
+            return new BaseResponse<>(SUCCESS_COMMENT_EMPTY);
+
+        List<MyCommentDto> commentDtoList = comments.stream()
+                .map(comment -> new MyCommentDto(comment.getId(), comment.getContent()))
+                .collect(Collectors.toList());
+
         return new BaseResponse<>(commentDtoList, SUCCESS);
     }
 

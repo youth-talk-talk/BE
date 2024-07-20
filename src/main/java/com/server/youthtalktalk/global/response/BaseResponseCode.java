@@ -17,9 +17,10 @@ public enum BaseResponseCode {
     // Comment
     SUCCESS_COMMENT_UPDATE("S06", "댓글 수정을 완료하였습니다.",HttpStatus.OK.value()),
     SUCCESS_COMMENT_DELETE("S07", "댓글 삭제를 완료하였습니다.",HttpStatus.OK.value()),
+    SUCCESS_COMMENT_EMPTY("S08", "회원이 작성한 댓글이 없습니다.",HttpStatus.OK.value()),
     // Member
-    SUCCESS_MEMBER_UPDATE("S08", "회원정보 수정을 완료하였습니다.", HttpStatus.OK.value()),
-    SUCCESS_MEMBER_DELETE("S09", "회원 탈퇴를 완료하였습니다.", HttpStatus.OK.value()),
+    SUCCESS_MEMBER_UPDATE("S09", "회원정보 수정을 완료하였습니다.", HttpStatus.OK.value()),
+    SUCCESS_MEMBER_DELETE("S10", "회원 탈퇴를 완료하였습니다.", HttpStatus.OK.value()),
 
     /* 요청 실패 시*/
     //공통
