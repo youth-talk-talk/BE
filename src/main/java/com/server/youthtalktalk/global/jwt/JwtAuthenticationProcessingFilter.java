@@ -22,6 +22,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -36,8 +37,8 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      * 1. RefreshToken이 없고, AccessToken이 유효한 경우 -> 인증 성공 처리, RefreshToken 재발급 X
      * 2. RefreshToken이 없고, AccessToken이 없거나 유효하지 않은 경우 -> 인증 실패 처리, MemberUnauthorizedException 발생
      * 3. RefreshToken이 있는 경우 -> AccessToken이 만료되어 RefreshToken을 함께 보낸 경우.
-     *                              DB의 RefreshToken과 비교하여 일치하면
-     *                              AccessToken과 RefreshToken 모두 재발급(RTR 방식), 인증은 실패 처리
+     *                              유효한 refersh token -> access, refresh 모두 재발급(RTR)
+     *                              유효하지 않은 fresh token -> 401 반환
      */
 
     private static final String NO_CHECK_URL = "/login";
@@ -60,23 +61,23 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 사용자 요청 헤더에서 RefreshToken 추출
-        // -> RefreshToken이 없거나 유효하지 않다면(DB에 저장된 RefreshToken과 다르다면) null을 반환
-        // 사용자의 요청 헤더에 RefreshToken이 있는 경우는, AccessToken이 만료되어 요청한 경우밖에 없다.
-        // 따라서, 위의 경우를 제외하면 추출한 refreshToken은 모두 null
-        String refreshToken = jwtService
-                .extractRefreshToken(request)
-                .filter(jwtService::isTokenValid)
-                .orElse(null);
+        // 요청 헤더에서 RefreshToken 추출 및 유효성 검사
+        Optional<String> optionalRefreshToken = jwtService.extractRefreshToken(request);
 
-        // 3번 케이스 - refresh token이 DB의 refresh token과 일치하는지 판단 후,
-        // 일치한다면 access token을 재발급한다.
-        if (refreshToken != null) {
-            checkRefreshTokenAndReIssueAccessToken(response, refreshToken);
-            return; // RefreshToken을 보낸 경우에는 AccessToken을 재발급 하고 인증 처리는 하지 않게 하기위해 바로 return으로 필터 진행 막기
+        // refresh token 있는 경우 유효성 검사
+        if (optionalRefreshToken.isPresent()) {
+            String refreshToken = optionalRefreshToken.get();
+            if (jwtService.isTokenValid(refreshToken)) {
+                // 3번 케이스 - RefreshToken이 유효하면 access token, refresh token을 재발급
+                checkRefreshTokenAndReIssueAccessToken(response, refreshToken);
+            } else {
+                // RefreshToken이 유효하지 않다면 401 상태 코드 반환
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            }
+            return; // 필터 체인 종료
         }
 
-        // 1,2번 케이스 - RefreshToken이 없거나 유효하지 않다면, AccessToken을 검사하고 인증 처리
+        // 1,2번 케이스 - RefreshToken이 없다면, AccessToken을 검사하고 인증 처리
         // AccessToken이 유효하다면, 인증 객체가 담긴 상태로 다음 필터로 넘어가기 때문에 인증 성공
         // AccessToken이 없거나 유효하지 않다면, 인증 객체가 담기지 않은 상태로 다음 필터로 넘어가기 때문에 403 에러 발생
         checkAccessTokenAndAuthentication(request, response, filterChain);

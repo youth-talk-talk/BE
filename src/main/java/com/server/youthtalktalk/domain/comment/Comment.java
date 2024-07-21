@@ -1,12 +1,12 @@
 package com.server.youthtalktalk.domain.comment;
 
+import com.server.youthtalktalk.domain.BaseTimeEntity;
 import com.server.youthtalktalk.domain.Likes;
 import com.server.youthtalktalk.domain.member.Member;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "dtype")
-public class Comment {
+public class Comment extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,9 +28,8 @@ public class Comment {
     private Member writer;
 
     private String content;
-    private LocalDate createdAt;
-    private LocalDate updatedAt;
 
+    @Builder.Default
     @OneToMany(mappedBy = "comment")
     private List<Likes> commentLikes = new ArrayList<>();
 
@@ -40,5 +39,10 @@ public class Comment {
         if (member != null) {
             member.getComments().add(this);
         }
+    }
+
+    // content 업데이트
+    public void updateContent(String content) {
+        this.content = content;
     }
 }
