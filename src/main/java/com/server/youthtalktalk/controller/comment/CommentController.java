@@ -51,7 +51,7 @@ public class CommentController {
      * 정책 댓글 조회 api
      */
     @GetMapping("/policies/{policyId}/comments")
-    public BaseResponse<List<CommentDto>> getPolicyComments(@NotBlank @PathVariable String policyId) {
+    public BaseResponse<List<CommentDto>> getPolicyComments(@PathVariable String policyId) {
         List<PolicyComment> policyComments = commentService.getPolicyComments(policyId);
         List<CommentDto> commentDtoList = commentService.convertToCommentDtoList(policyComments);
         return new BaseResponse<>(commentDtoList, SUCCESS);
@@ -61,7 +61,7 @@ public class CommentController {
      * 게시글 댓글 조회 api
      */
     @GetMapping("/posts/{postId}/comments")
-    public BaseResponse<List<CommentDto>> getPostComments(@NotNull @PathVariable Long postId) {
+    public BaseResponse<List<CommentDto>> getPostComments(@PathVariable Long postId) {
         List<PostComment> postComments = commentService.getPostComments(postId);
         List<CommentDto> commentDtoList = commentService.convertToCommentDtoList(postComments);
         return new BaseResponse<>(commentDtoList, SUCCESS);
@@ -99,7 +99,7 @@ public class CommentController {
      * 댓글 삭제 api
      */
     @DeleteMapping("/comments/{commentId}")
-    public BaseResponse<Void> deleteComment(@NotNull @PathVariable Long commentId) {
+    public BaseResponse<Void> deleteComment(@PathVariable Long commentId) {
         commentService.deleteComment(commentId);
         return new BaseResponse<>(SUCCESS_COMMENT_DELETE);
     }

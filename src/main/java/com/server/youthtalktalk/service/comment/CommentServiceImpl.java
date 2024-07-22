@@ -7,6 +7,8 @@ import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.policy.Policy;
 import com.server.youthtalktalk.domain.post.Post;
 import com.server.youthtalktalk.dto.comment.CommentDto;
+import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.comment.CommentNotFoundException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
@@ -20,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_INPUT_VALUE;
 
 @Slf4j
 @Service
@@ -62,6 +66,9 @@ public class CommentServiceImpl implements CommentService {
      */
     @Override
     public List<PolicyComment> getPolicyComments(String policyId) {
+        if (policyId == null || policyId.trim().isEmpty()) {
+            throw new InvalidValueException(INVALID_INPUT_VALUE);
+        }
         policyRepository.findById(policyId).orElseThrow(PolicyNotFoundException::new);
         return commentRepository.findPolicyCommentsByPolicyIdOrderByCreatedAtAsc(policyId);
     }
@@ -71,6 +78,9 @@ public class CommentServiceImpl implements CommentService {
      */
     @Override
     public List<PostComment> getPostComments(Long postId) {
+        if (postId == null) {
+            throw new InvalidValueException(INVALID_INPUT_VALUE);
+        }
         postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
         return commentRepository.findPostCommentsByPostIdOrderByCreatedAtAsc(postId);
     }
@@ -111,6 +121,9 @@ public class CommentServiceImpl implements CommentService {
      */
     @Override
     public void deleteComment(Long commentId) {
+        if (commentId == null) {
+            throw new InvalidValueException(INVALID_INPUT_VALUE);
+        }
         Comment comment = commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
         Member writer = comment.getWriter();
         if (writer != null) {
