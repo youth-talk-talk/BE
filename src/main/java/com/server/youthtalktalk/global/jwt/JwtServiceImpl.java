@@ -88,8 +88,13 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public void destroyRefreshToken(String username) {
         memberRepository.findByUsername(username).ifPresentOrElse(
-                Member::destroyRefreshToken,
-                MemberNotFoundException::new
+                member -> {
+                    member.destroyRefreshToken();
+                    memberRepository.save(member);
+                },
+                () -> {
+                    throw new MemberNotFoundException();
+                }
         );
     }
 

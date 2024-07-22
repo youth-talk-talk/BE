@@ -67,7 +67,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         // refresh token 있는 경우 유효성 검사
         if (optionalRefreshToken.isPresent()) {
             String refreshToken = optionalRefreshToken.get();
-            if (jwtService.isTokenValid(refreshToken)) {
+            if (jwtService.isTokenValid(refreshToken) && isRefreshTokenValidInDatabase(refreshToken)) { // 현재 db에 저장된 refresh token 값과 일치하는지 확인
                 // 3번 케이스 - RefreshToken이 유효하면 access token, refresh token을 재발급
                 checkRefreshTokenAndReIssueAccessToken(response, refreshToken);
             } else {
@@ -87,6 +87,9 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     private void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
         memberRepository.findByRefreshToken(refreshToken).ifPresent(
                 member -> {
+                    // 기존 refresh token 무효화
+                    jwtService.destroyRefreshToken(member.getUsername());
+                    // 새로운 refresh token, access token 발급 및 헤더로 전송
                     String reIssuedRefreshToken = reIssueRefreshToken(member);
                     jwtService.sendAccessAndRefreshToken(response, jwtService.createAccessToken(member.getUsername()),
                             reIssuedRefreshToken);
@@ -144,6 +147,11 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         if(member.getRole().equals(Role.ADMIN)){
             saveAuthentication(member);
         }
+    }
+
+    // 리프레쉬 토큰이 db에 저장된 refresh token과 일치하는지 검사
+    private boolean isRefreshTokenValidInDatabase(String refreshToken) {
+        return memberRepository.findByRefreshToken(refreshToken).isPresent();
     }
 
 }
