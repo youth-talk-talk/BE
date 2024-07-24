@@ -1,5 +1,6 @@
 package com.server.youthtalktalk.service.comment;
 
+import com.server.youthtalktalk.domain.Likes;
 import com.server.youthtalktalk.domain.comment.Comment;
 import com.server.youthtalktalk.domain.comment.PolicyComment;
 import com.server.youthtalktalk.domain.comment.PostComment;
@@ -10,10 +11,7 @@ import com.server.youthtalktalk.domain.policy.Region;
 import com.server.youthtalktalk.domain.post.Post;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
-import com.server.youthtalktalk.repository.CommentRepository;
-import com.server.youthtalktalk.repository.MemberRepository;
-import com.server.youthtalktalk.repository.PolicyRepository;
-import com.server.youthtalktalk.repository.PostRepository;
+import com.server.youthtalktalk.repository.*;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +38,9 @@ class CommentServiceTest {
 
     @Autowired
     PolicyRepository policyRepository;
+
+    @Autowired
+    LikeRepository likeRepository;
 
     @Autowired
     CommentService commentService;
@@ -249,6 +250,49 @@ class CommentServiceTest {
         // then
         assertThat(comments.isEmpty()).isTrue();
 
+    }
+
+    @Test
+    void 댓글_좋아요_등록_성공() {
+        // given
+        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
+        memberRepository.save(member);
+
+        Comment comment = Comment.builder().content("content1").build();
+        commentRepository.save(comment);
+
+        // when
+        commentService.setCommentLiked(comment.getId(), member);
+
+        // then
+        Likes like = likeRepository.findByMemberAndComment(member, comment).orElseThrow();
+        assertThat(like.getMember()).isEqualTo(member);
+        assertThat(like.getComment()).isEqualTo(comment);
+
+        assertThat(member.getLikes().contains(like)).isTrue();
+        assertThat(comment.getCommentLikes().contains(like)).isTrue();
+    }
+
+    @Test
+    void 댓글_좋아요_해제_성공() {
+        // given
+        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
+        Comment comment = Comment.builder().content("content1").build();
+        Likes like = Likes.builder().build();
+        like.setMember(member);
+        like.setComment(comment);
+
+        memberRepository.save(member);
+        commentRepository.save(comment);
+        likeRepository.save(like);
+
+        // when
+        commentService.setCommentUnliked(comment.getId(), member);
+
+        // then
+        assertThat(likeRepository.findById(like.getId())).isNotPresent();
+        assertThat(!member.getLikes().contains(like)).isTrue();
+        assertThat(!comment.getCommentLikes().contains(like)).isTrue();
     }
 
 }
