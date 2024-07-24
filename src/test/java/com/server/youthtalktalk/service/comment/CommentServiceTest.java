@@ -295,4 +295,31 @@ class CommentServiceTest {
         assertThat(!comment.getCommentLikes().contains(like)).isTrue();
     }
 
+    @Test
+    void 회원이_좋아요한_모든_댓글_조회_성공() {
+        // given
+        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
+        Comment comment1 = Comment.builder().content("content1").build();
+        Comment comment2 = Comment.builder().content("content2").build();
+        Likes like1 = Likes.builder().build();
+        Likes like2 = Likes.builder().build();
+        like1.setMember(member);
+        like2.setMember(member);
+        like1.setComment(comment1);
+        like2.setComment(comment2);
+
+        memberRepository.save(member);
+        commentRepository.save(comment1);
+        commentRepository.save(comment2);
+        likeRepository.save(like1);
+        likeRepository.save(like2);
+
+        // when
+        List<Comment> likedComments = commentService.getLikedComments(member);
+
+        // then
+        assertThat(likedComments.size()).isEqualTo(2);
+        assertThat(likedComments.contains(comment1)).isTrue();
+        assertThat(likedComments.contains(comment2)).isTrue();
+    }
 }
