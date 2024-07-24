@@ -99,10 +99,11 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<CommentDto> convertToCommentDtoList(List<? extends Comment> comments, Member member) {
         return comments.stream()
-                .map(comment -> { // writer null인 경우 닉네임 치환
+                .map(comment -> {
+                    // writer null인 경우 닉네임 치환
                     String writerNickname = (comment.getWriter() != null) ? comment.getWriter().getNickname() : "null";
-                    boolean isLikedByMember = false;
-                    if (isLikedByMember(comment, member)) isLikedByMember = true;
+                    // 회원의 좋아요 여부 판단
+                    boolean isLikedByMember = isLikedByMember(comment, member);
                     return new CommentDto(comment.getId(), writerNickname, comment.getContent(), isLikedByMember);
                 })
                 .collect(Collectors.toList());
