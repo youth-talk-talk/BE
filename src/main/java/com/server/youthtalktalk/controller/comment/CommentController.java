@@ -15,7 +15,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
@@ -31,20 +33,22 @@ public class CommentController {
      * 정책 댓글 등록 api
      */
     @PostMapping("/policies/comments")
-    public BaseResponse<CommentDto> createPolicyComment(@Valid @RequestBody PolicyCommentCreateDto policyCommentCreateDto) {
+    public BaseResponse<Map<String, Long>> createPolicyComment(@Valid @RequestBody PolicyCommentCreateDto policyCommentCreateDto) {
         PolicyComment policyComment = commentService.createPolicyComment(policyCommentCreateDto.policyId(), policyCommentCreateDto.content(), memberService.getCurrentMember());
-        CommentDto commentDto = new CommentDto(policyComment.getId(), policyComment.getWriter().getNickname(), policyComment.getContent());
-        return new BaseResponse<>(commentDto, SUCCESS);
+        Map<String, Long> response = new HashMap<>();
+        response.put("commentId", policyComment.getId());
+        return new BaseResponse<>(response, SUCCESS_COMMENT_CREATE);
     }
 
     /**
      * 게시글 댓글 등록 api
      */
     @PostMapping("/posts/comments")
-    public BaseResponse<CommentDto> createPostComment(@Valid @RequestBody PostCommentCreateDto postCommentCreateDto) {
+    public BaseResponse<Map<String, Long>> createPostComment(@Valid @RequestBody PostCommentCreateDto postCommentCreateDto) {
         PostComment postComment = commentService.createPostComment(postCommentCreateDto.postId(), postCommentCreateDto.content(), memberService.getCurrentMember());
-        CommentDto commentDto = new CommentDto(postComment.getId(), postComment.getWriter().getNickname(), postComment.getContent());
-        return new BaseResponse<>(commentDto, SUCCESS);
+        Map<String, Long> response = new HashMap<>();
+        response.put("commentId", postComment.getId());
+        return new BaseResponse<>(response, SUCCESS_COMMENT_CREATE);
     }
 
     /**

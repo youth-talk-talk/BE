@@ -15,12 +15,13 @@ public enum BaseResponseCode {
     SUCCESS_POLICY_FOUND("S04","정책 조회에 성공하였습니다.",HttpStatus.OK.value()),
     SUCCESS_POLICY_SEARCH_NO_RESULT("S05","조건에 맞는 정책 결과가 없습니다",HttpStatus.OK.value()),
     // Comment
-    SUCCESS_COMMENT_UPDATE("S06", "댓글 수정을 완료하였습니다.",HttpStatus.OK.value()),
-    SUCCESS_COMMENT_DELETE("S07", "댓글 삭제를 완료하였습니다.",HttpStatus.OK.value()),
-    SUCCESS_COMMENT_EMPTY("S08", "회원이 작성한 댓글이 없습니다.",HttpStatus.OK.value()),
+    SUCCESS_COMMENT_CREATE("S06", "댓글을 성공적으로 등록했습니다.",HttpStatus.OK.value()),
+    SUCCESS_COMMENT_UPDATE("S07", "댓글을 성공적으로 수정했습니다.",HttpStatus.OK.value()),
+    SUCCESS_COMMENT_DELETE("S08", "댓글을 성공적으로 삭제했습니다.",HttpStatus.OK.value()),
+    SUCCESS_COMMENT_EMPTY("S09", "회원이 작성한 댓글이 없습니다.",HttpStatus.OK.value()),
     // Member
-    SUCCESS_MEMBER_UPDATE("S09", "회원정보 수정을 완료하였습니다.", HttpStatus.OK.value()),
-    SUCCESS_MEMBER_DELETE("S10", "회원 탈퇴를 완료하였습니다.", HttpStatus.OK.value()),
+    SUCCESS_MEMBER_UPDATE("S10", "회원정보 수정을 완료하였습니다.", HttpStatus.OK.value()),
+    SUCCESS_MEMBER_DELETE("S11", "회원 탈퇴를 완료하였습니다.", HttpStatus.OK.value()),
 
     /* 요청 실패 시*/
     //공통
