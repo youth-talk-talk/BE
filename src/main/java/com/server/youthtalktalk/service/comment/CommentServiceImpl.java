@@ -175,4 +175,14 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.save(comment);
         likeRepository.delete(like);
     }
+
+    /**
+     * 회원이 좋아요한 댓글 조회
+     */
+    @Override
+    public List<Comment> getLikedComments(Member member) {
+        return likeRepository.findAllByMemberOrderByCreatedAtDesc(member)
+                .stream().map(Likes::getComment).collect(Collectors.toList());
+    }
+
 }

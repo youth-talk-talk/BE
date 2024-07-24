@@ -20,4 +20,5 @@ public interface CommentService {
     boolean isLikedByMember(Comment comment, Member member);
     void setCommentLiked(Long commentId, Member member);
     void setCommentUnliked(Long commentId, Member member);
+    List<Comment> getLikedComments(Member member);
 }

@@ -126,4 +126,12 @@ public class CommentController {
         }
     }
 
+    @GetMapping("/members/me/comments/likes")
+    public BaseResponse<List<MyCommentDto>> getLikedComments() {
+        List<Comment> likedComments = commentService.getLikedComments(memberService.getCurrentMember());
+        List<MyCommentDto> commentDtoList = likedComments.stream().map(comment -> new MyCommentDto(comment.getId(), comment.getContent()))
+                .collect(Collectors.toList());
+        return new BaseResponse<>(commentDtoList, SUCCESS);
+    }
+
 }
