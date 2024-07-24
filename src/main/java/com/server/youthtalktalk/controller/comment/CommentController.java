@@ -122,7 +122,7 @@ public class CommentController {
             return new BaseResponse<>(SUCCESS_COMMENT_LIKED);
         } else {
             commentService.setCommentUnliked(commentId, member); // 좋아요 해제
-            return new BaseResponse<>(SUCCESS);
+            return new BaseResponse<>(SUCCESS_COMMENT_UNLIKED);
         }
     }
 
