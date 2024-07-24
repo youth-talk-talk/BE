@@ -94,14 +94,16 @@ public class CommentServiceImpl implements CommentService {
     }
 
     /**
-     * 작성자 없는 경우 처리 후 CommentDto 리스트로 변환
+     * CommentDto로 변환
      */
     @Override
-    public List<CommentDto> convertToCommentDtoList(List<? extends Comment> comments) {
+    public List<CommentDto> convertToCommentDtoList(List<? extends Comment> comments, Member member) {
         return comments.stream()
                 .map(comment -> { // writer null인 경우 닉네임 치환
                     String writerNickname = (comment.getWriter() != null) ? comment.getWriter().getNickname() : "null";
-                    return new CommentDto(comment.getId(), writerNickname, comment.getContent());
+                    boolean isLikedByMember = false;
+                    if (isLikedByMember(comment, member)) isLikedByMember = true;
+                    return new CommentDto(comment.getId(), writerNickname, comment.getContent(), isLikedByMember);
                 })
                 .collect(Collectors.toList());
     }
@@ -132,4 +134,12 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.delete(comment);
     }
 
+    /**
+     * 좋아요 여부 판단
+     */
+    @Override
+    public boolean isLikedByMember(Comment comment, Member member) {
+        return comment.getCommentLikes()
+                .stream().anyMatch(likes -> likes.getMember().equals(member));
+    }
 }

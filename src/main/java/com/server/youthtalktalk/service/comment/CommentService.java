@@ -14,7 +14,8 @@ public interface CommentService {
     List<PolicyComment> getPolicyComments(String policyId);
     List<PostComment> getPostComments(Long postId);
     List<Comment> getMemberComments(Member member);
-    List<CommentDto> convertToCommentDtoList(List<? extends Comment> comments);
+    List<CommentDto> convertToCommentDtoList(List<? extends Comment> comments, Member member);
     void updateComment(Long commentId, String content);
     void deleteComment(Long commentId);
+    boolean isLikedByMember(Comment comment, Member member);
 }

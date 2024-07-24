@@ -57,7 +57,7 @@ public class CommentController {
     @GetMapping("/policies/{policyId}/comments")
     public BaseResponse<List<CommentDto>> getPolicyComments(@PathVariable String policyId) {
         List<PolicyComment> policyComments = commentService.getPolicyComments(policyId);
-        List<CommentDto> commentDtoList = commentService.convertToCommentDtoList(policyComments);
+        List<CommentDto> commentDtoList = commentService.convertToCommentDtoList(policyComments, memberService.getCurrentMember());
         return new BaseResponse<>(commentDtoList, SUCCESS);
     }
 
@@ -67,7 +67,7 @@ public class CommentController {
     @GetMapping("/posts/{postId}/comments")
     public BaseResponse<List<CommentDto>> getPostComments(@PathVariable Long postId) {
         List<PostComment> postComments = commentService.getPostComments(postId);
-        List<CommentDto> commentDtoList = commentService.convertToCommentDtoList(postComments);
+        List<CommentDto> commentDtoList = commentService.convertToCommentDtoList(postComments, memberService.getCurrentMember());
         return new BaseResponse<>(commentDtoList, SUCCESS);
     }
 
