@@ -72,4 +72,10 @@ public class Member extends BaseTimeEntity {
     public void updateRegion(Region updateRegion) {
         this.region = updateRegion;
     }
+
+    /* 연관관계 편의 메서드 */
+    public void removeLike(Likes like) {
+        likes.remove(like);
+        like.setMember(null);
+    }
 }

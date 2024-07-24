@@ -1,5 +1,6 @@
 package com.server.youthtalktalk.service.comment;
 
+import com.server.youthtalktalk.domain.Likes;
 import com.server.youthtalktalk.domain.comment.Comment;
 import com.server.youthtalktalk.domain.comment.PolicyComment;
 import com.server.youthtalktalk.domain.comment.PostComment;
@@ -9,12 +10,12 @@ import com.server.youthtalktalk.domain.post.Post;
 import com.server.youthtalktalk.dto.comment.CommentDto;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
+import com.server.youthtalktalk.global.response.exception.comment.AlreadyLikedException;
+import com.server.youthtalktalk.global.response.exception.comment.CommentLikeNotFoundException;
 import com.server.youthtalktalk.global.response.exception.comment.CommentNotFoundException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
-import com.server.youthtalktalk.repository.CommentRepository;
-import com.server.youthtalktalk.repository.PolicyRepository;
-import com.server.youthtalktalk.repository.PostRepository;
+import com.server.youthtalktalk.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,8 @@ public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
     private final PolicyRepository policyRepository;
     private final PostRepository postRepository;
+    private final LikeRepository likeRepository;
+    private final MemberRepository memberRepository;
 
     /**
      * 정책 댓글 생성
@@ -142,5 +145,34 @@ public class CommentServiceImpl implements CommentService {
     public boolean isLikedByMember(Comment comment, Member member) {
         return comment.getCommentLikes()
                 .stream().anyMatch(likes -> likes.getMember().equals(member));
+    }
+
+    /**
+     * 좋아요 등록
+     */
+    @Override
+    public void setCommentLiked(Long commentId, Member member) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
+        if (likeRepository.findByMemberAndComment(member, comment).isPresent())
+            throw new AlreadyLikedException();
+
+        Likes like = Likes.builder().build();
+        like.setComment(comment);
+        like.setMember(member);
+        likeRepository.save(like);
+    }
+
+    /**
+     * 좋아요 해제
+     */
+    @Override
+    public void setCommentUnliked(Long commentId, Member member) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
+        Likes like = likeRepository.findByMemberAndComment(member, comment).orElseThrow(CommentLikeNotFoundException::new);
+        member.removeLike(like);
+        comment.removeLike(like);
+        memberRepository.save(member);
+        commentRepository.save(comment);
+        likeRepository.delete(like);
     }
 }

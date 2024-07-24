@@ -41,6 +41,11 @@ public class Comment extends BaseTimeEntity {
         }
     }
 
+    public void removeLike(Likes like) {
+        commentLikes.remove(like);
+        like.setComment(null);
+    }
+
     // content 업데이트
     public void updateContent(String content) {
         this.content = content;

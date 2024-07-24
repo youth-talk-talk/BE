@@ -19,9 +19,11 @@ public enum BaseResponseCode {
     SUCCESS_COMMENT_UPDATE("S07", "댓글을 성공적으로 수정했습니다.",HttpStatus.OK.value()),
     SUCCESS_COMMENT_DELETE("S08", "댓글을 성공적으로 삭제했습니다.",HttpStatus.OK.value()),
     SUCCESS_COMMENT_EMPTY("S09", "회원이 작성한 댓글이 없습니다.",HttpStatus.OK.value()),
+    SUCCESS_COMMENT_LIKED("S10", "좋아요 등록이 완료되었습니다.",HttpStatus.OK.value()),
+    SUCCESS_COMMENT_UNLIKED("S11", "좋아요 해제가 완료되었습니다.",HttpStatus.OK.value()),
     // Member
-    SUCCESS_MEMBER_UPDATE("S10", "회원정보 수정을 완료하였습니다.", HttpStatus.OK.value()),
-    SUCCESS_MEMBER_DELETE("S11", "회원 탈퇴를 완료하였습니다.", HttpStatus.OK.value()),
+    SUCCESS_MEMBER_UPDATE("S12", "회원정보 수정을 완료하였습니다.", HttpStatus.OK.value()),
+    SUCCESS_MEMBER_DELETE("S13", "회원 탈퇴를 완료하였습니다.", HttpStatus.OK.value()),
 
     /* 요청 실패 시*/
     //공통
@@ -48,7 +50,9 @@ public enum BaseResponseCode {
     POST_ACCESS_DENIED("PS02","해당 게시글에 대한 권한이 없습니다.",HttpStatus.BAD_REQUEST.value()),
 
     // Comment
-    COMMENT_NOT_FOUND("C01", "해당 댓글을 찾을 수 없습니다.", HttpStatus.BAD_REQUEST.value());
+    COMMENT_NOT_FOUND("C01", "해당 댓글을 찾을 수 없습니다.", HttpStatus.BAD_REQUEST.value()),
+    COMMENT_ALREADY_LIKED("C02", "이미 좋아요한 댓글입니다.", HttpStatus.BAD_REQUEST.value()),
+    COMMENT_LIKE_NOT_FOUND("C03", "좋아요 정보가 없습니다.", HttpStatus.BAD_REQUEST.value());
 
     private final String code;
     private final String message;

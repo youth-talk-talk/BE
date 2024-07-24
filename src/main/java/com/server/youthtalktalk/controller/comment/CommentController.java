@@ -7,6 +7,7 @@ import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.dto.comment.*;
 import com.server.youthtalktalk.global.response.BaseResponse;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.repository.LikeRepository;
 import com.server.youthtalktalk.service.comment.CommentService;
 import com.server.youthtalktalk.service.member.MemberService;
 import jakarta.validation.Valid;
@@ -28,6 +29,7 @@ public class CommentController {
 
     private final CommentService commentService;
     private final MemberService memberService;
+    private final LikeRepository likeRepository;
 
     /**
      * 정책 댓글 등록 api
@@ -105,6 +107,23 @@ public class CommentController {
     public BaseResponse<Void> deleteComment(@PathVariable Long commentId) {
         commentService.deleteComment(commentId);
         return new BaseResponse<>(SUCCESS_COMMENT_DELETE);
+    }
+
+    /**
+     * 댓글 좋아요 등록/해제
+     */
+    @PostMapping("/comments/likes")
+    public BaseResponse<Void> updateCommentLike(@Valid @RequestBody LikeUpdateDto likeUpdateDto) {
+        Long commentId = likeUpdateDto.commentId();
+        Member member = memberService.getCurrentMember();
+
+        if (likeUpdateDto.isSetLiked()) {
+            commentService.setCommentLiked(commentId, member);// 좋아요 등록
+            return new BaseResponse<>(SUCCESS_COMMENT_LIKED);
+        } else {
+            commentService.setCommentUnliked(commentId, member); // 좋아요 해제
+            return new BaseResponse<>(SUCCESS);
+        }
     }
 
 }

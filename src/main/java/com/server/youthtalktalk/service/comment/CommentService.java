@@ -18,4 +18,6 @@ public interface CommentService {
     void updateComment(Long commentId, String content);
     void deleteComment(Long commentId);
     boolean isLikedByMember(Comment comment, Member member);
+    void setCommentLiked(Long commentId, Member member);
+    void setCommentUnliked(Long commentId, Member member);
 }
