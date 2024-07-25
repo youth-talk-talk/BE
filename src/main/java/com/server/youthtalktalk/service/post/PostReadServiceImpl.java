@@ -131,7 +131,7 @@ public class PostReadServiceImpl implements PostReadService {
                 .postId(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
-                .writerId(post.getWriter().getId())
+                .writerId(post.getWriter() == null ? null : post.getWriter().getId())
                 .policyId(post instanceof Review ? ((Review) post).getPolicy().getPolicyId() : null)
                 .policyTitle(post instanceof Review ? ((Review)post).getPolicy().getTitle() : null )
                 .comments(post.getPostComments().size())

@@ -73,7 +73,7 @@ public class PostServiceImpl implements PostService{
     @Override
     public PostRepDto updatePost(Long postId,PostUpdateReqDto postUpdateReqDto, List<MultipartFile> fileList, Member writer) throws IOException {
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
-        if(post.getWriter().getId()!=writer.getId()){ // 작성자가 아닐 경우
+        if(post.getWriter()==null || post.getWriter().getId()!=writer.getId()){ // 작성자가 아닐 경우
             throw new BusinessException(BaseResponseCode.POST_ACCESS_DENIED);
         }
 
@@ -103,7 +103,7 @@ public class PostServiceImpl implements PostService{
     @Override
     public void deletePost(Long postId, Member writer) {
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
-        if(post.getWriter().getId()!=writer.getId()){ // 작성자가 아닐 경우
+        if(post.getWriter() == null || post.getWriter().getId()!=writer.getId()){ // 작성자가 아닐 경우
             throw new BusinessException(BaseResponseCode.POST_ACCESS_DENIED);
         }
         postRepository.delete(post);
