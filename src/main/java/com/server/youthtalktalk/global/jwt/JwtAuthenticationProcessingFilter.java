@@ -1,5 +1,7 @@
 package com.server.youthtalktalk.global.jwt;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.member.Role;
 import com.server.youthtalktalk.repository.MemberRepository;
@@ -16,11 +18,10 @@ import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -71,8 +72,9 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 // 3번 케이스 - RefreshToken이 유효하면 access token, refresh token을 재발급
                 checkRefreshTokenAndReIssueAccessToken(response, refreshToken);
             } else {
-                // RefreshToken이 유효하지 않다면 401 상태 코드 반환
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                // RefreshToken이 유효하지 않다면 401 상태 코드와 메시지 반환
+                String message = "Invalid refresh token";
+                setResponseUnauthorized(response, message);
             }
             return; // 필터 체인 종료
         }
@@ -115,9 +117,24 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 .filter(jwtService::isTokenValid)
                 .flatMap(jwtService::extractUsername)
                 .flatMap(memberRepository::findByUsername)
-                .ifPresent(this::saveAuthentication);
-
-        filterChain.doFilter(request, response);
+                .ifPresentOrElse(
+                        member -> {
+                            saveAuthentication(member);
+                            try {
+                                filterChain.doFilter(request, response);
+                            } catch (IOException | ServletException e) {
+                                throw new RuntimeException(e);
+                            }
+                        },
+                        () -> {
+                            try {
+                                String message = "Invalid access token";
+                                setResponseUnauthorized(response, message);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                );
     }
 
     /**
@@ -152,6 +169,22 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     // 리프레쉬 토큰이 db에 저장된 refresh token과 일치하는지 검사
     private boolean isRefreshTokenValidInDatabase(String refreshToken) {
         return memberRepository.findByRefreshToken(refreshToken).isPresent();
+    }
+
+    private void setResponseUnauthorized(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        Map<String, String> responseMap = new HashMap<>();
+        responseMap.put("message", message);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonBody = objectMapper.writeValueAsString(responseMap);
+
+        response.getWriter().write(jsonBody);
+        response.getWriter().flush();
+        response.getWriter().close();
     }
 
 }

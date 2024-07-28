@@ -142,7 +142,7 @@ class JwtAuthenticationProcessingFilterTest {
         // when, then
         mockMvc.perform(
                         get("/"))
-                .andDo(print()).andExpect(status().isForbidden());
+                .andDo(print()).andExpect(status().isUnauthorized());
     }
 
     /**
@@ -158,7 +158,7 @@ class JwtAuthenticationProcessingFilterTest {
         mockMvc.perform(
                 get("/")
                         .header(accessHeader,accessToken+"1"))
-                .andExpectAll(status().isForbidden());
+                .andExpectAll(status().isUnauthorized());
     }
 
     /**
