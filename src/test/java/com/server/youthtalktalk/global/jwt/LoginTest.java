@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -20,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -63,10 +61,10 @@ public class LoginTest {
         return map;
     }
 
-    private ResultActions perform(String url, MediaType mediaType, Map<String, String> usernameMap) throws Exception {
+    private ResultActions perform(String url, Map<String, String> usernameMap) throws Exception {
         return mockMvc.perform(MockMvcRequestBuilders
                 .post(url)
-                .contentType(mediaType)
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(usernameMap)));
 
     }
@@ -83,7 +81,7 @@ public class LoginTest {
         Map<String, String> map = getUsernameMap(USERNAME);
 
         // when, then
-        perform(LOGIN_URL, APPLICATION_JSON, map)
+        perform(LOGIN_URL, map)
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
@@ -96,21 +94,21 @@ public class LoginTest {
         Map<String, String> map = getUsernameMap(USERNAME+"111");
 
         // when, then
-        perform(LOGIN_URL, APPLICATION_JSON, map)
+        perform(LOGIN_URL, map)
                 .andDo(print())
                 .andExpect(status().isUnauthorized())
                 .andReturn();
     }
 
     @Test
-    void 로그인_주소가_틀리면_FORBIDDEN() throws Exception {
+    void 로그인_주소가_틀리면_401() throws Exception {
         // given
         Map<String, String> map = getUsernameMap(USERNAME);
 
         // when, then
-        perform(LOGIN_URL+"else", APPLICATION_JSON, map)
+        perform(LOGIN_URL+"else", map)
                 .andDo(print())
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
 
     }
 
