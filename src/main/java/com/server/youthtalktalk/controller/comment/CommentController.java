@@ -29,7 +29,6 @@ public class CommentController {
 
     private final CommentService commentService;
     private final MemberService memberService;
-    private final LikeRepository likeRepository;
 
     /**
      * 정책 댓글 등록 api
