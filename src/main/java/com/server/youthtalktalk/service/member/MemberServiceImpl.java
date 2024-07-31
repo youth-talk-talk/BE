@@ -7,7 +7,10 @@ import com.server.youthtalktalk.domain.policy.Region;
 import com.server.youthtalktalk.domain.post.Post;
 import com.server.youthtalktalk.dto.member.MemberUpdateDto;
 import com.server.youthtalktalk.dto.member.SignUpRequestDto;
+import com.server.youthtalktalk.dto.member.apple.AppleDto;
+import com.server.youthtalktalk.dto.member.apple.AppleTokenResponseDto;
 import com.server.youthtalktalk.global.jwt.JwtService;
+import com.server.youthtalktalk.global.response.exception.member.AppleTokenValidationException;
 import com.server.youthtalktalk.global.response.exception.member.MemberAccessDeniedException;
 import com.server.youthtalktalk.global.response.exception.member.MemberDuplicatedException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
@@ -15,6 +18,7 @@ import com.server.youthtalktalk.global.util.AppleAuthUtil;
 import com.server.youthtalktalk.repository.CommentRepository;
 import com.server.youthtalktalk.repository.MemberRepository;
 import com.server.youthtalktalk.repository.PostRepository;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -95,7 +99,20 @@ public class MemberServiceImpl implements MemberService {
      * 회원 탈퇴
      */
     @Override
-    public void deleteMember(Member member) {
+    public void deleteMember(Member member, AppleDto.AppleCodeRequestDto appleCodeRequestDto) {
+        // 애플 회원 탈퇴인 경우
+        if(!(appleCodeRequestDto == null || appleCodeRequestDto.getAuthorizationCode().isEmpty())){
+            if(!member.getUsername().equals("apple"+appleCodeRequestDto.getUserIdentifier())){
+                throw new AppleTokenValidationException();
+            }
+            // identityToken 서명 검증
+            Claims claims = appleAuthUtil.verifyIdentityToken(appleCodeRequestDto.getIdentityToken());
+            log.info("[AUTH] apple login verification : identityToken 검증 성공");
+            // apple ID Server에 애플 토큰 요청
+            AppleTokenResponseDto appleTokenResponseDto = appleAuthUtil.getAppleToken(appleCodeRequestDto.getAuthorizationCode());
+            appleAuthUtil.revoke(appleTokenResponseDto.accessToken());
+            log.info("[AUTH] revoke apple account, memberId = {}", member.getId());
+        }
         List<Post> posts = member.getPosts();
         List<Comment> comments = member.getComments();
 
