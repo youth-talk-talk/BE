@@ -4,6 +4,7 @@ import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.dto.member.MemberInfoDto;
 import com.server.youthtalktalk.dto.member.MemberUpdateDto;
 import com.server.youthtalktalk.dto.member.SignUpRequestDto;
+import com.server.youthtalktalk.dto.member.apple.AppleDto;
 import com.server.youthtalktalk.global.response.BaseResponse;
 import com.server.youthtalktalk.service.member.MemberService;
 import jakarta.validation.Valid;
@@ -51,10 +52,10 @@ public class MemberController {
     /**
      * 회원탈퇴 api
      */
-    @DeleteMapping("/members/me")
-    public BaseResponse<String> deleteMember() {
+    @PostMapping("/members/me")
+    public BaseResponse<String> deleteMember(@RequestBody(required = false) AppleDto.AppleCodeRequestDto appleCodeRequestDto) {
         Member member = memberService.getCurrentMember();
-        memberService.deleteMember(member);
+        memberService.deleteMember(member,appleCodeRequestDto);
         return new BaseResponse<>(SUCCESS_MEMBER_DELETE);
     }
 
