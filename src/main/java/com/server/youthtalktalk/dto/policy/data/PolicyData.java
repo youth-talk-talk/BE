@@ -3,7 +3,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.server.youthtalktalk.domain.policy.*;
 import com.server.youthtalktalk.global.util.DateExtractor;
 import com.server.youthtalktalk.global.util.EmploymentStatusClassifier;
-import com.server.youthtalktalk.global.util.UrlFormatter;
+import com.server.youthtalktalk.global.util.UrlUtil;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -146,14 +146,14 @@ public class PolicyData {
 
         // 지원 사이트 전처리
         String applUrl = this.rqutUrla;
-        String formattedApplUrl = UrlFormatter.fomatlUrl(applUrl);
+        String formattedApplUrl = UrlUtil.formatUrl(applUrl);
 
         // 참고 사이트 전처리
         String refUrl1 = this.rfcSiteUrla1;
-        String formattedRefUrl1 = UrlFormatter.fomatlUrl(refUrl1);
+        String formattedRefUrl1 = UrlUtil.formatUrl(refUrl1);
 
         String refUrl2 = this.rfcSiteUrla2;
-        String formattedRefUrl2 = UrlFormatter.fomatlUrl(refUrl2);
+        String formattedRefUrl2 = UrlUtil.formatUrl(refUrl2);
 
 
         // Policy 객체 생성
