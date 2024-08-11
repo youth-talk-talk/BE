@@ -7,4 +7,4 @@ VOLUME /tmp
 COPY app.jar /app
 
 # 빌드된 이미지가 run될 때 실행할 명령어 -> 프로파일을 인자로 받아 실행 시 설정
-ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT} -Dspring.profiles.active=${PROFILE} -jar /app/youth-talk-talk-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT} -Dspring.profiles.active=${PROFILE} -Duser.timezone=Asia/Seoul -jar /app/youth-talk-talk-0.0.1-SNAPSHOT.jar"]
