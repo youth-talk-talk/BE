@@ -58,7 +58,7 @@ class MemberServiceTest {
         commentRepository.saveAll(comments);
 
         // when
-        memberService.deleteMember(member);
+        memberService.deleteMember(member,null);
 
         // then
         assertThat(memberRepository.findById(member.getId())).isNotPresent();
@@ -92,7 +92,7 @@ class MemberServiceTest {
         postRepository.saveAll(posts);
 
         // when
-        memberService.deleteMember(member);
+        memberService.deleteMember(member,null);
 
         // then
         assertThat(memberRepository.findById(member.getId())).isNotPresent();
@@ -120,7 +120,7 @@ class MemberServiceTest {
         commentRepository.saveAll(comments);
 
         // when
-        memberService.deleteMember(member);
+        memberService.deleteMember(member,null);
 
         // then
         assertThat(memberRepository.findById(member.getId())).isNotPresent();
