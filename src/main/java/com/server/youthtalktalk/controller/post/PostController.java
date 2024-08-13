@@ -2,6 +2,7 @@ package com.server.youthtalktalk.controller.post;
 
 import com.server.youthtalktalk.domain.Scrap;
 import com.server.youthtalktalk.domain.member.Member;
+import com.server.youthtalktalk.domain.policy.Category;
 import com.server.youthtalktalk.dto.post.*;
 import com.server.youthtalktalk.global.response.BaseResponse;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
@@ -78,9 +79,9 @@ public class PostController {
     }
 
     /** 리뷰 전체 조회 API */
-    @PostMapping("/review")
-    public BaseResponse<PostListRepDto> getAllReview(@PageableDefault(size = 10) Pageable pageable, @RequestBody ReviewSearchReqDto reviewSearchReqDto){
-        PostListRepDto postListRepDto = postReadService.getAllReviewByCategory(pageable,reviewSearchReqDto.getCategories(),memberService.getCurrentMember());
+    @GetMapping("/review")
+    public BaseResponse<PostListRepDto> getAllReview(@PageableDefault(size = 10) Pageable pageable, @RequestParam List<Category> categories){
+        PostListRepDto postListRepDto = postReadService.getAllReviewByCategory(pageable,categories,memberService.getCurrentMember());
         return new BaseResponse<>(postListRepDto,BaseResponseCode.SUCCESS);
     }
 
