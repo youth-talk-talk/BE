@@ -9,7 +9,7 @@ import lombok.Getter;
 @Builder
 public class PostCreateReqDto {
     @NotBlank(message = "게시글 제목은 필수값입니다.")
-    @Size(max = 20,message = "게시글 제목은 최대 20자입니다.")
+    @Size(max = 50,message = "게시글 제목은 최대 50자입니다.")
     private String title;
 
     @NotBlank(message = "게시글 본문은 필수값입니다.")
