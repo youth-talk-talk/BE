@@ -8,6 +8,6 @@ public class MainController {
 
     @GetMapping("/")
     public String showVersion() {
-        return "2024-08-20 test"; // 무중단 배포 확인용
+        return "2024-08-20 new rds test"; // 무중단 배포 확인용
     }
 }
