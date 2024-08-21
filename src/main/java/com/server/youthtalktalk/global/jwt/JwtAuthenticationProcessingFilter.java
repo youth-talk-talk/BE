@@ -21,9 +21,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -31,18 +29,16 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     /**
      * JWT 인증 필터 - "/login" 이외의 요청을 처리
-     *
      * 기본적으로 사용자는 요청 헤더에 AccessToken만 담아서 요청
      * AccessToken 만료 시에만 RefreshToken을 요청 헤더에 AccessToken과 함께 요청
-     *
      * 1. RefreshToken이 없고, AccessToken이 유효한 경우 -> 인증 성공 처리, RefreshToken 재발급 X
-     * 2. RefreshToken이 없고, AccessToken이 없거나 유효하지 않은 경우 -> 인증 실패 처리, MemberUnauthorizedException 발생
-     * 3. RefreshToken이 있는 경우 -> AccessToken이 만료되어 RefreshToken을 함께 보낸 경우.
-     *                              유효한 refersh token -> access, refresh 모두 재발급(RTR)
-     *                              유효하지 않은 fresh token -> 401 반환
+     * 2. RefreshToken이 없고, AccessToken이 없거나 유효하지 않은 경우 -> 인증 실패 처리
+     * 3. RefreshToken이 있는 경우 -> AccessToken이 만료되어 RefreshToken을 함께 보낸 경우
+     * 유효한 refresh token -> access, refresh 모두 재발급(RTR 방식)
+     * 유효하지 않은 refresh token -> 401 반환
      */
 
-    private static final String NO_CHECK_URL = "/login";
+    private static final List<String> NO_CHECK_URL = Arrays.asList("/login", "/signUp");
     private static final String HEALTH_CHECK = "/actuator/health";
 
     private final JwtService jwtService;
@@ -51,7 +47,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (request.getRequestURI().equals(NO_CHECK_URL)) {
+        if (NO_CHECK_URL.contains(request.getRequestURI())) {
             filterChain.doFilter(request, response);
             return;
         }
