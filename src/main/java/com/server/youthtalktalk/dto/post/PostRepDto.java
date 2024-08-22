@@ -19,4 +19,5 @@ public class PostRepDto {
     private String nickname;
     private Long view;
     private List<Image> images;
+    private String category;
 }
