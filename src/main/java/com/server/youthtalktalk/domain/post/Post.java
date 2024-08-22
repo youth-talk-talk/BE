@@ -28,7 +28,10 @@ public class Post extends BaseTimeEntity {
 
     @Size(max = 50, message = "Title must be 50 characters or less")
     private String title;
+
+    @Column(columnDefinition = "TEXT")
     private String content;
+
     private Long view;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -63,6 +66,7 @@ public class Post extends BaseTimeEntity {
                 .nickname(this.getWriter() == null ? "null" : this.getWriter().getNickname())
                 .view(this.getView())
                 .images(this.getImages())
+                .category(this instanceof Review ? ((Review)this).getPolicy().getCategory().getKey() : null)
                 .build();
     }
 }
