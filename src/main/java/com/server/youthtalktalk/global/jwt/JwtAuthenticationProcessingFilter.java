@@ -1,10 +1,13 @@
 package com.server.youthtalktalk.global.jwt;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.member.Role;
+import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.global.response.exception.token.InvalidTokenException;
 import com.server.youthtalktalk.repository.MemberRepository;
+import io.jsonwebtoken.Jwt;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,11 +34,11 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      * JWT 인증 필터 - "/login" 이외의 요청을 처리
      * 기본적으로 사용자는 요청 헤더에 AccessToken만 담아서 요청
      * AccessToken 만료 시에만 RefreshToken을 요청 헤더에 AccessToken과 함께 요청
-     * 1. RefreshToken이 없고, AccessToken이 유효한 경우 -> 인증 성공 처리, RefreshToken 재발급 X
-     * 2. RefreshToken이 없고, AccessToken이 없거나 유효하지 않은 경우 -> 인증 실패 처리
-     * 3. RefreshToken이 있는 경우 -> AccessToken이 만료되어 RefreshToken을 함께 보낸 경우
+     * 1. RefreshToken이 없고, AccessToken이 유효한 경우 -> 인증 성공, RefreshToken 재발급 X
+     * 2. RefreshToken이 없고, AccessToken이 없거나 유효하지 않은 경우 -> 인증 실패 (401)
+     * 3. RefreshToken이 있는 경우 -> AccessToken이 만료되어 RefreshToken을 함께 보낸 경우이므로
      * 유효한 refresh token -> access, refresh 모두 재발급(RTR 방식)
-     * 유효하지 않은 refresh token -> 401 반환
+     * 유효하지 않은 refresh token -> 인증 실패 (401)
      */
 
     private static final List<String> NO_CHECK_URL = Arrays.asList("/login", "/signUp");
@@ -46,7 +49,8 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     private final GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, InvalidTokenException {
+
         if (NO_CHECK_URL.contains(request.getRequestURI())) {
             filterChain.doFilter(request, response);
             return;
@@ -58,31 +62,38 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 요청 헤더에서 RefreshToken 추출 및 유효성 검사
-        Optional<String> optionalRefreshToken = jwtService.extractRefreshToken(request);
+        // 요청 헤더에서 RefreshToken 추출
+        jwtService.extractRefreshToken(request).ifPresentOrElse(
+                refreshToken -> { // refresh token이 있는 경우
+                    checkRefreshToken(response, refreshToken);
+                },
+                () -> {
+                    // refresh token이 없는 경우
+                    // 1,2번 케이스 - RefreshToken이 없다면, AccessToken을 검사하고 인증 처리
+                    // AccessToken이 유효하다면, 인증 객체가 담긴 상태로 다음 필터 진행 -> 인증 성공
+                    // AccessToken이 없거나 유효하지 않다면, InvalidTokenException 발생 -> 인증 실패(401)
+                    checkAccessTokenAndAuthentication(request, response, filterChain);
+                }
+        );
+    }
 
-        // refresh token 있는 경우 유효성 검사
-        if (optionalRefreshToken.isPresent()) {
-            String refreshToken = optionalRefreshToken.get();
-            if (jwtService.isTokenValid(refreshToken) && isRefreshTokenValidInDatabase(refreshToken)) { // 현재 db에 저장된 refresh token 값과 일치하는지 확인
-                // 3번 케이스 - RefreshToken이 유효하면 access token, refresh token을 재발급
-                checkRefreshTokenAndReIssueAccessToken(response, refreshToken);
-            } else {
-                // RefreshToken이 유효하지 않다면 401 상태 코드와 메시지 반환
-                String message = "Invalid refresh token";
-                setResponseUnauthorized(response, message);
-            }
-            return; // 필터 체인 종료
+    private void checkRefreshToken(HttpServletResponse response, String refreshToken) throws InvalidTokenException{
+        log.info("refresh token 유효성 검증");
+        try {
+            jwtService.isTokenValid(refreshToken);
+        } catch (JWTVerificationException e) {
+            throw new InvalidTokenException(BaseResponseCode.INVALID_REFRESH_TOKEN);
         }
-
-        // 1,2번 케이스 - RefreshToken이 없다면, AccessToken을 검사하고 인증 처리
-        // AccessToken이 유효하다면, 인증 객체가 담긴 상태로 다음 필터로 넘어가기 때문에 인증 성공
-        // AccessToken이 없거나 유효하지 않다면, 인증 객체가 담기지 않은 상태로 다음 필터로 넘어가기 때문에 403 에러 발생
-        checkAccessTokenAndAuthentication(request, response, filterChain);
+        if (isRefreshTokenValidInDatabase(refreshToken)) {
+            checkRefreshTokenAndReIssueAccessToken(response, refreshToken);
+        } else {
+            throw new InvalidTokenException(BaseResponseCode.INVALID_REFRESH_TOKEN);
+        }
     }
 
     // refresh token으로 회원 정보 찾아서 access token, refresh token 재발급
     private void checkRefreshTokenAndReIssueAccessToken(HttpServletResponse response, String refreshToken) {
+        log.info("checkRefreshTokenAndReIssueAccessToken 진입");
         memberRepository.findByRefreshToken(refreshToken).ifPresent(
                 member -> {
                     // 기존 refresh token 무효화
@@ -91,6 +102,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                     String reIssuedRefreshToken = reIssueRefreshToken(member);
                     jwtService.sendAccessAndRefreshToken(response, jwtService.createAccessToken(member.getUsername()),
                             reIssuedRefreshToken);
+                    log.info("access, refresh 재발급 완료");
                 }
         );
     }
@@ -108,29 +120,29 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
     // 유효한 토큰이면, 액세스 토큰에서 extractUsername으로 username을 추출한 후 findByUsername()로 Member 객체 반환
     // 그 유저 객체를 saveAuthentication()으로 인증 처리하여
     // 인증 허가 처리된 객체를 SecurityContextHolder에 담은 후 다음 필터로 넘김
-    private void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        jwtService.extractAccessToken(request)
-                .filter(jwtService::isTokenValid)
-                .flatMap(jwtService::extractUsername)
-                .flatMap(memberRepository::findByUsername)
-                .ifPresentOrElse(
-                        member -> {
-                            saveAuthentication(member);
-                            try {
-                                filterChain.doFilter(request, response);
-                            } catch (IOException | ServletException e) {
-                                throw new RuntimeException(e);
+    private void checkAccessTokenAndAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws InvalidTokenException{
+        log.info("checkAccessTokenAndAuthentication 진입");
+        String accessToken = jwtService.extractAccessToken(request).orElseThrow(() -> new InvalidTokenException(BaseResponseCode.INVALID_ACCESS_TOKEN));
+        try {
+            jwtService.isTokenValid(accessToken);
+            jwtService.extractUsername(accessToken)
+                    .flatMap(memberRepository::findByUsername)
+                    .ifPresentOrElse(
+                            member -> {
+                                saveAuthentication(member);
+                                try {
+                                    filterChain.doFilter(request, response);
+                                } catch (IOException | ServletException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            },
+                            () -> {
+                                throw new InvalidTokenException(BaseResponseCode.INVALID_ACCESS_TOKEN);
                             }
-                        },
-                        () -> {
-                            try {
-                                String message = "Invalid access token";
-                                setResponseUnauthorized(response, message);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                );
+                    );
+        } catch (JWTVerificationException e) {
+            throw new InvalidTokenException(BaseResponseCode.INVALID_ACCESS_TOKEN);
+        }
     }
 
     /**
@@ -162,25 +174,14 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
         }
     }
 
-    // 리프레쉬 토큰이 db에 저장된 refresh token과 일치하는지 검사
-    private boolean isRefreshTokenValidInDatabase(String refreshToken) {
-        return memberRepository.findByRefreshToken(refreshToken).isPresent();
-    }
-
-    private void setResponseUnauthorized(HttpServletResponse response, String message) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-
-        Map<String, String> responseMap = new HashMap<>();
-        responseMap.put("message", message);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonBody = objectMapper.writeValueAsString(responseMap);
-
-        response.getWriter().write(jsonBody);
-        response.getWriter().flush();
-        response.getWriter().close();
+    // 요청의 refresh token이 db에 저장된 refresh token과 일치하는지 검사
+    private boolean isRefreshTokenValidInDatabase(String refreshToken){
+        log.info("isRefreshTokenValidInDatabase 진입");
+        boolean result = false;
+        if (memberRepository.findByRefreshToken(refreshToken).isPresent()) {
+            return true;
+        }
+        return result;
     }
 
 }
