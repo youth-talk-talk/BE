@@ -52,7 +52,11 @@ public enum BaseResponseCode {
     // Comment
     COMMENT_NOT_FOUND("C01", "해당 댓글을 찾을 수 없습니다.", HttpStatus.BAD_REQUEST.value()),
     COMMENT_ALREADY_LIKED("C02", "이미 좋아요한 댓글입니다.", HttpStatus.BAD_REQUEST.value()),
-    COMMENT_LIKE_NOT_FOUND("C03", "좋아요 정보가 없습니다.", HttpStatus.BAD_REQUEST.value());
+    COMMENT_LIKE_NOT_FOUND("C03", "좋아요 정보가 없습니다.", HttpStatus.BAD_REQUEST.value()),
+
+    // Token
+    INVALID_ACCESS_TOKEN("T01", "유효하지 않은 엑세스 토큰입니다.", HttpStatus.UNAUTHORIZED.value()),
+    INVALID_REFRESH_TOKEN("T02", "유효하지 않은 리프레쉬 토큰입니다.", HttpStatus.UNAUTHORIZED.value());
 
     private final String code;
     private final String message;
