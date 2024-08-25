@@ -10,6 +10,7 @@ import com.server.youthtalktalk.repository.PostRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
+@ActiveProfiles("test")
 class MemberServiceTest {
 
     @Autowired
@@ -58,7 +60,7 @@ class MemberServiceTest {
         commentRepository.saveAll(comments);
 
         // when
-        memberService.deleteMember(member);
+        memberService.deleteMember(member,null);
 
         // then
         assertThat(memberRepository.findById(member.getId())).isNotPresent();
@@ -92,7 +94,7 @@ class MemberServiceTest {
         postRepository.saveAll(posts);
 
         // when
-        memberService.deleteMember(member);
+        memberService.deleteMember(member,null);
 
         // then
         assertThat(memberRepository.findById(member.getId())).isNotPresent();
@@ -120,7 +122,7 @@ class MemberServiceTest {
         commentRepository.saveAll(comments);
 
         // when
-        memberService.deleteMember(member);
+        memberService.deleteMember(member,null);
 
         // then
         assertThat(memberRepository.findById(member.getId())).isNotPresent();

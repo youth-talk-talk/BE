@@ -1,6 +1,7 @@
 package com.server.youthtalktalk.global.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.server.youthtalktalk.global.jwt.JwtAuthenticationExceptionHandler;
 import com.server.youthtalktalk.global.jwt.JwtAuthenticationProcessingFilter;
 import com.server.youthtalktalk.global.jwt.JwtService;
 import com.server.youthtalktalk.global.login.*;
@@ -47,9 +48,10 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**","/actuator/health").hasRole("ADMIN") // 관리자 역할 필요 경로
                         .anyRequest().authenticated()); // 나머지 모든 경로 인증 필요
 
-        // LogoutFilter -> JwtAuthenticationProcessingFilter -> CustomJsonUsernamePasswordAuthenticationFilter
+        // LogoutFilter -> JwtAuthenticationExceptionHandler -> JwtAuthenticationProcessingFilter -> CustomJsonUsernamePasswordAuthenticationFilter
         http.addFilterAfter(customJsonUsernamePasswordAuthenticationFilter(), LogoutFilter.class);
         http.addFilterBefore(jwtAuthenticationProcessingFilter(), CustomJsonUsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationExceptionHandler(), JwtAuthenticationProcessingFilter.class);
 
         return http.build();
     }
@@ -104,6 +106,11 @@ public class SecurityConfig {
     @Bean
     public JwtAuthenticationProcessingFilter jwtAuthenticationProcessingFilter() {
         return new JwtAuthenticationProcessingFilter(jwtService, memberRepository);
+    }
+
+    @Bean
+    public JwtAuthenticationExceptionHandler jwtAuthenticationExceptionHandler() {
+        return new JwtAuthenticationExceptionHandler();
     }
 
 }

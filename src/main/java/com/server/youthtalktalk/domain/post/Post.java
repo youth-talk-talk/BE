@@ -6,6 +6,7 @@ import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.comment.PostComment;
 import com.server.youthtalktalk.dto.post.PostRepDto;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -25,8 +26,12 @@ public class Post extends BaseTimeEntity {
     @JoinColumn(name =  "post_id")
     private Long id;
 
+    @Size(max = 50, message = "Title must be 50 characters or less")
     private String title;
+
+    @Column(columnDefinition = "TEXT")
     private String content;
+
     private Long view;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -61,6 +66,7 @@ public class Post extends BaseTimeEntity {
                 .nickname(this.getWriter() == null ? "null" : this.getWriter().getNickname())
                 .view(this.getView())
                 .images(this.getImages())
+                .category(this instanceof Review ? ((Review)this).getPolicy().getCategory().getKey() : null)
                 .build();
     }
 }

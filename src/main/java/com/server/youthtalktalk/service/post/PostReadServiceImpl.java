@@ -59,11 +59,7 @@ public class PostReadServiceImpl implements PostReadService {
     /** 리뷰 카테고리별 전체 조회 */
     @Override
     @Transactional
-    public PostListRepDto getAllReviewByCategory(Pageable pageable, List<String> category,Member member) {
-        List<Category> categories = new ArrayList<>();
-        for(String categoryName : category){
-            categories.add(Category.valueOf(categoryName));
-        }
+    public PostListRepDto getAllReviewByCategory(Pageable pageable, List<Category> categories,Member member) {
         Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC,"id"));
         Page<Post> reviewPopularPage = postRepository.findAllReviewsByCategoryAndView(categories,PageRequest.of(0, 5)); // 상위 5개만
         Page<Post> reviewPage = postRepository.findAllReviewsByCategory(categories,pageRequest);

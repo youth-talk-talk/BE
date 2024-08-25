@@ -31,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @Transactional
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class JwtAuthenticationProcessingFilterTest {
 
     @Autowired

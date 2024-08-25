@@ -2,6 +2,8 @@ package com.server.youthtalktalk.global.jwt;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.repository.MemberRepository;
@@ -159,14 +161,10 @@ public class JwtServiceImpl implements JwtService {
      * 토튼 유효성 검사
      */
     @Override
-    public boolean isTokenValid(String token) {
-        try {
-            JWT.require(Algorithm.HMAC512(secret)).build().verify(token);
-            return true;
-        } catch (Exception e) {
-            log.error("유효하지 않은 토큰입니다: {}", e.getMessage());
-            return false;
-        }
+    public void isTokenValid(String token) throws JWTVerificationException {
+        log.info("토큰 유효성 검사 시작");
+        JWT.require(Algorithm.HMAC512(secret)).build().verify(token);
+        log.info("토큰 유효성 검사 완료");
     }
 
 }

@@ -9,7 +9,7 @@ import lombok.ToString;
 @Getter
 public class AppleDto {
     @Getter
-    public static class AppleLoginRequestDto {
+    public static class AppleCodeRequestDto {
         private String userIdentifier;
         private String identityToken;
         private String authorizationCode;
