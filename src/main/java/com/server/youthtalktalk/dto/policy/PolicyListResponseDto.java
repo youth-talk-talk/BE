@@ -4,9 +4,9 @@ import com.server.youthtalktalk.domain.policy.Category;
 import com.server.youthtalktalk.domain.policy.Policy;
 import com.server.youthtalktalk.global.util.DeadlineStatusCalculator;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 @Builder
 public class PolicyListResponseDto {
 
@@ -16,7 +16,6 @@ public class PolicyListResponseDto {
     private String deadlineStatus; // 마감 상태
     private String hostDep; // 주관 기관명
     private boolean isScrap; // 스크랩 여부
-    private Long totalCount; // 총 정책 수
 
     public static PolicyListResponseDto toListDto(Policy policy, Boolean isScrap) {
         return PolicyListResponseDto.builder()
