@@ -116,6 +116,8 @@ public class PolicyServiceImpl implements PolicyService {
         Policy policy = policyRepository.findById(policyId)
                 .orElseThrow(PolicyNotFoundException::new);
 
+        policyRepository.save(policy.toBuilder().view(policy.getView()+1).build());
+
         boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), ItemType.POLICY);
         PolicyDetailResponseDto result = PolicyDetailResponseDto.toDto(policy, isScrap);
         log.info("특정 정책 세부 조회 성공");
