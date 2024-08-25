@@ -4,6 +4,7 @@ import com.server.youthtalktalk.domain.policy.Category;
 import com.server.youthtalktalk.dto.policy.SearchConditionRequestDto;
 import com.server.youthtalktalk.dto.policy.PolicyDetailResponseDto;
 import com.server.youthtalktalk.dto.policy.PolicyListResponseDto;
+import com.server.youthtalktalk.dto.policy.SearchConditionResponseDto;
 import com.server.youthtalktalk.global.response.BaseResponse;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.service.member.MemberService;
@@ -76,14 +77,14 @@ public class PolicyController {
      * 조건 적용 정책 조회
      */
     @PostMapping("/policies/search")
-    public BaseResponse<List<PolicyListResponseDto>> getPoliciesByCondition(@RequestBody SearchConditionRequestDto request,
-                                                                            @RequestParam(defaultValue = "10") int size,
-                                                                            @RequestParam(defaultValue = "0") int page) {
+    public BaseResponse<SearchConditionResponseDto> getPoliciesByCondition(@RequestBody SearchConditionRequestDto request,
+                                                                           @RequestParam(defaultValue = "10") int size,
+                                                                           @RequestParam(defaultValue = "0") int page) {
         Pageable pageable = PageRequest.of(page, size);
-        List<PolicyListResponseDto> policies = policyService.getPoliciesByCondition(request, pageable);
-        if(policies.isEmpty())
-            return new BaseResponse<>(policies, BaseResponseCode.SUCCESS_POLICY_SEARCH_NO_RESULT);
-        return new BaseResponse<>(policies, BaseResponseCode.SUCCESS_POLICY_FOUND);
+        SearchConditionResponseDto listResponseDto = policyService.getPoliciesByCondition(request, pageable);
+        if(listResponseDto.getPolicyList().isEmpty())
+            return new BaseResponse<>(listResponseDto, BaseResponseCode.SUCCESS_POLICY_SEARCH_NO_RESULT);
+        return new BaseResponse<>(listResponseDto, BaseResponseCode.SUCCESS_POLICY_FOUND);
     }
 
 

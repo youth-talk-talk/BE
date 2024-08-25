@@ -9,6 +9,7 @@ import com.server.youthtalktalk.domain.policy.Region;
 import com.server.youthtalktalk.dto.policy.PolicyDetailResponseDto;
 import com.server.youthtalktalk.dto.policy.PolicyListResponseDto;
 import com.server.youthtalktalk.dto.policy.SearchConditionRequestDto;
+import com.server.youthtalktalk.dto.policy.SearchConditionResponseDto;
 import com.server.youthtalktalk.global.response.BaseResponse;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
@@ -116,6 +117,8 @@ public class PolicyServiceImpl implements PolicyService {
         Policy policy = policyRepository.findById(policyId)
                 .orElseThrow(PolicyNotFoundException::new);
 
+        policyRepository.save(policy.toBuilder().view(policy.getView()+1).build());
+
         boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), ItemType.POLICY);
         PolicyDetailResponseDto result = PolicyDetailResponseDto.toDto(policy, isScrap);
         log.info("특정 정책 세부 조회 성공");
@@ -125,7 +128,7 @@ public class PolicyServiceImpl implements PolicyService {
     /**
      * 조건 적용 정책 조회
      */
-    public List<PolicyListResponseDto> getPoliciesByCondition(SearchConditionRequestDto condition, Pageable pageable) {
+    public SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto condition, Pageable pageable) {
         Long memberId;
         Region region;
         try {
@@ -156,10 +159,9 @@ public class PolicyServiceImpl implements PolicyService {
 
         log.info("Filtered policies count: {}", policies.getTotalElements());
 
-
         if (policies.isEmpty()) {
             log.info("조건에 맞는 정책이 존재하지 않습니다");
-            return Collections.emptyList(); // 빈 리스트 반환
+            return SearchConditionResponseDto.toListDto(Collections.emptyList(), 0L); // 빈 리스트 반환
         }
 
         List<PolicyListResponseDto> result = policies.stream()
@@ -169,7 +171,7 @@ public class PolicyServiceImpl implements PolicyService {
                 })
                 .collect(Collectors.toList());
         log.info("조건 적용 정책 조회 성공");
-        return result;
+        return SearchConditionResponseDto.toListDto(result, policies.getTotalElements());
     }
 
 

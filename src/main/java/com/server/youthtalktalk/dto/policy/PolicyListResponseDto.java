@@ -3,9 +3,11 @@ package com.server.youthtalktalk.dto.policy;
 import com.server.youthtalktalk.domain.policy.Category;
 import com.server.youthtalktalk.domain.policy.Policy;
 import com.server.youthtalktalk.global.util.DeadlineStatusCalculator;
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 
-@Data
+@Getter
+@Builder
 public class PolicyListResponseDto {
 
     private String policyId; // 정책 아이디
@@ -16,13 +18,13 @@ public class PolicyListResponseDto {
     private boolean isScrap; // 스크랩 여부
 
     public static PolicyListResponseDto toListDto(Policy policy, Boolean isScrap) {
-        PolicyListResponseDto dto = new PolicyListResponseDto();
-        dto.setPolicyId(policy.getPolicyId());
-        dto.setCategory(policy.getCategory());
-        dto.setTitle(policy.getTitle());
-        dto.setDeadlineStatus(DeadlineStatusCalculator.calculateDeadline(policy.getApplyDue()));
-        dto.setHostDep(policy.getHostDep());
-        dto.setScrap(isScrap);
-        return dto;
+        return PolicyListResponseDto.builder()
+                .policyId(policy.getPolicyId())
+                .category(policy.getCategory())
+                .title(policy.getTitle())
+                .deadlineStatus(DeadlineStatusCalculator.calculateDeadline(policy.getApplyDue()))
+                .hostDep(policy.getHostDep())
+                .isScrap(isScrap)
+                .build();
     }
 }
