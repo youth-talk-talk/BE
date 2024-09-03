@@ -18,7 +18,7 @@ public enum BaseResponseCode {
     SUCCESS_COMMENT_CREATE("S06", "댓글을 성공적으로 등록했습니다.",HttpStatus.OK.value()),
     SUCCESS_COMMENT_UPDATE("S07", "댓글을 성공적으로 수정했습니다.",HttpStatus.OK.value()),
     SUCCESS_COMMENT_DELETE("S08", "댓글을 성공적으로 삭제했습니다.",HttpStatus.OK.value()),
-    SUCCESS_COMMENT_EMPTY("S09", "회원이 작성한 댓글이 없습니다.",HttpStatus.OK.value()),
+    SUCCESS_COMMENT_EMPTY("S09", "해당하는 댓글이 없습니다.",HttpStatus.OK.value()),
     SUCCESS_COMMENT_LIKED("S10", "좋아요 등록이 완료되었습니다.",HttpStatus.OK.value()),
     SUCCESS_COMMENT_UNLIKED("S11", "좋아요 해제가 완료되었습니다.",HttpStatus.OK.value()),
     // Member

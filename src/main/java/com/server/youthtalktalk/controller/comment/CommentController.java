@@ -83,8 +83,9 @@ public class CommentController {
         if (comments.isEmpty()) // 회원이 작성한 댓글이 없는 경우
             return new BaseResponse<>(SUCCESS_COMMENT_EMPTY);
 
+        String nickname = member.getNickname();
         List<MyCommentDto> commentDtoList = comments.stream()
-                .map(comment -> new MyCommentDto(comment.getId(), comment.getContent()))
+                .map(comment -> new MyCommentDto(comment.getId(), nickname, comment.getContent()))
                 .collect(Collectors.toList());
 
         return new BaseResponse<>(commentDtoList, SUCCESS);
@@ -125,10 +126,20 @@ public class CommentController {
         }
     }
 
+    /**
+     * 회원이 좋아요한 댓글 조회 api
+     */
     @GetMapping("/members/me/comments/likes")
     public BaseResponse<List<MyCommentDto>> getLikedComments() {
-        List<Comment> likedComments = commentService.getLikedComments(memberService.getCurrentMember());
-        List<MyCommentDto> commentDtoList = likedComments.stream().map(comment -> new MyCommentDto(comment.getId(), comment.getContent()))
+        Member member = memberService.getCurrentMember();
+        List<Comment> likedComments = commentService.getLikedComments(member);
+
+        if(likedComments.isEmpty()) // 회원이 좋아요한 댓글이 없는 경우
+            return new BaseResponse<>(SUCCESS_COMMENT_EMPTY);
+
+        String nickname = member.getNickname();
+        List<MyCommentDto> commentDtoList = likedComments.stream()
+                .map(comment -> new MyCommentDto(comment.getId(), nickname, comment.getContent()))
                 .collect(Collectors.toList());
         return new BaseResponse<>(commentDtoList, SUCCESS);
     }
