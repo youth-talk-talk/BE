@@ -64,7 +64,7 @@ public class PostServiceImpl implements PostService{
 
         if(fileList!=null&&!fileList.isEmpty()) {
             List<String> imageUrlList = imageService.uploadMultiFile(fileList);
-            imageService.saveImageList(imageUrlList, savedPost);
+            imageService.savePostImageList(imageUrlList, savedPost);
         }
         log.info("게시글 생성 성공, postId = {}", savedPost.getId());
         return savedPost.toPostRepDto();
@@ -91,7 +91,7 @@ public class PostServiceImpl implements PostService{
 
         if(fileList!=null&&!fileList.isEmpty()) {
             List<String> imageUrlList = imageService.uploadMultiFile(fileList);
-            imageService.saveImageList(imageUrlList, savedPost);
+            imageService.savePostImageList(imageUrlList, savedPost);
         }
         if(postUpdateReqDto.getDeletedImgUrlList()!=null&&!postUpdateReqDto.getDeletedImgUrlList().isEmpty()){
             imageService.deleteMultiFile(postUpdateReqDto.getDeletedImgUrlList());

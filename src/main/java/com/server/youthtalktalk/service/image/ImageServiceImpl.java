@@ -4,7 +4,10 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.server.youthtalktalk.domain.Image;
+import com.server.youthtalktalk.domain.Announcement;
+import com.server.youthtalktalk.domain.image.AnnouncementImage;
+import com.server.youthtalktalk.domain.image.Image;
+import com.server.youthtalktalk.domain.image.PostImage;
 import com.server.youthtalktalk.domain.post.Post;
 import com.server.youthtalktalk.repository.ImageRepository;
 import jakarta.transaction.Transactional;
@@ -84,16 +87,28 @@ public class ImageServiceImpl implements ImageService{
     }
 
     @Override
-    public List<Image> saveImageList(List<String> imageUrlList, Post post) {
+    public void savePostImageList(List<String> imageUrlList, Post post) {
         List<Image> imageList = new ArrayList<>();
         for (String imageUrl : imageUrlList) {
-            Image image = Image.builder()
+            PostImage image = PostImage.builder()
                     .imgUrl(imageUrl)
-                    .post(post)
                     .build();
             image.setPost(post);
             imageList.add(image);
         }
-        return imageRepository.saveAll(imageList);
+        imageRepository.saveAll(imageList);
+    }
+
+    @Override
+    public void saveAnnouncementImageList(List<String> imageUrlList, Announcement announcement) {
+        List<Image> imageList = new ArrayList<>();
+        for (String imageUrl : imageUrlList) {
+            AnnouncementImage image = AnnouncementImage.builder()
+                    .imgUrl(imageUrl)
+                    .build();
+            image.setAnnouncement(announcement);
+            imageList.add(image);
+        }
+        imageRepository.saveAll(imageList);
     }
 }
