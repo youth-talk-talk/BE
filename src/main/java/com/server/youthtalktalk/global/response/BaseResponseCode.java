@@ -56,7 +56,10 @@ public enum BaseResponseCode {
 
     // Token
     INVALID_ACCESS_TOKEN("T01", "유효하지 않은 엑세스 토큰입니다.", HttpStatus.UNAUTHORIZED.value()),
-    INVALID_REFRESH_TOKEN("T02", "유효하지 않은 리프레쉬 토큰입니다.", HttpStatus.UNAUTHORIZED.value());
+    INVALID_REFRESH_TOKEN("T02", "유효하지 않은 리프레쉬 토큰입니다.", HttpStatus.UNAUTHORIZED.value()),
+
+    // Announcement
+    ANNOUNCEMENT_NOT_FOUND_EXCEPTION("A01","해당 공지사항을 찾을 수 없습니다.",HttpStatus.NOT_FOUND.value());
 
     private final String code;
     private final String message;

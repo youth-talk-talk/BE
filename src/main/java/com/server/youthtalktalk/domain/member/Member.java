@@ -3,12 +3,12 @@ package com.server.youthtalktalk.domain.member;
 import com.server.youthtalktalk.domain.BaseTimeEntity;
 import com.server.youthtalktalk.domain.Likes;
 import com.server.youthtalktalk.domain.Scrap;
+import com.server.youthtalktalk.domain.Announcement;
 import com.server.youthtalktalk.domain.comment.Comment;
 import com.server.youthtalktalk.domain.policy.Region;
 import com.server.youthtalktalk.domain.post.Post;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +52,10 @@ public class Member extends BaseTimeEntity {
     @Builder.Default
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Likes> likes = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "writer", cascade = CascadeType.ALL)
+    private List<Announcement> announcements = new ArrayList<>();
 
     // refresh token 업데이트
     public void updateRefreshToken(String updateRefreshToken) {

@@ -1,6 +1,7 @@
 package com.server.youthtalktalk.dto.post;
 
-import com.server.youthtalktalk.domain.Image;
+import com.server.youthtalktalk.domain.image.Image;
+import com.server.youthtalktalk.domain.image.PostImage;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -18,6 +19,6 @@ public class PostRepDto {
     private Long writerId;
     private String nickname;
     private Long view;
-    private List<Image> images;
+    private List<PostImage> images;
     private String category;
 }
