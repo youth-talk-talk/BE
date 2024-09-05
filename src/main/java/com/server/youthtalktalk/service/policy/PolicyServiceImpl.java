@@ -205,5 +205,20 @@ public class PolicyServiceImpl implements PolicyService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 스크랩한 마감 임박 정책 조회 (최대 5개)
+     */
+    @Override
+    public List<PolicyListResponseDto> getScrappedPoliciesWithUpcomingDeadline(Member member){
+        PageRequest pageRequest = PageRequest.of(0, 5); // top 5
+        List<Policy> policies = policyRepository.findTop5OrderByDeadlineAsc(member, pageRequest).getContent();
+        return policies.stream()
+                .map(policy -> {
+                    boolean isScrap = true;
+                    return PolicyListResponseDto.toListDto(policy, isScrap);
+                })
+                .collect(Collectors.toList());
+    }
+
 }
 

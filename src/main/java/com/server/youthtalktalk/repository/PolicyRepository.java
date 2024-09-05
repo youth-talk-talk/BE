@@ -41,4 +41,11 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
      */
     @Query("select p from Policy p join Scrap s on s.itemId = p.policyId where s.member = :member order by s.id DESC ")
     Page<Policy> findAllByScrap(@Param("member") Member member, Pageable pageable);
+
+    /**
+     * 스크랩한 마감임박 정책 조회 (임박순, 최대 5개)
+     */
+    @Query("select p from Policy p join Scrap s on s.itemId = p.policyId where s.member = :member and (p.applyDue > CURRENT_DATE or p.applyDue is null) order by case when p.applyDue is null then 1 else 0 end, p.applyDue asc")
+
+    Page<Policy> findTop5OrderByDeadlineAsc(Member member, Pageable pageable);
 }
