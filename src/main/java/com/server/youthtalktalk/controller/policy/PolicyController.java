@@ -87,6 +87,15 @@ public class PolicyController {
         return new BaseResponse<>(listResponseDto, BaseResponseCode.SUCCESS_POLICY_FOUND);
     }
 
+    /**
+     * 스크랩한 마감 임박 정책 조회 (최대 5개)
+     */
+    @GetMapping("/policies/scrapped/upcoming-deadline")
+    public BaseResponse<List<PolicyListResponseDto>> getScrappedPoliciesWithUpcomingDeadline() {
+        List<PolicyListResponseDto> listResponseDto = policyService.getScrappedPoliciesWithUpcomingDeadline(memberService.getCurrentMember());
+        return new BaseResponse<>(listResponseDto, BaseResponseCode.SUCCESS);
+    }
+
 
 
 
