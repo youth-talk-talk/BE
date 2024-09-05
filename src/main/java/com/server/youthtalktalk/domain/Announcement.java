@@ -27,29 +27,15 @@ public class Announcement extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member writer;
-
     @Builder.Default
     @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL)
     private List<AnnouncementImage> images = new ArrayList<>();
 
-    /* 연관관계 메서드 */
-    public void setWriter(Member member) {
-        this.writer = member;
-        if (member != null) {
-            member.getAnnouncements().add(this);
-        }
-    }
-
     public AnnouncementRepDto toAnnouncementRepDto() {
         return AnnouncementRepDto.builder()
                 .id(this.id)
-                .writerId(this.writer.getId())
                 .title(this.title)
                 .content(this.content)
-                .nickname(this.writer.getNickname())
                 .updateAt(this.getUpdatedAt().toString())
                 .imageList(this.getImages())
                 .build();

@@ -53,10 +53,6 @@ public class Member extends BaseTimeEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Likes> likes = new ArrayList<>();
 
-    @Builder.Default
-    @OneToMany(mappedBy = "writer", cascade = CascadeType.ALL)
-    private List<Announcement> announcements = new ArrayList<>();
-
     // refresh token 업데이트
     public void updateRefreshToken(String updateRefreshToken) {
         this.refreshToken = updateRefreshToken;

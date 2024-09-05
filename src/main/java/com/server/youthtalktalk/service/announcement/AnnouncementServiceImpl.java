@@ -1,13 +1,11 @@
 package com.server.youthtalktalk.service.announcement;
 
 import com.server.youthtalktalk.domain.Announcement;
+import com.server.youthtalktalk.dto.announcement.AnnouncementCreateDto;
 import com.server.youthtalktalk.dto.announcement.AnnouncementListRepDto;
 import com.server.youthtalktalk.dto.announcement.AnnouncementRepDto;
-import com.server.youthtalktalk.global.response.BaseResponse;
-import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.announcement.AnnouncementNotFoundException;
 import com.server.youthtalktalk.repository.AnnouncementRepository;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -41,5 +39,15 @@ public class AnnouncementServiceImpl implements AnnouncementService{
     public AnnouncementRepDto getAnnouncement(Long announcementId) {
         Announcement announcement = announcementRepository.findById(announcementId).orElseThrow(AnnouncementNotFoundException::new);
         return announcement.toAnnouncementRepDto();
+    }
+
+    @Override
+    public Long createAnnouncement(AnnouncementCreateDto announcementCreateDto) {
+        Announcement announcement = Announcement.builder()
+                .title(announcementCreateDto.title())
+                .content(announcementCreateDto.content())
+                .build();
+        announcementRepository.save(announcement);
+        return announcement.getId();
     }
 }

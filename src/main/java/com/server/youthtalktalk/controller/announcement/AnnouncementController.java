@@ -1,34 +1,46 @@
 package com.server.youthtalktalk.controller.announcement;
 
+import com.server.youthtalktalk.dto.announcement.AnnouncementCreateDto;
 import com.server.youthtalktalk.dto.announcement.AnnouncementListRepDto;
 import com.server.youthtalktalk.dto.announcement.AnnouncementRepDto;
 import com.server.youthtalktalk.global.response.BaseResponse;
-import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.service.announcement.AnnouncementService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
 @RestController
-@RequestMapping("/announcement")
 @RequiredArgsConstructor
 public class AnnouncementController {
     private final AnnouncementService announcementService;
 
-    /** 공지사항 상세 조회 */
-    @GetMapping("/{id}")
+    /**
+     * 공지사항 상세 조회
+     */
+    @GetMapping("/announcements/{id}")
     public BaseResponse<AnnouncementRepDto> getAnnouncement(@PathVariable Long id) {
         AnnouncementRepDto announcementRepDto = announcementService.getAnnouncement(id);
-        return new BaseResponse<>(announcementRepDto, BaseResponseCode.SUCCESS);
+        return new BaseResponse<>(announcementRepDto, SUCCESS);
     }
 
-    /** 공지사항 전체 조회 */
-    @GetMapping("")
+    /**
+     * 공지사항 전체 조회
+     */
+    @GetMapping("/announcements")
     public BaseResponse<AnnouncementListRepDto> getAnnouncementList(Pageable pageable) {
         AnnouncementListRepDto announcementListRepDto = announcementService.getAnnouncementList(pageable);
-        return new BaseResponse<>(announcementListRepDto, BaseResponseCode.SUCCESS);
+        return new BaseResponse<>(announcementListRepDto, SUCCESS);
+    }
+
+    /**
+     * 공지사항 등록
+     */
+    @PostMapping("/admin/announcements")
+    public BaseResponse<Long> createAnnouncement(@Valid @RequestBody AnnouncementCreateDto announcementCreateDto) {
+        Long announcementId = announcementService.createAnnouncement(announcementCreateDto);
+        return new BaseResponse<>(announcementId, SUCCESS_ANNOUNCEMENT_CREATE);
     }
 }
