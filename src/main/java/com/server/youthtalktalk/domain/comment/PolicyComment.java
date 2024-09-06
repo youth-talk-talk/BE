@@ -24,4 +24,8 @@ public class PolicyComment extends Comment{
             policy.getPolicyComments().add(this);
     }
 
+    @Override
+    public String getRelatedEntityId() {
+        return policy.getPolicyId();
+    }
 }
