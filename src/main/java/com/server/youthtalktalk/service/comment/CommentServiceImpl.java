@@ -117,7 +117,7 @@ public class CommentServiceImpl implements CommentService {
                 .map(comment -> {
                     String nickname = (comment.getWriter() != null) ? comment.getWriter().getNickname() : "null"; // writer null인 경우 닉네임 치환
                     Boolean isLikedByMember = isLikedByMember(comment, member); // 회원의 좋아요 여부 판단
-                    return new CommentDto(comment.getId(), comment.getContent(), nickname, isLikedByMember);
+                    return new CommentDto(comment.getId(), nickname, comment.getContent(), isLikedByMember);
                 })
                 .collect(Collectors.toList());
     }
@@ -131,9 +131,9 @@ public class CommentServiceImpl implements CommentService {
                 .map(comment -> {
                     Object relatedEntityId = comment.getRelatedEntityId();
                     if (relatedEntityId instanceof String) {
-                        return new PolicyCommentDto(comment.getId(), comment.getContent(), nickname, (String) relatedEntityId);
+                        return new PolicyCommentDto(comment.getId(), nickname, comment.getContent(), (String) relatedEntityId);
                     } else {
-                        return new PostCommentDto(comment.getId(), comment.getContent(), nickname, (Long) relatedEntityId);
+                        return new PostCommentDto(comment.getId(), nickname, comment.getContent(), (Long) relatedEntityId);
                     }
                 })
                 .collect(Collectors.toList());
