@@ -177,13 +177,16 @@ class CommentServiceTest {
     }
 
     @Test
-    void 댓글_수정_성공() {
+    void 정책_댓글_수정_성공() {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
-        Comment comment = Comment.builder().content("content").build();
+        Policy policy = Policy.builder().policyId("policy1").build();
+        PolicyComment comment = PolicyComment.builder().content("content").build();
         comment.setWriter(member);
+        comment.setPolicy(policy);
 
         memberRepository.save(member);
+        policyRepository.save(policy);
         commentRepository.save(comment);
 
         // when
@@ -192,17 +195,55 @@ class CommentServiceTest {
         // then
         Comment savedComment = commentRepository.findById(comment.getId()).orElseThrow();
         assertThat(savedComment.getWriter()).isEqualTo(member);
+        assertThat(savedComment.getRelatedEntityId()).isEqualTo(policy.getPolicyId());
         assertThat(savedComment.getContent().equals("new_content")).isTrue();
+
         assertThat(member.getComments().size()).isEqualTo(1);
         assertThat(member.getComments().get(0).getId()).isEqualTo(savedComment.getId());
-        assertThat(member.getComments().get(0).getContent().equals("new_content")).isTrue();
+        assertThat(member.getComments().get(0).getContent()).isEqualTo("new_content");
+
+        assertThat(policy.getPolicyComments().size()).isEqualTo(1);
+        assertThat(policy.getPolicyComments().get(0).getId()).isEqualTo(savedComment.getId());
+        assertThat(policy.getPolicyComments().get(0).getContent()).isEqualTo("new_content");
     }
+
+    @Test
+    void 게시글_댓글_수정_성공() {
+        // given
+        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
+        Post post = Post.builder().title("post1").content("post1_content").build();
+        PostComment comment = PostComment.builder().content("content").build();
+        comment.setWriter(member);
+        comment.setPost(post);
+
+        memberRepository.save(member);
+        postRepository.save(post);
+        commentRepository.save(comment);
+
+        // when
+        commentService.updateComment(comment.getId(), "new_content");
+
+        // then
+        Comment savedComment = commentRepository.findById(comment.getId()).orElseThrow();
+        assertThat(savedComment.getWriter()).isEqualTo(member);
+        assertThat(savedComment.getRelatedEntityId()).isEqualTo(post.getId());
+        assertThat(savedComment.getContent().equals("new_content")).isTrue();
+
+        assertThat(member.getComments().size()).isEqualTo(1);
+        assertThat(member.getComments().get(0).getId()).isEqualTo(savedComment.getId());
+        assertThat(member.getComments().get(0).getContent()).isEqualTo("new_content");
+
+        assertThat(post.getPostComments().size()).isEqualTo(1);
+        assertThat(post.getPostComments().get(0).getId()).isEqualTo(savedComment.getId());
+        assertThat(post.getPostComments().get(0).getContent()).isEqualTo("new_content");
+    }
+
 
     @Test
     void 댓글_삭제_성공() {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
-        Comment comment = Comment.builder().content("content").build();
+        Comment comment = PostComment.builder().content("content").build();
         comment.setWriter(member);
 
         memberRepository.save(member);
@@ -223,15 +264,15 @@ class CommentServiceTest {
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
         memberRepository.save(member);
 
-        Comment comment1 = Comment.builder().content("content1").build();
-        Comment comment2 = Comment.builder().content("content2").build();
+        Comment comment1 = PostComment.builder().content("content1").build();
+        Comment comment2 = PostComment.builder().content("content2").build();
         comment1.setWriter(member);
         comment2.setWriter(member);
         commentRepository.save(comment1);
         commentRepository.save(comment2);
 
         // when
-        List<Comment> comments = commentService.getMemberComments(member);
+        List<Comment> comments = commentService.getMyComments(member);
 
         // then
         assertThat(comments.size()).isEqualTo(2);
@@ -247,7 +288,7 @@ class CommentServiceTest {
         memberRepository.save(member);
 
         // when
-        List<Comment> comments = commentService.getMemberComments(member);
+        List<Comment> comments = commentService.getMyComments(member);
 
         // then
         assertThat(comments.isEmpty()).isTrue();
@@ -260,7 +301,7 @@ class CommentServiceTest {
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
         memberRepository.save(member);
 
-        Comment comment = Comment.builder().content("content1").build();
+        Comment comment = PostComment.builder().content("content1").build();
         commentRepository.save(comment);
 
         // when
@@ -279,7 +320,7 @@ class CommentServiceTest {
     void 댓글_좋아요_해제_성공() {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
-        Comment comment = Comment.builder().content("content1").build();
+        Comment comment = PostComment.builder().content("content1").build();
         Likes like = Likes.builder().build();
         like.setMember(member);
         like.setComment(comment);
@@ -301,8 +342,8 @@ class CommentServiceTest {
     void 회원이_좋아요한_모든_댓글_조회_성공() {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
-        Comment comment1 = Comment.builder().content("content1").build();
-        Comment comment2 = Comment.builder().content("content2").build();
+        Comment comment1 = PostComment.builder().content("content1").build();
+        Comment comment2 = PostComment.builder().content("content2").build();
         Likes like1 = Likes.builder().build();
         Likes like2 = Likes.builder().build();
         like1.setMember(member);
@@ -324,4 +365,5 @@ class CommentServiceTest {
         assertThat(likedComments.contains(comment1)).isTrue();
         assertThat(likedComments.contains(comment2)).isTrue();
     }
+
 }

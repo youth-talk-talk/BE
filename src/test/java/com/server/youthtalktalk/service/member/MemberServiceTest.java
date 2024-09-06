@@ -1,6 +1,7 @@
 package com.server.youthtalktalk.service.member;
 
 import com.server.youthtalktalk.domain.comment.Comment;
+import com.server.youthtalktalk.domain.comment.PostComment;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.member.Role;
 import com.server.youthtalktalk.domain.post.Post;
@@ -51,8 +52,8 @@ class MemberServiceTest {
         postRepository.saveAll(posts);
 
         List<Comment> comments = new ArrayList<>();
-        Comment comment1 = Comment.builder().content("comment1").build();
-        Comment comment2 = Comment.builder().content("comment2").build();
+        Comment comment1 = PostComment.builder().content("comment1").build();
+        Comment comment2 = PostComment.builder().content("comment2").build();
         comment1.setWriter(member);
         comment2.setWriter(member);
         comments.add(comment1);
@@ -113,8 +114,8 @@ class MemberServiceTest {
         memberRepository.save(member);
 
         List<Comment> comments = new ArrayList<>();
-        Comment comment1 = Comment.builder().content("comment1").build();
-        Comment comment2 = Comment.builder().content("comment2").build();
+        Comment comment1 = PostComment.builder().content("comment1").build();
+        Comment comment2 = PostComment.builder().content("comment2").build();
         comment1.setWriter(member);
         comment2.setWriter(member);
         comments.add(comment1);
