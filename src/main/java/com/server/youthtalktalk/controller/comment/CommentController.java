@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
@@ -94,8 +95,8 @@ public class CommentController {
         if(likedComments.isEmpty()) // 회원이 좋아요한 댓글이 없는 경우
             return new BaseResponse<>(SUCCESS_COMMENT_EMPTY);
 
-        List<MyCommentDto> myCommentDtoList = commentService.toMyCommentDtoList(likedComments, member.getNickname());
-        return new BaseResponse<>(myCommentDtoList, SUCCESS);
+        List<MyCommentDto> likedCommentDtoList = commentService.toMyCommentDtoList(likedComments, member.getNickname());
+        return new BaseResponse<>(likedCommentDtoList, SUCCESS);
     }
 
     /**

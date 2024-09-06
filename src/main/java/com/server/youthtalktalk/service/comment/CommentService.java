@@ -6,6 +6,8 @@ import com.server.youthtalktalk.domain.comment.PostComment;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.dto.comment.CommentDto;
 import com.server.youthtalktalk.dto.comment.MyCommentDto;
+import com.server.youthtalktalk.dto.comment.PolicyCommentDto;
+import com.server.youthtalktalk.dto.comment.PostCommentDto;
 
 import java.util.List;
 

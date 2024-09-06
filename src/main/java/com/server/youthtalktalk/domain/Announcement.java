@@ -31,6 +31,14 @@ public class Announcement extends BaseTimeEntity {
     @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL)
     private List<AnnouncementImage> images = new ArrayList<>();
 
+    public void updateTitle(String title) {
+        this.title = title;
+    }
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
     public AnnouncementRepDto toAnnouncementRepDto() {
         return AnnouncementRepDto.builder()
                 .id(this.id)

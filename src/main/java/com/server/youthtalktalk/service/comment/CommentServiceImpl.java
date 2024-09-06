@@ -9,6 +9,8 @@ import com.server.youthtalktalk.domain.policy.Policy;
 import com.server.youthtalktalk.domain.post.Post;
 import com.server.youthtalktalk.dto.comment.CommentDto;
 import com.server.youthtalktalk.dto.comment.MyCommentDto;
+import com.server.youthtalktalk.dto.comment.PolicyCommentDto;
+import com.server.youthtalktalk.dto.comment.PostCommentDto;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.comment.AlreadyLikedException;
 import com.server.youthtalktalk.global.response.exception.comment.CommentLikeNotFoundException;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_INPUT_VALUE;
@@ -106,29 +109,32 @@ public class CommentServiceImpl implements CommentService {
     }
 
     /**
-     * CommentDto로 변환
+     * 연관엔티티 id 없는 CommentDto로 변환
      */
     @Override
     public List<CommentDto> toCommentDtoList(List<? extends Comment> comments, Member member) {
         return comments.stream()
                 .map(comment -> {
-                    String writerNickname = (comment.getWriter() != null) ? comment.getWriter().getNickname() : "null"; // writer null인 경우 닉네임 치환
-                    boolean isLikedByMember = isLikedByMember(comment, member); // 회원의 좋아요 여부 판단
-                    Object relatedEntityId = comment.getRelatedEntityId(); // 연관 엔티티(post 또는 policy)의 id
-                    return new CommentDto(comment.getId(), writerNickname, comment.getContent(), isLikedByMember, relatedEntityId);
+                    String nickname = (comment.getWriter() != null) ? comment.getWriter().getNickname() : "null"; // writer null인 경우 닉네임 치환
+                    Boolean isLikedByMember = isLikedByMember(comment, member); // 회원의 좋아요 여부 판단
+                    return new CommentDto(comment.getId(), comment.getContent(), nickname, isLikedByMember);
                 })
                 .collect(Collectors.toList());
     }
 
     /**
-     * MyCommentDto로 변환 (좋아요 없음, 닉네임 고정)
+     * 연관엔티티 id 있는 CommentDto로 변환 (마이페이지 용)
      */
     @Override
     public List<MyCommentDto> toMyCommentDtoList(List<Comment> comments, String nickname) {
         return comments.stream()
                 .map(comment -> {
-                    Object relatedEntityId = comment.getRelatedEntityId(); // 연관 엔티티(post 또는 policy)의 id
-                    return new MyCommentDto(comment.getId(), nickname, comment.getContent(), relatedEntityId);
+                    Object relatedEntityId = comment.getRelatedEntityId();
+                    if (relatedEntityId instanceof String) {
+                        return new PolicyCommentDto(comment.getId(), comment.getContent(), nickname, (String) relatedEntityId);
+                    } else {
+                        return new PostCommentDto(comment.getId(), comment.getContent(), nickname, (Long) relatedEntityId);
+                    }
                 })
                 .collect(Collectors.toList());
     }

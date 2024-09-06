@@ -4,6 +4,7 @@ import com.server.youthtalktalk.domain.Announcement;
 import com.server.youthtalktalk.dto.announcement.AnnouncementCreateDto;
 import com.server.youthtalktalk.dto.announcement.AnnouncementListRepDto;
 import com.server.youthtalktalk.dto.announcement.AnnouncementRepDto;
+import com.server.youthtalktalk.dto.announcement.AnnouncementUpdateDto;
 import com.server.youthtalktalk.global.response.exception.announcement.AnnouncementNotFoundException;
 import com.server.youthtalktalk.repository.AnnouncementRepository;
 import jakarta.transaction.Transactional;
@@ -49,5 +50,14 @@ public class AnnouncementServiceImpl implements AnnouncementService{
                 .build();
         announcementRepository.save(announcement);
         return announcement.getId();
+    }
+
+    @Override
+    public void updateAnnouncement(Long announcementId, AnnouncementUpdateDto announcementUpdateDto) {
+        announcementRepository.findById(announcementId).ifPresent(
+                announcement -> {
+//                    announcement.update
+                }
+        );
     }
 }
