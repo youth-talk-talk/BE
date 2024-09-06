@@ -6,13 +6,9 @@ import com.server.youthtalktalk.domain.comment.PostComment;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.dto.comment.*;
 import com.server.youthtalktalk.global.response.BaseResponse;
-import com.server.youthtalktalk.global.response.BaseResponseCode;
-import com.server.youthtalktalk.repository.LikeRepository;
 import com.server.youthtalktalk.service.comment.CommentService;
 import com.server.youthtalktalk.service.member.MemberService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,7 +54,7 @@ public class CommentController {
     @GetMapping("/policies/{policyId}/comments")
     public BaseResponse<List<CommentDto>> getPolicyComments(@PathVariable String policyId) {
         List<PolicyComment> policyComments = commentService.getPolicyComments(policyId);
-        List<CommentDto> commentDtoList = commentService.convertToCommentDtoList(policyComments, memberService.getCurrentMember());
+        List<CommentDto> commentDtoList = commentService.toCommentDtoList(policyComments, memberService.getCurrentMember());
         return new BaseResponse<>(commentDtoList, SUCCESS);
     }
 
@@ -68,7 +64,7 @@ public class CommentController {
     @GetMapping("/posts/{postId}/comments")
     public BaseResponse<List<CommentDto>> getPostComments(@PathVariable Long postId) {
         List<PostComment> postComments = commentService.getPostComments(postId);
-        List<CommentDto> commentDtoList = commentService.convertToCommentDtoList(postComments, memberService.getCurrentMember());
+        List<CommentDto> commentDtoList = commentService.toCommentDtoList(postComments, memberService.getCurrentMember());
         return new BaseResponse<>(commentDtoList, SUCCESS);
     }
 
@@ -78,17 +74,28 @@ public class CommentController {
     @GetMapping("/members/me/comments")
     public BaseResponse<List<MyCommentDto>> getMemberComments() {
         Member member = memberService.getCurrentMember();
-        List<Comment> comments = commentService.getMemberComments(member);
+        List<Comment> comments = commentService.getMyComments(member);
 
         if (comments.isEmpty()) // 회원이 작성한 댓글이 없는 경우
             return new BaseResponse<>(SUCCESS_COMMENT_EMPTY);
 
-        String nickname = member.getNickname();
-        List<MyCommentDto> commentDtoList = comments.stream()
-                .map(comment -> new MyCommentDto(comment.getId(), nickname, comment.getContent()))
-                .collect(Collectors.toList());
+        List<MyCommentDto> myCommentDtoList = commentService.toMyCommentDtoList(comments, member.getNickname());
+        return new BaseResponse<>(myCommentDtoList, SUCCESS);
+    }
 
-        return new BaseResponse<>(commentDtoList, SUCCESS);
+    /**
+     * 회원이 좋아요한 댓글 조회 api
+     */
+    @GetMapping("/members/me/comments/likes")
+    public BaseResponse<List<MyCommentDto>> getLikedComments() {
+        Member member = memberService.getCurrentMember();
+        List<Comment> likedComments = commentService.getLikedComments(member);
+
+        if(likedComments.isEmpty()) // 회원이 좋아요한 댓글이 없는 경우
+            return new BaseResponse<>(SUCCESS_COMMENT_EMPTY);
+
+        List<MyCommentDto> myCommentDtoList = commentService.toMyCommentDtoList(likedComments, member.getNickname());
+        return new BaseResponse<>(myCommentDtoList, SUCCESS);
     }
 
     /**
@@ -124,24 +131,6 @@ public class CommentController {
             commentService.setCommentUnliked(commentId, member); // 좋아요 해제
             return new BaseResponse<>(SUCCESS_COMMENT_UNLIKED);
         }
-    }
-
-    /**
-     * 회원이 좋아요한 댓글 조회 api
-     */
-    @GetMapping("/members/me/comments/likes")
-    public BaseResponse<List<MyCommentDto>> getLikedComments() {
-        Member member = memberService.getCurrentMember();
-        List<Comment> likedComments = commentService.getLikedComments(member);
-
-        if(likedComments.isEmpty()) // 회원이 좋아요한 댓글이 없는 경우
-            return new BaseResponse<>(SUCCESS_COMMENT_EMPTY);
-
-        String nickname = member.getNickname();
-        List<MyCommentDto> commentDtoList = likedComments.stream()
-                .map(comment -> new MyCommentDto(comment.getId(), nickname, comment.getContent()))
-                .collect(Collectors.toList());
-        return new BaseResponse<>(commentDtoList, SUCCESS);
     }
 
 }

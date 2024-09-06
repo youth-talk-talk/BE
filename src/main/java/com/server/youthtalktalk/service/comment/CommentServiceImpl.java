@@ -8,7 +8,7 @@ import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.policy.Policy;
 import com.server.youthtalktalk.domain.post.Post;
 import com.server.youthtalktalk.dto.comment.CommentDto;
-import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.dto.comment.MyCommentDto;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.comment.AlreadyLikedException;
 import com.server.youthtalktalk.global.response.exception.comment.CommentLikeNotFoundException;
@@ -81,7 +81,7 @@ public class CommentServiceImpl implements CommentService {
      */
     @Override
     public List<PostComment> getPostComments(Long postId) {
-        if (postId == null) {
+        if (postId == null || postId < 0) {
             throw new InvalidValueException(INVALID_INPUT_VALUE);
         }
         postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
@@ -92,22 +92,43 @@ public class CommentServiceImpl implements CommentService {
      * 회원이 작성한 댓글 조회
      */
     @Override
-    public List<Comment> getMemberComments(Member member) {
+    public List<Comment> getMyComments(Member member) {
         return commentRepository.findCommentsByWriterOrderByCreatedAtDesc(member);
+    }
+
+    /**
+     * 회원이 좋아요한 댓글 조회
+     */
+    @Override
+    public List<Comment> getLikedComments(Member member) {
+        return likeRepository.findAllByMemberOrderByCreatedAtDesc(member)
+                .stream().map(Likes::getComment).collect(Collectors.toList());
     }
 
     /**
      * CommentDto로 변환
      */
     @Override
-    public List<CommentDto> convertToCommentDtoList(List<? extends Comment> comments, Member member) {
+    public List<CommentDto> toCommentDtoList(List<? extends Comment> comments, Member member) {
         return comments.stream()
                 .map(comment -> {
-                    // writer null인 경우 닉네임 치환
-                    String writerNickname = (comment.getWriter() != null) ? comment.getWriter().getNickname() : "null";
-                    // 회원의 좋아요 여부 판단
-                    boolean isLikedByMember = isLikedByMember(comment, member);
-                    return new CommentDto(comment.getId(), writerNickname, comment.getContent(), isLikedByMember);
+                    String writerNickname = (comment.getWriter() != null) ? comment.getWriter().getNickname() : "null"; // writer null인 경우 닉네임 치환
+                    boolean isLikedByMember = isLikedByMember(comment, member); // 회원의 좋아요 여부 판단
+                    Object relatedEntityId = comment.getRelatedEntityId(); // 연관 엔티티(post 또는 policy)의 id
+                    return new CommentDto(comment.getId(), writerNickname, comment.getContent(), isLikedByMember, relatedEntityId);
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * MyCommentDto로 변환 (좋아요 없음, 닉네임 고정)
+     */
+    @Override
+    public List<MyCommentDto> toMyCommentDtoList(List<Comment> comments, String nickname) {
+        return comments.stream()
+                .map(comment -> {
+                    Object relatedEntityId = comment.getRelatedEntityId(); // 연관 엔티티(post 또는 policy)의 id
+                    return new MyCommentDto(comment.getId(), nickname, comment.getContent(), relatedEntityId);
                 })
                 .collect(Collectors.toList());
     }
@@ -174,15 +195,6 @@ public class CommentServiceImpl implements CommentService {
         memberRepository.save(member);
         commentRepository.save(comment);
         likeRepository.delete(like);
-    }
-
-    /**
-     * 회원이 좋아요한 댓글 조회
-     */
-    @Override
-    public List<Comment> getLikedComments(Member member) {
-        return likeRepository.findAllByMemberOrderByCreatedAtDesc(member)
-                .stream().map(Likes::getComment).collect(Collectors.toList());
     }
 
 }
