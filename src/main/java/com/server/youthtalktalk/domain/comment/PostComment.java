@@ -26,4 +26,8 @@ public class PostComment extends Comment{
         post.getPostComments().add(this);
     }
 
+    @Override
+    public Long getRelatedEntityId() {
+        return post.getId();
+    }
 }
