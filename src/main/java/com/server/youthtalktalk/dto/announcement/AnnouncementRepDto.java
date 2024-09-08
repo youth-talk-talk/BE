@@ -13,7 +13,5 @@ public class AnnouncementRepDto {
     private String title;
     private String content;
     private List<AnnouncementImage> imageList;
-    private Long writerId;
-    private String nickname;
     private String updateAt;
 }
