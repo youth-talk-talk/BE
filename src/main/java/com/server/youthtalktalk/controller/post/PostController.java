@@ -1,7 +1,5 @@
 package com.server.youthtalktalk.controller.post;
 
-import com.server.youthtalktalk.domain.Scrap;
-import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.policy.Category;
 import com.server.youthtalktalk.dto.post.*;
 import com.server.youthtalktalk.global.response.BaseResponse;
@@ -10,7 +8,6 @@ import com.server.youthtalktalk.service.member.MemberService;
 import com.server.youthtalktalk.service.post.PostReadService;
 import com.server.youthtalktalk.service.post.PostService;
 import jakarta.validation.Valid;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -45,6 +42,20 @@ public class PostController {
                                            @PathVariable Long id) throws IOException {
         PostRepDto repDto = postService.updatePost(id,postUpdateReqDto,images,memberService.getCurrentMember());
         return new BaseResponse<>(repDto, BaseResponseCode.SUCCESS);
+    }
+
+    /** 게시글 생성 API test */
+    @PostMapping("/create")
+    public BaseResponse<PostRepDto> createPost(@RequestBody @Valid PostCreateTestReqDto postCreateReqDto) throws IOException {
+        PostRepDto postRepDto = postService.createPostTest(postCreateReqDto,memberService.getCurrentMember());
+        return new BaseResponse<>(postRepDto, BaseResponseCode.SUCCESS);
+    }
+
+    /** 게시글 수정 API test */
+    @PatchMapping("/update/{id}")
+    public BaseResponse<PostRepDto> updatePost(@PathVariable Long id, @RequestBody @Valid PostUpdateReqTestDto postUpdateReqDto) throws IOException {
+        PostRepDto postRepDto = postService.updatePostTest(id,postUpdateReqDto,memberService.getCurrentMember());
+        return new BaseResponse<>(postRepDto, BaseResponseCode.SUCCESS);
     }
 
     /** 게시글 삭제 API */
