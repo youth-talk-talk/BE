@@ -27,7 +27,7 @@
 |---------------------|------------------------------------------------------------------------------------------------------------------------|
 | **IDE**             | IntelliJ                                                                                                               |
 | **Language**        | Java 17                                                                                                                |
-| **Framework**       | Spring Boot 3.2.5, Spring Cloud                                                                                         |
+| **Framework**       | Spring Boot 3                                                                                       |
 | **Database**        | MySQL, H2                                                                                                             |
 | **ORM**             | Spring Data JPA, Querydsl                                                                                              |
 | **Authentication**  | OAuth2, JWT (JSON Web Tokens)                                                                                          |
