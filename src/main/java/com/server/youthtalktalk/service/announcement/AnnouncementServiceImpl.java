@@ -54,9 +54,13 @@ public class AnnouncementServiceImpl implements AnnouncementService{
 
     @Override
     public void updateAnnouncement(Long announcementId, AnnouncementUpdateDto announcementUpdateDto) {
-        announcementRepository.findById(announcementId).ifPresent(
+        announcementRepository.findById(announcementId).ifPresentOrElse(
                 announcement -> {
-//                    announcement.update
+                    announcementUpdateDto.title().ifPresent(announcement::updateTitle);
+                    announcementUpdateDto.content().ifPresent(announcement::updateContent);
+                    announcementRepository.save(announcement);
+                }, () -> {
+                    throw new AnnouncementNotFoundException();
                 }
         );
     }

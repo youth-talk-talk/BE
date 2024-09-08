@@ -26,6 +26,7 @@ public enum BaseResponseCode {
     SUCCESS_MEMBER_DELETE("S13", "회원 탈퇴를 완료하였습니다.", HttpStatus.OK.value()),
     // Announcement
     SUCCESS_ANNOUNCEMENT_CREATE("S14", "공지사항을 성공적으로 등록했습니다.", HttpStatus.OK.value()),
+    SUCCESS_ANNOUNCEMENT_UPDATE("S15", "공지사항을 성공적으로 수정했습니다.", HttpStatus.OK.value()),
 
     /* 요청 실패 시*/
     //공통

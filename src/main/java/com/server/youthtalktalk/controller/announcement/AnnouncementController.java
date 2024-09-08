@@ -3,6 +3,7 @@ package com.server.youthtalktalk.controller.announcement;
 import com.server.youthtalktalk.dto.announcement.AnnouncementCreateDto;
 import com.server.youthtalktalk.dto.announcement.AnnouncementListRepDto;
 import com.server.youthtalktalk.dto.announcement.AnnouncementRepDto;
+import com.server.youthtalktalk.dto.announcement.AnnouncementUpdateDto;
 import com.server.youthtalktalk.global.response.BaseResponse;
 import com.server.youthtalktalk.service.announcement.AnnouncementService;
 import jakarta.validation.Valid;
@@ -43,4 +44,14 @@ public class AnnouncementController {
         Long announcementId = announcementService.createAnnouncement(announcementCreateDto);
         return new BaseResponse<>(announcementId, SUCCESS_ANNOUNCEMENT_CREATE);
     }
+
+    /**
+     * 공지사항 수정
+     */
+    @PatchMapping("/admin/announcements/{id}")
+    public BaseResponse<Void> updateAnnouncement(@PathVariable Long id, @RequestBody AnnouncementUpdateDto announcementUpdateDto) {
+        announcementService.updateAnnouncement(id, announcementUpdateDto);
+        return new BaseResponse<>(SUCCESS_ANNOUNCEMENT_UPDATE);
+    }
+
 }
