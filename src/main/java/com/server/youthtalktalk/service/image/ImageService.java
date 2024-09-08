@@ -9,8 +9,11 @@ import java.io.IOException;
 import java.util.List;
 
 public interface ImageService {
-    List<String> uploadMultiFile(List<MultipartFile> multipartFileList) throws IOException;
-    void deleteMultiFile(List<String> fileUrlList);
+    String uploadMultiFile(MultipartFile multipartFile) throws IOException;
+    List<String> uploadMultiFiles(List<MultipartFile> multipartFileList) throws IOException;
+    void mappingPostImage(List<String> imgUrls,Post post);
+    void createPostImage(String imgUrl);
+    void deleteMultiFile(List<String> imgUrlList);
     void savePostImageList(List<String> imageUrlList, Post post);
     void saveAnnouncementImageList(List<String> imageUrlList, Announcement announcement);
 }
