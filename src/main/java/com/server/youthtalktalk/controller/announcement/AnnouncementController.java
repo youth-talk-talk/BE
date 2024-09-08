@@ -11,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
 @RestController
@@ -40,9 +43,11 @@ public class AnnouncementController {
      * 공지사항 등록
      */
     @PostMapping("/admin/announcements")
-    public BaseResponse<Long> createAnnouncement(@Valid @RequestBody AnnouncementCreateDto announcementCreateDto) {
+    public BaseResponse<Map<String, Long>> createAnnouncement(@Valid @RequestBody AnnouncementCreateDto announcementCreateDto) {
         Long announcementId = announcementService.createAnnouncement(announcementCreateDto);
-        return new BaseResponse<>(announcementId, SUCCESS_ANNOUNCEMENT_CREATE);
+        Map<String, Long> data = new HashMap<>();
+        data.put("announcementId", announcementId);
+        return new BaseResponse<>(data, SUCCESS_ANNOUNCEMENT_CREATE);
     }
 
     /**
