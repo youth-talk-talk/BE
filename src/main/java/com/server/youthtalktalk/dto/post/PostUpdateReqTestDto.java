@@ -17,6 +17,7 @@ public class PostUpdateReqTestDto {
     private String title;
 
     @NotNull(message = "게시글 본문은 필수값입니다.")
+    @Size(min = 1, message = "게시글 본문은 필수값입니다.")
     private List<Content> contentList;
 
     private String policyId; // 정책을 변경했을 때만

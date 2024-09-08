@@ -11,5 +11,13 @@ public class AnnouncementListRepDto {
     private int pageNum;
     private int pageSize;
     private int totalPage;
-    private List<AnnouncementRepDto> announcementList;
+    private List<AnnouncementDto> announcementList;
+
+    @Getter
+    @Builder
+    public static class AnnouncementDto {
+        private Long id;
+        private String title;
+        private String updateAt;
+    }
 }

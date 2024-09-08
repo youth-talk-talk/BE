@@ -10,9 +10,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
@@ -43,8 +47,9 @@ public class AnnouncementController {
      * 공지사항 등록
      */
     @PostMapping("/admin/announcements")
-    public BaseResponse<Map<String, Long>> createAnnouncement(@Valid @RequestBody AnnouncementCreateDto announcementCreateDto) {
-        Long announcementId = announcementService.createAnnouncement(announcementCreateDto);
+    public BaseResponse<Map<String, Long>> createAnnouncement(@RequestPart("content") @Valid AnnouncementCreateDto announcementCreateDto,
+                                                              @RequestPart(value = "images",required = false) List<MultipartFile> fileList) throws IOException {
+        Long announcementId = announcementService.createAnnouncement(announcementCreateDto,fileList);
         Map<String, Long> data = new HashMap<>();
         data.put("announcementId", announcementId);
         return new BaseResponse<>(data, SUCCESS_ANNOUNCEMENT_CREATE);
@@ -54,8 +59,10 @@ public class AnnouncementController {
      * 공지사항 수정
      */
     @PatchMapping("/admin/announcements/{id}")
-    public BaseResponse<Void> updateAnnouncement(@PathVariable Long id, @RequestBody AnnouncementUpdateDto announcementUpdateDto) {
-        announcementService.updateAnnouncement(id, announcementUpdateDto);
+    public BaseResponse<Void> updateAnnouncement(@RequestPart("content") @Valid AnnouncementUpdateDto announcementUpdateDto,
+                                                 @RequestPart(value = "images",required = false) List<MultipartFile> fileList,
+                                                 @PathVariable Long id) {
+        announcementService.updateAnnouncement(id, announcementUpdateDto,fileList);
         return new BaseResponse<>(SUCCESS_ANNOUNCEMENT_UPDATE);
     }
 
