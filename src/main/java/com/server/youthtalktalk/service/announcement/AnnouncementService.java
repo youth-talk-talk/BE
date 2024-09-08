@@ -11,4 +11,5 @@ public interface AnnouncementService {
     AnnouncementRepDto getAnnouncement(Long announcementId);
     Long createAnnouncement(AnnouncementCreateDto announcementCreateDto);
     void updateAnnouncement(Long announcementId, AnnouncementUpdateDto announcementUpdateDto);
+    void deleteAnnouncement(Long announcementId);
 }

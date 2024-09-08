@@ -54,4 +54,12 @@ public class AnnouncementController {
         return new BaseResponse<>(SUCCESS_ANNOUNCEMENT_UPDATE);
     }
 
+    /**
+     * 공지사항 삭제
+     */
+    @DeleteMapping("/admin/announcements/{id}")
+    public BaseResponse<Void> deleteAnnouncement(@PathVariable Long id) {
+        announcementService.deleteAnnouncement(id);
+        return new BaseResponse<>(SUCCESS_ANNOUNCEMENT_DELETE);
+    }
 }

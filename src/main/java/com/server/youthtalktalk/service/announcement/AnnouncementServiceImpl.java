@@ -64,4 +64,14 @@ public class AnnouncementServiceImpl implements AnnouncementService{
                 }
         );
     }
+
+    @Override
+    public void deleteAnnouncement(Long announcementId) {
+        announcementRepository.findById(announcementId).ifPresentOrElse(
+                announcementRepository::delete,
+                () -> {
+                    throw new AnnouncementNotFoundException();
+                }
+        );
+    }
 }

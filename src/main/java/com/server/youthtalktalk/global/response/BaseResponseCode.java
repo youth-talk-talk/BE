@@ -27,6 +27,7 @@ public enum BaseResponseCode {
     // Announcement
     SUCCESS_ANNOUNCEMENT_CREATE("S14", "공지사항을 성공적으로 등록했습니다.", HttpStatus.OK.value()),
     SUCCESS_ANNOUNCEMENT_UPDATE("S15", "공지사항을 성공적으로 수정했습니다.", HttpStatus.OK.value()),
+    SUCCESS_ANNOUNCEMENT_DELETE("S16", "공지사항을 성공적으로 삭제했습니다.", HttpStatus.OK.value()),
 
     /* 요청 실패 시*/
     //공통
