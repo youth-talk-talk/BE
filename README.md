@@ -35,6 +35,15 @@
 - **후기 게시판**: 정책별 게시글 작성, 댓글 작성 기능
 - **자유 게시판**: 자유 게시글 작성, 댓글 작성 기능
 
+<br><br>
+## 아키텍처
+<img src="https://github.com/user-attachments/assets/eea0cc93-aae6-4075-a454-54265caafc8a" alt="youthtalktalk_origin drawio" width="600"/>
+
+<br><br>
+## ERD
+<img src="https://github.com/user-attachments/assets/2a7f4da2-690c-4142-8d9f-8e6af8612ae6" alt="ERD" width="600"/>
+
+
 
 <br><br>
 ## 폴더 구조
@@ -74,10 +83,3 @@
     └── 📁 post
 ```
 
-<br><br>
-## 아키텍처
-<img src="https://github.com/user-attachments/assets/eea0cc93-aae6-4075-a454-54265caafc8a" alt="youthtalktalk_origin drawio" width="600"/>
-
-<br><br>
-## ERD
-<img src="https://github.com/user-attachments/assets/2a7f4da2-690c-4142-8d9f-8e6af8612ae6" alt="ERD" width="600"/>
