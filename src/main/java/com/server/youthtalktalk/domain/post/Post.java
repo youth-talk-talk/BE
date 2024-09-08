@@ -1,7 +1,6 @@
 package com.server.youthtalktalk.domain.post;
 
 import com.server.youthtalktalk.domain.BaseTimeEntity;
-import com.server.youthtalktalk.domain.image.Image;
 import com.server.youthtalktalk.domain.image.PostImage;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.comment.PostComment;
@@ -39,6 +38,11 @@ public class Post extends BaseTimeEntity {
     @JoinColumn(name = "member_id")
     private Member writer;
 
+    // 임시 추가
+    @ElementCollection
+    @CollectionTable(name = "post_contents", joinColumns = @JoinColumn(name = "post_id"))
+    private List<Content> contents;
+
     @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<PostImage> images = new ArrayList<>();
@@ -60,13 +64,14 @@ public class Post extends BaseTimeEntity {
                 .postId(this.getId())
                 .title(this.getTitle())
                 .content(this.getContent())
+                .contentList(this.getContents())
                 .policyId(this instanceof Review ? ((Review)this).getPolicy().getPolicyId() : null)
                 .policyTitle(this instanceof Review ? ((Review)this).getPolicy().getTitle() : null)
                 .postType(this instanceof Review ? "review" : "post")
                 .writerId(this.getWriter() == null ? null : this.getWriter().getId())
                 .nickname(this.getWriter() == null ? "null" : this.getWriter().getNickname())
                 .view(this.getView())
-                .images(this.getImages())
+                .images(this.getImages().stream().map(PostImage::getImgUrl).toList())
                 .category(this instanceof Review ? ((Review)this).getPolicy().getCategory().getKey() : null)
                 .build();
     }

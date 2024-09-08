@@ -8,6 +8,8 @@ import com.server.youthtalktalk.domain.Announcement;
 import com.server.youthtalktalk.domain.image.AnnouncementImage;
 import com.server.youthtalktalk.domain.image.Image;
 import com.server.youthtalktalk.domain.image.PostImage;
+import com.server.youthtalktalk.domain.post.Content;
+import com.server.youthtalktalk.domain.post.ContentType;
 import com.server.youthtalktalk.domain.post.Post;
 import com.server.youthtalktalk.repository.ImageRepository;
 import jakarta.transaction.Transactional;
@@ -26,6 +28,7 @@ import java.util.UUID;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional
 public class ImageServiceImpl implements ImageService{
     // @Value는 lombok 어노테이션이 아님에 주의! 버켓 이름 동적 할당(properties에서 가져옴)
     @Value("${cloud.aws.s3.bucket}")
@@ -37,8 +40,33 @@ public class ImageServiceImpl implements ImageService{
 
 
     @Override
-    @Transactional
-    public List<String> uploadMultiFile(List<MultipartFile> multipartFileList) throws IOException {
+    public String uploadMultiFile(MultipartFile multipartFile) throws IOException {
+        try {
+            // 파일 이름의 중복을 막기 위해 "UUID(랜덤 값) + 원본파일이름"로 연결함
+            String s3FileName = UUID.randomUUID() + "-" + multipartFile.getOriginalFilename();
+
+            // 파일 사이즈를 ContentLength를 이용하여 S3에 알려줌
+            ObjectMetadata objMeta = new ObjectMetadata();
+            // url을 클릭 시 사진이 웹에서 보이는 것이 아닌 바로 다운되는 현상을 해결하기 위해 메타데이터 타입 설정
+            objMeta.setContentType(multipartFile.getContentType());
+            InputStream inputStream = multipartFile.getInputStream();
+            objMeta.setContentLength(inputStream.available());
+
+            // 파일 stream을 열어서 S3에 파일을 업로드
+            amazonS3.putObject(bucket, s3FileName, inputStream, objMeta);
+            inputStream.close();
+
+            // Url 가져와서 반환
+            log.info("S3 upload file name = {}", s3FileName);
+            return amazonS3.getUrl(bucket, s3FileName).toString();
+        }
+        catch (AmazonS3Exception e) {
+            throw new AmazonS3Exception("Failed to upload multiple files", e);
+        }
+    }
+
+    @Override
+    public List<String> uploadMultiFiles(List<MultipartFile> multipartFileList) throws IOException {
         List<String> fileList = new ArrayList<>();
         try {
             for (MultipartFile file : multipartFileList) {
@@ -67,14 +95,28 @@ public class ImageServiceImpl implements ImageService{
         return fileList;
     }
 
+    @Override
+    public void mappingPostImage(List<String> imgUrls,Post post) {
+        List<Image> images = imageRepository.findAllByImgUrlIn(imgUrls);
+        for (Image image : images) {
+            ((PostImage)image).setPost(post);
+        }
+    }
 
     @Override
-    @Transactional
-    public void deleteMultiFile(List<String> fileUrlList) {
+    public void createPostImage(String imgUrl) {
+        imageRepository.save(PostImage.builder()
+                .imgUrl(imgUrl)
+                .post(null)
+                .build());
+    }
+
+    @Override
+    public void deleteMultiFile(List<String> imgUrlList) {
         try {
             String bucketUrl = "https://s3."+region+".amazonaws.com/"+bucket;
-            imageRepository.deleteAllByImgUrlIn(fileUrlList);
-            for (String fileUrl : fileUrlList) {
+            imageRepository.deleteAllByImgUrlIn(imgUrlList);
+            for (String fileUrl : imgUrlList) {
                 log.info("delete imgUrl = {}",fileUrl);
                 String fileName = fileUrl.substring(bucketUrl.length() + 1);
                 DeleteObjectRequest request = new DeleteObjectRequest(bucket, fileName);
