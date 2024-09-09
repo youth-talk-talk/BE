@@ -84,23 +84,22 @@ public class PostReadServiceImpl implements PostReadService {
     /** 게시글, 리뷰 키워드 검색 */
     @Override
     @Transactional
-    public List<PostListDto> getAllPostByKeyword(Pageable pageable, String type, String keyword, Member member) {
+    public PostListResponse getAllPostByKeyword(Pageable pageable, String type, String keyword, Member member) {
         Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC,"id"));
-        List<Post> postList=null;
         keyword = keyword.replaceAll("\\s", ""); // 키워드 공백 제거
-        if(type.equals("post")){
-            postList = postRepository.findAllPostsByKeyword(keyword,pageRequest).getContent();
-        }
-        else if(type.equals("review")){
-            postList = postRepository.findAllReviewsByKeyword(keyword,pageRequest).getContent();
-        }
-        else throw new InvalidValueException(BaseResponseCode.INVALID_INPUT_VALUE);
-
-        List<PostListDto> result = new ArrayList<>();
-        postList.forEach(post -> result.add(toPostDto(post,member)));
+        Page<Post> postList = switch (type) {
+            case "post" -> postRepository.findAllPostsByKeyword(keyword, pageRequest);
+            case "review" -> postRepository.findAllReviewsByKeyword(keyword, pageRequest);
+            default -> throw new InvalidValueException(BaseResponseCode.INVALID_INPUT_VALUE);
+        };
+        List<PostListDto> result = postList.getContent().stream().map(post -> toPostDto(post, member)).toList();
 
         log.info("게시글 키워드 검색 성공 keyword = {} type = {}", keyword, type);
-        return result;
+        return PostListResponse.builder()
+                .posts(result)
+                .page(postList.getNumber())
+                .total(postList.getTotalElements())
+                .build();
     }
 
     @Override

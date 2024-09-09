@@ -98,9 +98,9 @@ public class PostController {
 
     /** 게시글 키워드 검색 API */
     @GetMapping("/keyword")
-    public BaseResponse<List<PostListDto>> getAllPostByKeyword(@PageableDefault(size = 10) Pageable pageable, @RequestParam String keyword, @RequestParam String type){
-        List<PostListDto> postListDto = postReadService.getAllPostByKeyword(pageable,type,keyword,memberService.getCurrentMember());
-        return new BaseResponse<>(postListDto,BaseResponseCode.SUCCESS);
+    public BaseResponse<PostListResponse> getAllPostByKeyword(@PageableDefault(size = 10) Pageable pageable, @RequestParam String keyword, @RequestParam String type){
+        PostListResponse postListResponse = postReadService.getAllPostByKeyword(pageable,type,keyword,memberService.getCurrentMember());
+        return new BaseResponse<>(postListResponse,BaseResponseCode.SUCCESS);
     }
 
     /** 나의 모든 게시글 조회 API */
