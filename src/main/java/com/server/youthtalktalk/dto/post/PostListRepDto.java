@@ -13,6 +13,14 @@ public class PostListRepDto {
 
     @Getter
     @Builder
+    public static class PostListResponse{
+        private long total;
+        private int page;
+        private List<PostListDto> posts;
+    }
+
+    @Getter
+    @Builder
     public static class PostListDto {
         private Long postId;
         private String title;
