@@ -6,10 +6,7 @@ import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.policy.Category;
 import com.server.youthtalktalk.domain.policy.Policy;
 import com.server.youthtalktalk.domain.policy.Region;
-import com.server.youthtalktalk.dto.policy.PolicyDetailResponseDto;
-import com.server.youthtalktalk.dto.policy.PolicyListResponseDto;
-import com.server.youthtalktalk.dto.policy.SearchConditionRequestDto;
-import com.server.youthtalktalk.dto.policy.SearchConditionResponseDto;
+import com.server.youthtalktalk.dto.policy.*;
 import com.server.youthtalktalk.global.response.BaseResponse;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
@@ -175,6 +172,40 @@ public class PolicyServiceImpl implements PolicyService {
     }
 
 
+    /**
+     * 이름으로 정책 조회
+     */
+    public List<SearchNameResponseDto> getPoliciesByName(String title, Pageable pageable){
+        title = title.replace(" ", "");
+        Region region;
+        try {
+            region = memberService.getCurrentMember().getRegion();
+        } catch (Exception e) {
+            throw new MemberNotFoundException();
+        }
+
+        List<Policy> policies = policyRepository.findByRegionAndTitle(region, title, pageable).getContent();
+
+        if (policies.isEmpty()) {
+            log.info("해당 이름의 정책이 존재하지 않습니다");
+            return Collections.emptyList(); // 빈 리스트 반환
+        }
+
+        List<SearchNameResponseDto> result = policies.stream()
+                .map(policy -> {
+                    String policyTitle = policy.getTitle();
+                    String policyId = policy.getPolicyId();
+                    return SearchNameResponseDto.builder()
+                            .policyId(policyId)
+                            .title(policyTitle)
+                            .build();
+                })
+                .collect(Collectors.toList());
+        log.info("이름으로 정책 조회 성공");
+        return result;
+    }
+
+
 
     @Override
     public Scrap scrapPolicy(String policyId, Member member) {
@@ -219,6 +250,9 @@ public class PolicyServiceImpl implements PolicyService {
                 })
                 .collect(Collectors.toList());
     }
+
+
+
 
 }
 
