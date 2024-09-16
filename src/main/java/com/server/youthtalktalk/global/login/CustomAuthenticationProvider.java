@@ -18,12 +18,17 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     private final UserDetailsService userDetailsService;
     private final GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
 
+    /**
+     * 요청의 username이 db의 사용자 정보와 일치하는지 비교한다.
+     * 인증에 성공하면, UserDetail 정보를 기반으로 UsernamePasswordAuthenticationToken 객체를 생성하여 반환한다.
+     */
+
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String username = authentication.getPrincipal().toString();
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         return new UsernamePasswordAuthenticationToken(userDetails,
-                "password", authoritiesMapper.mapAuthorities(userDetails.getAuthorities()));
+                userDetails.getPassword(), authoritiesMapper.mapAuthorities(userDetails.getAuthorities()));
     }
 
     @Override
