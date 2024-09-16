@@ -59,7 +59,7 @@ public class Post extends BaseTimeEntity {
         }
     }
 
-    public PostRepDto toPostRepDto() {
+    public PostRepDto toPostRepDto(boolean isScrap) {
         return PostRepDto.builder()
                 .postId(this.getId())
                 .title(this.getTitle())
@@ -73,6 +73,7 @@ public class Post extends BaseTimeEntity {
                 .view(this.getView())
                 .images(this.getImages().stream().map(PostImage::getImgUrl).toList())
                 .category(this instanceof Review ? ((Review)this).getPolicy().getCategory().getKey() : null)
+                .isScrap(isScrap)
                 .build();
     }
 }

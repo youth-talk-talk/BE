@@ -42,7 +42,7 @@ public class PostReadServiceImpl implements PostReadService {
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
         postRepository.save(post.toBuilder().view(post.getView()+1).build());
         log.info("게시글 조회 성공, postId = {}", postId);
-        return post.toPostRepDto();
+        return post.toPostRepDto(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId().toString(),ItemType.POST));
     }
 
     /** 게시글 전체 조회 */
