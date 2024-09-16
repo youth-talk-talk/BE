@@ -69,7 +69,7 @@ public class PostServiceImpl implements PostService{
             imageService.savePostImageList(imageUrlList, savedPost);
         }
         log.info("게시글 생성 성공, postId = {}", savedPost.getId());
-        return savedPost.toPostRepDto();
+        return savedPost.toPostRepDto(scrapRepository.existsByMemberIdAndItemIdAndItemType(writer.getId(),post.getId().toString(),ItemType.POST));
     }
 
     @Override
@@ -80,6 +80,7 @@ public class PostServiceImpl implements PostService{
                     .title(postCreateReqDto.getTitle())
                     .contents(postCreateReqDto.getContentList())
                     .view(0L)
+                    .content("")
                     .build();
         }
         else if(postCreateReqDto.getPostType().equals("review")){ // 리뷰
@@ -87,6 +88,7 @@ public class PostServiceImpl implements PostService{
                     .title(postCreateReqDto.getTitle())
                     .contents(postCreateReqDto.getContentList())
                     .view(0L)
+                    .content("")
                     .build();
             Policy policy = policyRepository.findById(postCreateReqDto.getPolicyId()).orElseThrow(PolicyNotFoundException::new);
             review.setPolicy(policy);
@@ -100,7 +102,7 @@ public class PostServiceImpl implements PostService{
         // 이미지 리스트 추출 후 기존 PostImage 매핑
         imageService.mappingPostImage(extractImageUrl(post),post);
         log.info("게시글 생성 성공, postId = {}", savedPost.getId());
-        return savedPost.toPostRepDto();
+        return savedPost.toPostRepDto(scrapRepository.existsByMemberIdAndItemIdAndItemType(writer.getId(),post.getId().toString(),ItemType.POST));
     }
 
     @Override
@@ -130,7 +132,7 @@ public class PostServiceImpl implements PostService{
             imageService.deleteMultiFile(postUpdateReqDto.getDeletedImgUrlList());
         }
         log.info("게시글 수정 성공, postId = {}", savedPost.getId());
-        return savedPost.toPostRepDto();
+        return savedPost.toPostRepDto(scrapRepository.existsByMemberIdAndItemIdAndItemType(writer.getId(),post.getId().toString(),ItemType.POST));
     }
 
     @Override
@@ -159,7 +161,7 @@ public class PostServiceImpl implements PostService{
             imageService.deleteMultiFile(postUpdateReqDto.getDeletedImgUrlList());
         }
         log.info("게시글 수정 성공, postId = {}", savedPost.getId());
-        return savedPost.toPostRepDto();
+        return savedPost.toPostRepDto(scrapRepository.existsByMemberIdAndItemIdAndItemType(writer.getId(),post.getId().toString(),ItemType.POST));
     }
 
     @Override
@@ -200,6 +202,4 @@ public class PostServiceImpl implements PostService{
         }
         return imgUrls;
     }
-
-
 }
