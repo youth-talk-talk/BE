@@ -23,4 +23,5 @@ public class PostRepDto {
     private Long view;
     private List<String> images;
     private String category;
+    private boolean isScrap;
 }
