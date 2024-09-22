@@ -1,11 +1,10 @@
 package com.server.youthtalktalk.global.login;
 
 import com.server.youthtalktalk.domain.member.Member;
-import com.server.youthtalktalk.global.response.exception.member.MemberAccessDeniedException;
+import com.server.youthtalktalk.global.util.HashUtil;
 import com.server.youthtalktalk.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -25,14 +24,17 @@ import java.util.UUID;
 public class LoginService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
+    private final HashUtil hashUtil;
 
     /**
-     * username이 일치하는 사용자 정보가 있는지 검증한다 -> 있으면 로그인 성공, 없으면 로그인 실패
+     * 파라미터 username을 해싱 처리한 후 db에서 일치하는 사용자를 조회한다.
      * 비밀번호는 인증 절차에 필요하지 않으므로 난수로 만든 다음 UserDetail 객체로 넘긴다.
      */
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        log.info("loadUserByUsername 진입");
+        log.info("username: {}", username);
         Member member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("로그인에 실패했습니다."));
 
