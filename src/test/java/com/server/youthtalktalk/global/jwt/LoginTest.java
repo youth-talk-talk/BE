@@ -3,6 +3,7 @@ package com.server.youthtalktalk.global.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.member.Role;
+import com.server.youthtalktalk.global.util.HashUtil;
 import com.server.youthtalktalk.repository.MemberRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,14 +36,17 @@ public class LoginTest {
     MemberRepository memberRepository;
 
     @Autowired
+    HashUtil hashUtil;
+
+    @Autowired
     EntityManager em;
 
     ObjectMapper objectMapper = new ObjectMapper();
 
-    private static String KEY_USERNAME = "username";
     private static String KEY_SOCIAL_TYPE = "socialType";
-    private static String USERNAME = "777777";
+    private static String KEY_SOCIAL_ID = "socialId";
     private static String SOCIAL_TYPE = "kakao";
+    private static String SOCIAL_ID = "777777";
     private static String LOGIN_URL = "/login";
 
     private void clear(){
@@ -53,16 +57,16 @@ public class LoginTest {
     @BeforeEach
     public void init(){
         memberRepository.save(Member.builder()
-                .username(USERNAME)
+                .username(hashUtil.hash(SOCIAL_ID))
                 .role(Role.USER)
                 .build());
         clear();
     }
 
-    private Map<String, String> getUsernameMap(String username, String socialType){
+    private Map<String, String> getUsernameMap(String socialType, String socialId){
         Map<String, String> map = new HashMap<>();
-        map.put(KEY_USERNAME, username);
         map.put(KEY_SOCIAL_TYPE, socialType);
+        map.put(KEY_SOCIAL_ID, socialId);
         return map;
     }
 
@@ -71,7 +75,6 @@ public class LoginTest {
                 .post(url)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestBodyMap)));
-
     }
 
     /**
@@ -83,7 +86,7 @@ public class LoginTest {
     @Test
     void 로그인_성공() throws Exception {
         // given
-        Map<String, String> map = getUsernameMap(USERNAME, SOCIAL_TYPE);
+        Map<String, String> map = getUsernameMap(SOCIAL_TYPE, SOCIAL_ID);
 
         // when, then
         perform(LOGIN_URL, map)
@@ -96,7 +99,7 @@ public class LoginTest {
     @Test
     void 로그인_실패_회원이_아님() throws Exception {
         // given
-        Map<String, String> map = getUsernameMap(USERNAME+"111", SOCIAL_TYPE);
+        Map<String, String> map = getUsernameMap(SOCIAL_TYPE, SOCIAL_ID+"111");
 
         // when, then
         perform(LOGIN_URL, map)
@@ -108,7 +111,7 @@ public class LoginTest {
     @Test
     void 로그인_주소가_틀리면_401() throws Exception {
         // given
-        Map<String, String> map = getUsernameMap(USERNAME, SOCIAL_TYPE);
+        Map<String, String> map = getUsernameMap(SOCIAL_TYPE, SOCIAL_ID);
 
         // when, then
         perform(LOGIN_URL+"else", map)

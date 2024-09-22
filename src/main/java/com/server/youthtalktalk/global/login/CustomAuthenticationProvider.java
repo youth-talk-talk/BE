@@ -25,8 +25,8 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        String username = authentication.getPrincipal().toString();
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        String socialId = authentication.getPrincipal().toString(); // 평문의 socialId
+        UserDetails userDetails = userDetailsService.loadUserByUsername(socialId);
         return new UsernamePasswordAuthenticationToken(userDetails,
                 userDetails.getPassword(), authoritiesMapper.mapAuthorities(userDetails.getAuthorities()));
     }

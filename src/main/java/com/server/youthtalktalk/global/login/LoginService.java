@@ -27,14 +27,15 @@ public class LoginService implements UserDetailsService {
     private final HashUtil hashUtil;
 
     /**
-     * 파라미터 username을 해싱 처리한 후 db에서 일치하는 사용자를 조회한다.
+     * 파라미터 socialId를 해싱 처리한 후 db에서 일치하는 사용자를 조회한다.
      * 비밀번호는 인증 절차에 필요하지 않으므로 난수로 만든 다음 UserDetail 객체로 넘긴다.
      */
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String socialId) throws UsernameNotFoundException {
         log.info("loadUserByUsername 진입");
-        log.info("username: {}", username);
+        log.info("socialId: {}", socialId);
+        String username = hashUtil.hash(socialId);
         Member member = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("로그인에 실패했습니다."));
 

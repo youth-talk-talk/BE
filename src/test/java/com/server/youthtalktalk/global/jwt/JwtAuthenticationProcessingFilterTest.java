@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.member.Role;
+import com.server.youthtalktalk.global.util.HashUtil;
 import com.server.youthtalktalk.repository.MemberRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +42,9 @@ class JwtAuthenticationProcessingFilterTest {
     MemberRepository memberRepository;
 
     @Autowired
+    HashUtil hashUtil;
+
+    @Autowired
     EntityManager em;
 
     @Autowired
@@ -60,10 +64,10 @@ class JwtAuthenticationProcessingFilterTest {
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
     private static final String BEARER = "Bearer ";
 
-    private static String KEY_USERNAME = "username";
     private static String KEY_SOCIAL_TYPE = "socialType";
-    private static String USERNAME = "hashedUsername";
+    private static String KEY_SOCIAL_ID = "socialId";
     private static String SOCIAL_TYPE = "kakao";
+    private static String SOCIAL_ID = "77777";
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -75,21 +79,21 @@ class JwtAuthenticationProcessingFilterTest {
     @BeforeEach
     public void init(){
         memberRepository.save(Member.builder()
-                .username(USERNAME)
+                .username(hashUtil.hash(SOCIAL_ID))
                 .role(Role.USER)
                 .build());
         clear();
     }
 
-    private Map<String, String> createRequestBodyMap(String username, String socialType){
+    private Map<String, String> createRequestBodyMap(String socialType, String socialId){
         Map<String, String> map = new HashMap<>();
-        map.put(KEY_USERNAME, username);
         map.put(KEY_SOCIAL_TYPE, socialType);
+        map.put(KEY_SOCIAL_ID, socialId);
         return map;
     }
 
     private Map<String, String> getAccessAndRefreshToken() throws Exception {
-        Map<String, String> map = createRequestBodyMap(USERNAME, SOCIAL_TYPE);
+        Map<String, String> map = createRequestBodyMap(SOCIAL_TYPE, SOCIAL_ID);
 
         System.out.println("로그인 요청 시작");
         MvcResult result = mockMvc.perform(

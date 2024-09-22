@@ -37,7 +37,7 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
     private static final String DEFAULT_LOGIN_REQUEST_URL = "/login";
     private static final String HTTP_METHOD = "POST";
     private static final String CONTENT_TYPE = "application/json";
-    private static final String USERNAME_KEY = "username";
+    private static final String SOCIAL_ID_KEY = "socialId";
     private static final String SOCIAL_TYPE_KEY = "socialType";
     private static final String AUTHORIZATION_CODE = "authorizationCode"; // 애플 로그인
     private static final String IDENTITY_TOKEN = "identityToken";
@@ -62,7 +62,7 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
      * 요청 JSON Example
      * {
      *    "socialType" : "kakao",
-     *    "username" : "해시값"
+     *    "socialId" : "777777"
      * }
      * messageBody를 objectMapper.readValue()로 Map으로 변환
      * Map의 Key로 username 추출 후
@@ -80,7 +80,7 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
 
         String messageBody = StreamUtils.copyToString(request.getInputStream(), StandardCharsets.UTF_8);
         Map<String, String> loginDataMap = objectMapper.readValue(messageBody, Map.class);
-        String username = loginDataMap.get(USERNAME_KEY);
+        String socialId = loginDataMap.get(SOCIAL_ID_KEY);
         String socialType = loginDataMap.get(SOCIAL_TYPE_KEY);
 
         // apple 토큰 검증 과정
@@ -92,13 +92,13 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
             }
 
             String sub = appleVerification(identityToken,authorizationCode); // 검증 완료된 애플 고유 아이디
-            log.info("[AUTH] apple login sub = {}",username);
-            if(!username.equals("apple"+sub))
+            log.info("[AUTH] apple login sub = {}", sub);
+            if(!socialId.equals(sub))
                 throw new BusinessException(APPLE_USER_IDENTIFIER_ERROR);
         }
 
         UsernamePasswordAuthenticationToken authRequest =
-                new UsernamePasswordAuthenticationToken(username, "");
+                new UsernamePasswordAuthenticationToken(socialId, "");
 
         return this.getAuthenticationManager().authenticate(authRequest);
     }
