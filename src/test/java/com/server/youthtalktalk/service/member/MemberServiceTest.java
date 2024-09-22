@@ -4,10 +4,19 @@ import com.server.youthtalktalk.domain.comment.Comment;
 import com.server.youthtalktalk.domain.comment.PostComment;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.member.Role;
+import com.server.youthtalktalk.domain.member.SocialType;
+import com.server.youthtalktalk.domain.policy.Region;
 import com.server.youthtalktalk.domain.post.Post;
+import com.server.youthtalktalk.dto.member.SignUpRequestDto;
+import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
+import com.server.youthtalktalk.global.util.HashUtil;
 import com.server.youthtalktalk.repository.CommentRepository;
 import com.server.youthtalktalk.repository.MemberRepository;
 import com.server.youthtalktalk.repository.PostRepository;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,8 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @SpringBootTest
 @Transactional
@@ -35,6 +46,90 @@ class MemberServiceTest {
 
     @Autowired
     MemberService memberService;
+
+    @Autowired
+    HashUtil hashUtil;
+
+    @Autowired
+    private Validator validator;
+
+    @BeforeEach
+    void setUp() {
+        validator = Validation.buildDefaultValidatorFactory().getValidator(); // Validator 설정
+    }
+
+    @Test
+    public void 회원가입_성공() {
+        // given
+        SignUpRequestDto signUpRequestDto = SignUpRequestDto.builder()
+                .username("1111").socialType("kakao").nickname("member1").region("부산").build();
+
+        // when
+        Long memberId = memberService.signUp(signUpRequestDto);
+
+        // then
+        Member member = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
+        assertThat(member.getUsername()).isEqualTo(hashUtil.hash(signUpRequestDto.getUsername()));
+        assertThat(member.getRefreshToken()).isNotBlank();
+        assertThat(member.getNickname()).isEqualTo(signUpRequestDto.getNickname());
+        assertThat(member.getSocialType()).isEqualTo(SocialType.KAKAO);
+        assertThat(member.getRegion()).isEqualTo(Region.BUSAN);
+    }
+
+    @Test
+    public void 회원가입_실패_NotBlank_검증_오류() {
+        // given
+        SignUpRequestDto signUpRequestDto1 = SignUpRequestDto.builder()
+                .username(null).socialType("kakao").nickname("member1").region("부산").build();
+
+        SignUpRequestDto signUpRequestDto2 = SignUpRequestDto.builder()
+                .username("").socialType("kakao").nickname("member1").region("부산").build();
+
+        // when
+        Set<ConstraintViolation<SignUpRequestDto>> violations1 = validator.validate(signUpRequestDto1);
+        Set<ConstraintViolation<SignUpRequestDto>> violations2 = validator.validate(signUpRequestDto2);
+
+        // then
+        assertFalse(violations1.isEmpty());
+        assertThat(violations1.size()).isEqualTo(1);
+        assertThat(violations1.iterator().next().getMessage()).isEqualTo("username은 필수값입니다.");
+
+        assertFalse(violations2.isEmpty());
+        assertThat(violations2.size()).isEqualTo(1);
+        assertThat(violations2.iterator().next().getMessage()).isEqualTo("username은 필수값입니다.");
+    }
+
+    @Test
+    public void 회원가입_실패_Size_검증_오류() {
+        // given
+        SignUpRequestDto signUpRequestDto1 = SignUpRequestDto.builder()
+                .username("11111").socialType("kakao").nickname("여덟글자보다긴닉네임").region("부산").build();
+
+        // when
+        Set<ConstraintViolation<SignUpRequestDto>> violations1 = validator.validate(signUpRequestDto1);
+
+        // then
+        assertFalse(violations1.isEmpty());
+        assertThat(violations1.size()).isEqualTo(1);
+        assertThat(violations1.iterator().next().getMessage()).isEqualTo("닉네임 길이는 8자 이하입니다.");
+
+    }
+
+    @Test
+    public void 회원가입_실패_Pattern_검증_오류() {
+        // given
+        SignUpRequestDto signUpRequestDto1 = SignUpRequestDto.builder()
+                .username("11111").socialType("kakao").nickname("member1").region("지역").build();
+
+        // when
+        Set<ConstraintViolation<SignUpRequestDto>> violations1 = validator.validate(signUpRequestDto1);
+
+        // then
+        assertFalse(violations1.isEmpty());
+        assertThat(violations1.size()).isEqualTo(1);
+        assertThat(violations1.iterator().next().getMessage()).isEqualTo("지역이 유효하지 않습니다.");
+
+    }
 
     @Test
     void 회원탈퇴_성공_게시글과_댓글_모두_있음() {
