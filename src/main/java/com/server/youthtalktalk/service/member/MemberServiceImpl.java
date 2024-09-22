@@ -77,6 +77,7 @@ public class MemberServiceImpl implements MemberService {
 
         String accessToken = jwtService.createAccessToken(hashedUsername);
         String refreshToken = jwtService.createRefreshToken();
+        jwtService.updateRefreshToken(hashedUsername, refreshToken);
         jwtService.sendAccessAndRefreshToken(httpServletResponse, accessToken, refreshToken);
         return member.getId();
     }
