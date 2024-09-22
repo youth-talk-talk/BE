@@ -129,7 +129,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                     .flatMap(memberRepository::findByUsername)
                     .ifPresentOrElse(
                             member -> {
-                                saveAuthentication(member);
+                                saveAuthentication(member); // 인증 허가 처리
                                 try {
                                     filterChain.doFilter(request, response);
                                 } catch (IOException | ServletException e) {
@@ -152,15 +152,17 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      */
 
     private void saveAuthentication(Member member) {
-        UserDetails userDetailsUser = User.builder()
+        String randomPassword = UUID.randomUUID().toString();
+
+        UserDetails userDetails = User.builder()
                 .username(member.getUsername())
-                .password("password")
+                .password(randomPassword)
                 .roles(member.getRole().name())
                 .build();
 
         Authentication authentication =
-                new UsernamePasswordAuthenticationToken(userDetailsUser, "password",
-                        authoritiesMapper.mapAuthorities(userDetailsUser.getAuthorities()));
+                new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(),
+                        authoritiesMapper.mapAuthorities(userDetails.getAuthorities()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
