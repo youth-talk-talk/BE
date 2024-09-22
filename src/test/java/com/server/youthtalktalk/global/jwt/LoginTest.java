@@ -40,7 +40,9 @@ public class LoginTest {
     ObjectMapper objectMapper = new ObjectMapper();
 
     private static String KEY_USERNAME = "username";
-    private static String USERNAME = "kakao777777";
+    private static String KEY_SOCIAL_TYPE = "socialType";
+    private static String USERNAME = "777777";
+    private static String SOCIAL_TYPE = "kakao";
     private static String LOGIN_URL = "/login";
 
     private void clear(){
@@ -57,17 +59,18 @@ public class LoginTest {
         clear();
     }
 
-    private Map<String, String> getUsernameMap(String username){
+    private Map<String, String> getUsernameMap(String username, String socialType){
         Map<String, String> map = new HashMap<>();
         map.put(KEY_USERNAME, username);
+        map.put(KEY_SOCIAL_TYPE, socialType);
         return map;
     }
 
-    private ResultActions perform(String url, Map<String, String> usernameMap) throws Exception {
+    private ResultActions perform(String url, Map<String, String> requestBodyMap) throws Exception {
         return mockMvc.perform(MockMvcRequestBuilders
                 .post(url)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(usernameMap)));
+                .content(objectMapper.writeValueAsString(requestBodyMap)));
 
     }
 
@@ -80,7 +83,7 @@ public class LoginTest {
     @Test
     void 로그인_성공() throws Exception {
         // given
-        Map<String, String> map = getUsernameMap(USERNAME);
+        Map<String, String> map = getUsernameMap(USERNAME, SOCIAL_TYPE);
 
         // when, then
         perform(LOGIN_URL, map)
@@ -93,7 +96,7 @@ public class LoginTest {
     @Test
     void 로그인_실패_회원이_아님() throws Exception {
         // given
-        Map<String, String> map = getUsernameMap(USERNAME+"111");
+        Map<String, String> map = getUsernameMap(USERNAME+"111", SOCIAL_TYPE);
 
         // when, then
         perform(LOGIN_URL, map)
@@ -105,7 +108,7 @@ public class LoginTest {
     @Test
     void 로그인_주소가_틀리면_401() throws Exception {
         // given
-        Map<String, String> map = getUsernameMap(USERNAME);
+        Map<String, String> map = getUsernameMap(USERNAME, SOCIAL_TYPE);
 
         // when, then
         perform(LOGIN_URL+"else", map)

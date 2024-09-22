@@ -61,7 +61,9 @@ class JwtAuthenticationProcessingFilterTest {
     private static final String BEARER = "Bearer ";
 
     private static String KEY_USERNAME = "username";
-    private static String USERNAME = "myUsername";
+    private static String KEY_SOCIAL_TYPE = "socialType";
+    private static String USERNAME = "hashedUsername";
+    private static String SOCIAL_TYPE = "kakao";
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -79,14 +81,15 @@ class JwtAuthenticationProcessingFilterTest {
         clear();
     }
 
-    private Map<String, String> createRequestBodyMap(String username){
+    private Map<String, String> createRequestBodyMap(String username, String socialType){
         Map<String, String> map = new HashMap<>();
         map.put(KEY_USERNAME, username);
+        map.put(KEY_SOCIAL_TYPE, socialType);
         return map;
     }
 
     private Map<String, String> getAccessAndRefreshToken() throws Exception {
-        Map<String, String> map = createRequestBodyMap(USERNAME);
+        Map<String, String> map = createRequestBodyMap(USERNAME, SOCIAL_TYPE);
 
         System.out.println("로그인 요청 시작");
         MvcResult result = mockMvc.perform(
