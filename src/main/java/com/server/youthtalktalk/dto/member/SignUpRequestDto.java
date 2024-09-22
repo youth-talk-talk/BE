@@ -10,7 +10,7 @@ import lombok.Getter;
 @Builder
 public class SignUpRequestDto {
 
-    @NotBlank(message = "username은 필수값입니다.")
+    @NotBlank(message = "socialId는 필수값입니다.")
     private String socialId;
 
     @NotBlank(message = "socialType은 필수값입니다.")

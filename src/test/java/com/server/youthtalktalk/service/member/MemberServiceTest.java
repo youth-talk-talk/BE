@@ -62,14 +62,14 @@ class MemberServiceTest {
     public void 회원가입_성공() {
         // given
         SignUpRequestDto signUpRequestDto = SignUpRequestDto.builder()
-                .username("1111").socialType("kakao").nickname("member1").region("부산").build();
+                .socialId("1111").socialType("kakao").nickname("member1").region("부산").build();
 
         // when
         Long memberId = memberService.signUp(signUpRequestDto);
 
         // then
         Member member = memberRepository.findById(memberId).orElseThrow(MemberNotFoundException::new);
-        assertThat(member.getUsername()).isEqualTo(hashUtil.hash(signUpRequestDto.getUsername()));
+        assertThat(member.getUsername()).isEqualTo(hashUtil.hash(signUpRequestDto.getSocialId()));
         assertThat(member.getRefreshToken()).isNotBlank();
         assertThat(member.getNickname()).isEqualTo(signUpRequestDto.getNickname());
         assertThat(member.getSocialType()).isEqualTo(SocialType.KAKAO);
@@ -80,10 +80,10 @@ class MemberServiceTest {
     public void 회원가입_실패_NotBlank_검증_오류() {
         // given
         SignUpRequestDto signUpRequestDto1 = SignUpRequestDto.builder()
-                .username(null).socialType("kakao").nickname("member1").region("부산").build();
+                .socialId(null).socialType("kakao").nickname("member1").region("부산").build();
 
         SignUpRequestDto signUpRequestDto2 = SignUpRequestDto.builder()
-                .username("").socialType("kakao").nickname("member1").region("부산").build();
+                .socialId("").socialType("kakao").nickname("member1").region("부산").build();
 
         // when
         Set<ConstraintViolation<SignUpRequestDto>> violations1 = validator.validate(signUpRequestDto1);
@@ -92,18 +92,18 @@ class MemberServiceTest {
         // then
         assertFalse(violations1.isEmpty());
         assertThat(violations1.size()).isEqualTo(1);
-        assertThat(violations1.iterator().next().getMessage()).isEqualTo("username은 필수값입니다.");
+        assertThat(violations1.iterator().next().getMessage()).isEqualTo("socialId는 필수값입니다.");
 
         assertFalse(violations2.isEmpty());
         assertThat(violations2.size()).isEqualTo(1);
-        assertThat(violations2.iterator().next().getMessage()).isEqualTo("username은 필수값입니다.");
+        assertThat(violations2.iterator().next().getMessage()).isEqualTo("socialId는 필수값입니다.");
     }
 
     @Test
     public void 회원가입_실패_Size_검증_오류() {
         // given
         SignUpRequestDto signUpRequestDto1 = SignUpRequestDto.builder()
-                .username("11111").socialType("kakao").nickname("여덟글자보다긴닉네임").region("부산").build();
+                .socialId("11111").socialType("kakao").nickname("여덟글자보다긴닉네임").region("부산").build();
 
         // when
         Set<ConstraintViolation<SignUpRequestDto>> violations1 = validator.validate(signUpRequestDto1);
@@ -119,7 +119,7 @@ class MemberServiceTest {
     public void 회원가입_실패_Pattern_검증_오류() {
         // given
         SignUpRequestDto signUpRequestDto1 = SignUpRequestDto.builder()
-                .username("11111").socialType("kakao").nickname("member1").region("지역").build();
+                .socialId("11111").socialType("kakao").nickname("member1").region("지역").build();
 
         // when
         Set<ConstraintViolation<SignUpRequestDto>> violations1 = validator.validate(signUpRequestDto1);
