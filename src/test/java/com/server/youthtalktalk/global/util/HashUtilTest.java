@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -16,10 +15,10 @@ class HashUtilTest {
     private HashUtil hashUtil;
 
     /**
-     * SHA-256 알고리즘으로 올바른 반환값을 도출하는지 검증
+     * SHA-256 알고리즘으로 올바른 해시값을 반환하는지 검증
      */
     @Test
-    public void SHA256_알고리즘으로_해싱값을_반환() throws Exception {
+    public void SHA256_알고리즘으로_해시값을_반환() throws Exception {
         // given
         String input = "test";
         String expectedHash = "9F86D081884C7D659A2FEAA0C55AD015A3BF4F1B2B0B822CD15D6C15B0F00A08";
