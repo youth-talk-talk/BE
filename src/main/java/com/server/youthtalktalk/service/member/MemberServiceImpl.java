@@ -117,7 +117,7 @@ public class MemberServiceImpl implements MemberService {
     public void deleteMember(Member member, AppleDto.AppleCodeRequestDto appleCodeRequestDto) {
         // 애플 회원 탈퇴인 경우
         if(!(appleCodeRequestDto == null || appleCodeRequestDto.getAuthorizationCode().isEmpty())){
-            if(!member.getUsername().equals("apple"+appleCodeRequestDto.getUserIdentifier())){
+            if (!member.getUsername().equals(hashUtil.hash(appleCodeRequestDto.getUserIdentifier()))) {
                 throw new AppleTokenValidationException();
             }
             // identityToken 서명 검증
