@@ -6,14 +6,15 @@ import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.Optional;
-
 @Getter
 @Builder
 public class SignUpRequestDto {
 
     @NotNull(message = "username은 필수값입니다.")
-    private String username; // 소셜타입+id
+    private String username;
+
+    @NotNull(message = "socialType은 필수값입니다.")
+    private String socialType;
 
     @NotNull(message = "닉네임은 필수값입니다.")
     @Size(max = 8, message = "닉네임 길이는 8자 이하입니다.")

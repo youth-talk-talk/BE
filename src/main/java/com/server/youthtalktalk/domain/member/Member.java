@@ -3,7 +3,6 @@ package com.server.youthtalktalk.domain.member;
 import com.server.youthtalktalk.domain.BaseTimeEntity;
 import com.server.youthtalktalk.domain.Likes;
 import com.server.youthtalktalk.domain.Scrap;
-import com.server.youthtalktalk.domain.Announcement;
 import com.server.youthtalktalk.domain.comment.Comment;
 import com.server.youthtalktalk.domain.policy.Region;
 import com.server.youthtalktalk.domain.post.Post;
@@ -26,7 +25,7 @@ public class Member extends BaseTimeEntity {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String username;
+    private String username; // 소셜 id를 해싱 처리한 값
 
     private String nickname;
     private String refreshToken;
@@ -36,6 +35,9 @@ public class Member extends BaseTimeEntity {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @Enumerated(EnumType.STRING)
+    private SocialType socialType;
 
     @Builder.Default
     @OneToMany(mappedBy = "writer")

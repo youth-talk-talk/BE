@@ -3,6 +3,7 @@ package com.server.youthtalktalk.service.member;
 import com.server.youthtalktalk.domain.comment.Comment;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.domain.member.Role;
+import com.server.youthtalktalk.domain.member.SocialType;
 import com.server.youthtalktalk.domain.policy.Region;
 import com.server.youthtalktalk.domain.post.Post;
 import com.server.youthtalktalk.dto.member.MemberUpdateDto;
@@ -15,6 +16,7 @@ import com.server.youthtalktalk.global.response.exception.member.MemberAccessDen
 import com.server.youthtalktalk.global.response.exception.member.MemberDuplicatedException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.global.util.AppleAuthUtil;
+import com.server.youthtalktalk.global.util.HashUtil;
 import com.server.youthtalktalk.repository.CommentRepository;
 import com.server.youthtalktalk.repository.MemberRepository;
 import com.server.youthtalktalk.repository.PostRepository;
@@ -29,7 +31,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -44,27 +45,37 @@ public class MemberServiceImpl implements MemberService {
     private final JwtService jwtService;
     private final HttpServletResponse httpServletResponse;
     private final AppleAuthUtil appleAuthUtil;
+    private final HashUtil hashUtil;
 
     /**
      * 회원 가입
      */
     @Override
     public Long signUp(SignUpRequestDto signUpRequestDto) {
-        String username = signUpRequestDto.getUsername();
+        String username = signUpRequestDto.getUsername(); // 평문의 소셜 id
         String nickname = signUpRequestDto.getNickname();
+        SocialType socialType = SocialType.fromString(signUpRequestDto.getSocialType());
         Region region = Region.fromRegionStr(signUpRequestDto.getRegion());
 
-        checkIfDuplicatedMember(signUpRequestDto.getUsername()); // 중복 회원 검증
+        String hashedUsername = hashUtil.hash(username);
+        checkIfDuplicatedMember(hashedUsername); // 중복 회원 검증
 
-        if (username.startsWith("apple")){
+        if (socialType == SocialType.APPLE){
             String idToken = signUpRequestDto.getIdToken();
             appleAuthUtil.verifyIdentityToken(idToken); // 애플 토큰 검증
         }
 
-        Member member = Member.builder().username(username).nickname(nickname).region(region).role(Role.USER).build();
+        Member member = Member.builder()
+                .username(hashedUsername)
+                .nickname(nickname)
+                .region(region)
+                .socialType(socialType)
+                .role(Role.USER)
+                .build();
+
         memberRepository.save(member);
 
-        String accessToken = jwtService.createAccessToken(username);
+        String accessToken = jwtService.createAccessToken(hashedUsername);
         String refreshToken = jwtService.createRefreshToken();
         jwtService.sendAccessAndRefreshToken(httpServletResponse, accessToken, refreshToken);
         return member.getId();
@@ -129,11 +140,10 @@ public class MemberServiceImpl implements MemberService {
         memberRepository.delete(member);
     }
 
-    private void checkIfDuplicatedMember(String username) {
-        Optional<Member> findMember = memberRepository.findByUsername(username);
-        if (findMember.isPresent()) {
-            throw new MemberDuplicatedException();
-        }
+    private void checkIfDuplicatedMember(String hashedUsername) {
+        memberRepository.findByUsername(hashedUsername).ifPresent(member -> {
+                    throw new MemberDuplicatedException();
+        });
     }
 
 }
