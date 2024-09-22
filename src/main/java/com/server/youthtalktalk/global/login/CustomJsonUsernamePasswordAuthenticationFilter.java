@@ -2,13 +2,11 @@ package com.server.youthtalktalk.global.login;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.youthtalktalk.dto.member.apple.AppleTokenResponseDto;
-import com.server.youthtalktalk.global.response.BaseResponse;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.BusinessException;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.util.AppleAuthUtil;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -40,6 +38,7 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
     private static final String HTTP_METHOD = "POST";
     private static final String CONTENT_TYPE = "application/json";
     private static final String USERNAME_KEY = "username";
+    private static final String SOCIAL_TYPE_KEY = "socialType";
     private static final String AUTHORIZATION_CODE = "authorizationCode"; // 애플 로그인
     private static final String IDENTITY_TOKEN = "identityToken";
     private static final AntPathRequestMatcher DEFAULT_LOGIN_PATH_REQUEST_MATCHER =
@@ -62,10 +61,11 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
      *
      * 요청 JSON Example
      * {
-     *    "username" : "kakao12345678"
+     *    "socialType" : "kakao",
+     *    "username" : "해시값"
      * }
-     * messageBody를 objectMapper.readValue()로 Map으로 변환 (Key : JSON의 키 -> username)
-     * Map의 Key로 해당 username 추출 후
+     * messageBody를 objectMapper.readValue()로 Map으로 변환
+     * Map의 Key로 username 추출 후
      * CustomAuthenticationToken의 파라미터 principal, credentials에 대입
      *
      * AbstractAuthenticationProcessingFilter(부모)의 getAuthenticationManager()로 AuthenticationManager 객체를 반환 받은 후
@@ -81,9 +81,10 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
         String messageBody = StreamUtils.copyToString(request.getInputStream(), StandardCharsets.UTF_8);
         Map<String, String> loginDataMap = objectMapper.readValue(messageBody, Map.class);
         String username = loginDataMap.get(USERNAME_KEY);
+        String socialType = loginDataMap.get(SOCIAL_TYPE_KEY);
 
         // apple 토큰 검증 과정
-        if(username.startsWith("apple")){ // 애플 로그인 요청일 경우
+        if(socialType.equalsIgnoreCase("apple")){ // 애플 로그인 요청일 경우
             String identityToken = loginDataMap.get(IDENTITY_TOKEN);
             String authorizationCode = loginDataMap.get(AUTHORIZATION_CODE);
             if(identityToken==null || authorizationCode==null){
