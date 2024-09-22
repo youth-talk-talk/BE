@@ -1,7 +1,6 @@
 package com.server.youthtalktalk.dto.member;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
@@ -12,7 +11,7 @@ import lombok.Getter;
 public class SignUpRequestDto {
 
     @NotBlank(message = "username은 필수값입니다.")
-    private String username;
+    private String socialId;
 
     @NotBlank(message = "socialType은 필수값입니다.")
     private String socialType;

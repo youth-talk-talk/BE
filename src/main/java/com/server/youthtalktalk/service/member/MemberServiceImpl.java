@@ -52,13 +52,13 @@ public class MemberServiceImpl implements MemberService {
      */
     @Override
     public Long signUp(SignUpRequestDto signUpRequestDto) {
-        String username = signUpRequestDto.getUsername(); // 평문의 소셜 id
+        String socialId = signUpRequestDto.getSocialId(); // 평문의 소셜 id
         String nickname = signUpRequestDto.getNickname();
         SocialType socialType = SocialType.fromString(signUpRequestDto.getSocialType());
         Region region = Region.fromRegionStr(signUpRequestDto.getRegion());
 
-        String hashedUsername = hashUtil.hash(username);
-        checkIfDuplicatedMember(hashedUsername); // 중복 회원 검증
+        String username = hashUtil.hash(socialId);
+        checkIfDuplicatedMember(username); // 중복 회원 검증
 
         if (socialType == SocialType.APPLE){
             String idToken = signUpRequestDto.getIdToken();
@@ -66,7 +66,7 @@ public class MemberServiceImpl implements MemberService {
         }
 
         Member member = Member.builder()
-                .username(hashedUsername)
+                .username(username)
                 .nickname(nickname)
                 .region(region)
                 .socialType(socialType)
@@ -75,10 +75,12 @@ public class MemberServiceImpl implements MemberService {
 
         memberRepository.save(member);
 
-        String accessToken = jwtService.createAccessToken(hashedUsername);
+        String accessToken = jwtService.createAccessToken(username);
         String refreshToken = jwtService.createRefreshToken();
-        jwtService.updateRefreshToken(hashedUsername, refreshToken);
+
+        jwtService.updateRefreshToken(username, refreshToken);
         jwtService.sendAccessAndRefreshToken(httpServletResponse, accessToken, refreshToken);
+
         return member.getId();
     }
 
@@ -141,8 +143,8 @@ public class MemberServiceImpl implements MemberService {
         memberRepository.delete(member);
     }
 
-    private void checkIfDuplicatedMember(String hashedUsername) {
-        memberRepository.findByUsername(hashedUsername).ifPresent(member -> {
+    private void checkIfDuplicatedMember(String username) {
+        memberRepository.findByUsername(username).ifPresent(member -> {
                     throw new MemberDuplicatedException();
         });
     }
