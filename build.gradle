@@ -91,7 +91,7 @@ tasks.named('test') {
 
 tasks.register('copyYamlFiles', Copy) {
 	from './BE-submodule-data'
-	include '*.yml','*.p8'
+	include '**/*'
 	into 'src/main/resources'
 }
 
