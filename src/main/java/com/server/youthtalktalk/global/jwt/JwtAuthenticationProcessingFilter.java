@@ -21,6 +21,7 @@ import org.springframework.security.core.authority.mapping.NullAuthoritiesMapper
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -41,19 +42,20 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      * 유효하지 않은 refresh token -> 인증 실패 (401)
      */
 
-    private static final List<String> NO_CHECK_URL = Arrays.asList("/login", "/signUp");
+    private static final List<String> NO_CHECK_URL = Arrays.asList("/login", "/signUp","/admin/login","/css/**");
     private static final String HEALTH_CHECK = "/actuator/health";
 
     private final JwtService jwtService;
     private final MemberRepository memberRepository;
     private final GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
-
+    private final AntPathMatcher antPathMatcher = new AntPathMatcher();
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, InvalidTokenException {
-
-        if (NO_CHECK_URL.contains(request.getRequestURI())) {
-            filterChain.doFilter(request, response);
-            return;
+        for (String path : NO_CHECK_URL) {
+            if (antPathMatcher.match(path, request.getRequestURI())) {
+                filterChain.doFilter(request, response);
+                return;
+            }
         }
 
         if(request.getRequestURI().equals(HEALTH_CHECK)) {

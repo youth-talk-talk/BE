@@ -3,6 +3,7 @@ package com.server.youthtalktalk.global.login;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.youthtalktalk.domain.member.Member;
+import com.server.youthtalktalk.domain.member.Role;
 import com.server.youthtalktalk.dto.member.LoginSuccessDto;
 import com.server.youthtalktalk.global.jwt.JwtService;
 import com.server.youthtalktalk.global.response.BaseResponse;
@@ -11,6 +12,7 @@ import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundE
 import com.server.youthtalktalk.repository.MemberRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +53,15 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(objectMapper.writeValueAsString(new BaseResponse<>(new LoginSuccessDto(findMember.getId()), SUCCESS)));
+
+        // 관리자가 로그인했을 때만 access token 쿠키 발급
+        if(findMember.getRole().equals(Role.ADMIN)) {
+            Cookie accessCookie = new Cookie("Authorization", accessToken);
+            accessCookie.setMaxAge(3600); // 1시간
+            accessCookie.setPath("/");
+            accessCookie.setSecure(false); // https 적용 여부
+            response.addCookie(accessCookie);
+        }
 
         log.info("로그인에 성공하였습니다. 회원 id={}", findMember.getId());
     }

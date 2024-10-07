@@ -7,6 +7,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.server.youthtalktalk.domain.member.Member;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.repository.MemberRepository;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
@@ -126,7 +128,12 @@ public class JwtServiceImpl implements JwtService {
     public Optional<String> extractAccessToken(HttpServletRequest request) {
         return Optional.ofNullable(request.getHeader(accessHeader))
                 .filter(accessToken -> accessToken.startsWith(BEARER))
-                .map(accessToken -> accessToken.replace(BEARER, ""));
+                .map(accessToken -> accessToken.replace(BEARER, ""))
+                .or(() -> Optional.ofNullable(request.getCookies()) // 관리자 페이지 접근 시 쿠키로 토큰 인증
+                        .flatMap(cookies -> Arrays.stream(cookies)
+                                .filter(cookie -> "Authorization".equals(cookie.getName()))
+                                .map(Cookie::getValue)
+                                .findFirst()));
     }
 
     /**
