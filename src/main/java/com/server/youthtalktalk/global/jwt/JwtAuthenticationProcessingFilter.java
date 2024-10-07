@@ -42,7 +42,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      * 유효하지 않은 refresh token -> 인증 실패 (401)
      */
 
-    private static final List<String> NO_CHECK_URL = Arrays.asList("/login", "/signUp","/admin/login","/css/**");
+    private static final List<String> NO_CHECK_URL = Arrays.asList("/login", "/signUp","/admin/login","/css/**", "admin/login");
     private static final String HEALTH_CHECK = "/actuator/health";
 
     private final JwtService jwtService;
