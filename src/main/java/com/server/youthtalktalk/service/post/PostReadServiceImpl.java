@@ -13,6 +13,7 @@ import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
 import com.server.youthtalktalk.repository.PostRepository;
 import com.server.youthtalktalk.repository.ScrapRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -104,9 +105,9 @@ public class PostReadServiceImpl implements PostReadService {
 
     @Override
     @Transactional
-    public List<PostListDto> getScrapPostList(Pageable pageable,Member member) {
+    public List<ScrapPostListDto> getScrapPostList(Pageable pageable,Member member) {
         List<Post> postList = postRepository.findAllByScrap(member, pageable).getContent();
-        return postList.stream().map(post -> toPostDto(post,member)).toList();
+        return postList.stream().map(post -> toScrapPostDto(post,member)).toList();
     }
 
     public PostListRepDto toPostListRepDto(List<Post> topList,List<Post> postList, Member member) {
@@ -132,6 +133,23 @@ public class PostReadServiceImpl implements PostReadService {
                 .comments(post.getPostComments().size())
                 .scrap(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId().toString(),ItemType.POST))
                 .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId().toString(), ItemType.POST).size())
+                .build();
+    }
+
+    public ScrapPostListDto toScrapPostDto(Post post, Member member) {
+        Scrap scrap = scrapRepository.findByMemberAndItemIdAndItemType(member,post.getId().toString(),ItemType.POST)
+                .orElseThrow(EntityNotFoundException::new);
+        return ScrapPostListDto.builder()
+                .postId(post.getId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .writerId(post.getWriter() == null ? null : post.getWriter().getId())
+                .policyId(post instanceof Review ? ((Review) post).getPolicy().getPolicyId() : null)
+                .policyTitle(post instanceof Review ? ((Review)post).getPolicy().getTitle() : null )
+                .comments(post.getPostComments().size())
+                .scrap(true)
+                .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId().toString(), ItemType.POST).size())
+                .scrapId(scrap.getId())
                 .build();
     }
 }
