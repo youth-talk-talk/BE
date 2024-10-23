@@ -9,7 +9,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -25,4 +27,7 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     @Modifying
     @Query("DELETE FROM Image e WHERE e.imgUrl IN :imgUrls")
     void deleteAllByImgUrlIn(@Param("imgUrls") List<String> imgUrls);
+
+    @Query("SELECT pi.imgUrl FROM PostImage pi WHERE pi.post IS NULL AND pi.createdAt <= :date")
+    List<String> findAllByPostIsNull(LocalDateTime date);
 }
