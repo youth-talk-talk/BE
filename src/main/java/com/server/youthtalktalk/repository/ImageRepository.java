@@ -28,6 +28,6 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     @Query("DELETE FROM Image e WHERE e.imgUrl IN :imgUrls")
     void deleteAllByImgUrlIn(@Param("imgUrls") List<String> imgUrls);
 
-    @Query("SELECT pi.imgUrl FROM PostImage pi WHERE pi.post IS NULL AND pi.createdAt <= :date")
+    @Query("SELECT pi.imgUrl FROM PostImage pi WHERE pi.post IS NULL AND (pi.createdAt IS NULL OR pi.createdAt <= :date)")
     List<String> findAllByPostIsNull(LocalDateTime date);
 }
