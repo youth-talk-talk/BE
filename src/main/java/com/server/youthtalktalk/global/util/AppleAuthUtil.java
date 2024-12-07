@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static com.nimbusds.oauth2.sdk.GrantType.AUTHORIZATION_CODE;
+import static com.server.youthtalktalk.domain.member.dto.apple.AppleDto.*;
 
 @Component
 @RequiredArgsConstructor

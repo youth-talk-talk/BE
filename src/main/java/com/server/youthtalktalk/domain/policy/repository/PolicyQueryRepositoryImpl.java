@@ -6,7 +6,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
-import com.server.youthtalktalk.domain.policy.QPolicy;
+import com.server.youthtalktalk.domain.policy.entity.QPolicy;
 import com.server.youthtalktalk.domain.policy.entity.Region;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
