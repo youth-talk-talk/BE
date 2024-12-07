@@ -30,7 +30,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -150,9 +149,13 @@ public class MemberServiceImpl implements MemberService {
         });
     }
 
+    /**
+     * 차단 등록
+     */
     @Override
-    public void blockMember(Member member, Long blockedId) {
-        Member blockedmember = memberRepository.findById(blockedId).orElseThrow(MemberNotFoundException::new);
+    public void blockMember(Member member, Long blockId) {
+        Member blockedmember = memberRepository.findById(blockId).orElseThrow(MemberNotFoundException::new);
+        validateInvalidTarget(member, blockId);
         validateDuplicatedBlock(member, blockedmember);
         Block block = Block.builder().member(member).blockedMember(blockedmember).build();
         member.addBlock(block);
@@ -160,10 +163,39 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /**
-     * 중복 차단 확인
+     * 유효한 차단(또는 해제) 대상인지 검증
+     */
+    private void validateInvalidTarget(Member member, Long targetId) {
+        if (targetId.equals(member.getId())) { // 스스로 차단(또는 해제)하는 경우
+            throw new InvalidMemberForBlockException();
+        }
+    }
+
+    /**
+     * 중복 차단 검증
      */
     private void validateDuplicatedBlock(Member member, Member blockedmember) {
         blockRepository.findByMemberAndBlockedMember(member, blockedmember)
                 .ifPresent(block -> { throw new BlockDuplicatedException(); });
+    }
+
+    /**
+     * 차단 해제
+     */
+    @Override
+    public void unblockMember(Member member, Long unblockId) {
+        Member blockedmember = memberRepository.findById(unblockId).orElseThrow(MemberNotFoundException::new);
+        validateInvalidTarget(member, unblockId);
+        Block block = findBlock(member, blockedmember);
+        member.removeBlock(block);
+        blockRepository.delete(block);
+    }
+
+    /**
+     * 차단 관계 조회
+     */
+    private Block findBlock(Member member, Member blockedmember) {
+        return blockRepository.findByMemberAndBlockedMember(member, blockedmember)
+                .orElseThrow(NotBlockedMemberException::new);
     }
 }

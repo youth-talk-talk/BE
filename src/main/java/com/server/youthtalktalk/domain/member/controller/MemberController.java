@@ -60,12 +60,22 @@ public class MemberController {
     }
 
     /**
-     * 사용자 차단 api
+     * 차단 등록 api
      */
     @PostMapping("/members/block/{blockId}")
     public BaseResponse<String> blockMember(@PathVariable Long blockId) {
         Member member = memberService.getCurrentMember();
         memberService.blockMember(member,blockId);
         return new BaseResponse<>(SUCCESS_MEMBER_BLOCK);
+    }
+
+    /**
+     * 차단 해제 api
+     */
+    @PostMapping("/members/unblock/{unblockId}")
+    public BaseResponse<String> unblockMember(@PathVariable Long unblockId) {
+        Member member = memberService.getCurrentMember();
+        memberService.unblockMember(member,unblockId);
+        return new BaseResponse<>(SUCCESS_MEMBER_UNBLOCK);
     }
 }
