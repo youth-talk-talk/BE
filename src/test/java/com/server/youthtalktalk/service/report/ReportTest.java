@@ -53,6 +53,7 @@ public class ReportTest {
         Report report = reportService.reportPost(post.getId(), reporter);
         // Then
         assertThat(report.getReporter().getId()).isEqualTo(reporter.getId());
+        assertThat(reportRepository.existsByPostAndReporter(post, reporter)).isTrue();
     }
 
     @Test
