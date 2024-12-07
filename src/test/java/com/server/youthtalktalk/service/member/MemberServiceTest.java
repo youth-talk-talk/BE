@@ -239,7 +239,7 @@ class MemberServiceTest {
     }
 
     @Test
-    void 사용자_차단_성공() {
+    void 회원_차단_성공() {
         Member member1 = Member.builder().username("username1").role(Role.USER).build();
         Member member2 = Member.builder().username("username2").role(Role.USER).build();
         memberRepository.save(member1);
@@ -256,7 +256,7 @@ class MemberServiceTest {
     }
 
     @Test
-    void 사용자_중복_차단_예외() {
+    void 중복_차단_예외() {
         Member member1 = Member.builder().username("username1").role(Role.USER).build();
         Member member2 = Member.builder().username("username2").role(Role.USER).build();
         memberRepository.save(member1);
@@ -267,4 +267,14 @@ class MemberServiceTest {
                 () -> memberService.blockMember(member1, member2.getId())); // 중복 차단 시 예외 발생해야함
 
     }
+
+    @Test
+    void 존재하지않는_회원_차단_예외() {
+        Member member1 = Member.builder().username("username1").role(Role.USER).build();
+        memberRepository.save(member1);
+
+        assertThrows(MemberNotFoundException.class,
+                () -> memberService.blockMember(member1, 0L));// 존재하지 않는 회원을 차단 시 예외 발생해야함
+    }
+
 }
