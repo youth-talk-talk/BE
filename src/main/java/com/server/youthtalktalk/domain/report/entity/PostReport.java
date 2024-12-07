@@ -14,7 +14,7 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SuperBuilder
-@DiscriminatorColumn(name = "post")
+@DiscriminatorValue("post")
 public class PostReport extends Report {
 
     @ManyToOne(fetch = FetchType.LAZY)
