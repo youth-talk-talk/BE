@@ -10,4 +10,5 @@ public interface MemberService {
     Member getCurrentMember();
     void updateMemberInfo(MemberUpdateDto memberUpdateDto, Member member);
     void deleteMember(Member member, AppleDto.AppleCodeRequestDto appleCodeRequestDto);
+    void blockMember(Member member, Long blockedId);
 }

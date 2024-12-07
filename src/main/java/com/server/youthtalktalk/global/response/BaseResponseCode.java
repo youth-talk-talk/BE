@@ -24,10 +24,11 @@ public enum BaseResponseCode {
     // Member
     SUCCESS_MEMBER_UPDATE("S12", "회원정보 수정을 완료하였습니다.", HttpStatus.OK.value()),
     SUCCESS_MEMBER_DELETE("S13", "회원 탈퇴를 완료하였습니다.", HttpStatus.OK.value()),
+    SUCCESS_MEMBER_BLOCK("S14", "사용자를 성공적으로 차단했습니다.", HttpStatus.OK.value()),
     // Announcement
-    SUCCESS_ANNOUNCEMENT_CREATE("S14", "공지사항을 성공적으로 등록했습니다.", HttpStatus.OK.value()),
-    SUCCESS_ANNOUNCEMENT_UPDATE("S15", "공지사항을 성공적으로 수정했습니다.", HttpStatus.OK.value()),
-    SUCCESS_ANNOUNCEMENT_DELETE("S16", "공지사항을 성공적으로 삭제했습니다.", HttpStatus.OK.value()),
+    SUCCESS_ANNOUNCEMENT_CREATE("S15", "공지사항을 성공적으로 등록했습니다.", HttpStatus.OK.value()),
+    SUCCESS_ANNOUNCEMENT_UPDATE("S16", "공지사항을 성공적으로 수정했습니다.", HttpStatus.OK.value()),
+    SUCCESS_ANNOUNCEMENT_DELETE("S17", "공지사항을 성공적으로 삭제했습니다.", HttpStatus.OK.value()),
 
     /* 요청 실패 시*/
     //공통
@@ -45,6 +46,7 @@ public enum BaseResponseCode {
     APPLE_NEED_ADD_SIGN_UP("M06","애플 추가 회원가입이 필요합니다.",HttpStatus.BAD_REQUEST.value()),
     MEMBER_DUPLICATED("M07", "이미 가입한 회원입니다.", HttpStatus.BAD_REQUEST.value()),
     APPLE_USER_IDENTIFIER_ERROR("M08","애플 USERIDENTIFIER가 유효하지 않습니다.",HttpStatus.BAD_REQUEST.value()),
+    BLOCK_DUPLICATED("M09", "이미 차단한 회원입니다.", HttpStatus.BAD_REQUEST.value()),
 
     // Policy
     POLICY_NOT_FOUND("PC01","해당 정책을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),

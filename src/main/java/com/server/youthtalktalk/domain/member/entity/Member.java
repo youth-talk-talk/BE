@@ -55,6 +55,10 @@ public class Member extends BaseTimeEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Likes> likes = new ArrayList<>();
 
+    @Builder.Default
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<Block> blocks = new ArrayList<>();
+
     // refresh token 업데이트
     public void updateRefreshToken(String updateRefreshToken) {
         this.refreshToken = updateRefreshToken;
@@ -73,6 +77,11 @@ public class Member extends BaseTimeEntity {
     // region 업데이트
     public void updateRegion(Region updateRegion) {
         this.region = updateRegion;
+    }
+
+    // block 추가
+    public void addBlock(Block block) {
+        this.blocks.add(block);
     }
 
     /* 연관관계 편의 메서드 */

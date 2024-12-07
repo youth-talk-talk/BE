@@ -59,4 +59,13 @@ public class MemberController {
         return new BaseResponse<>(SUCCESS_MEMBER_DELETE);
     }
 
+    /**
+     * 사용자 차단 api
+     */
+    @PostMapping("/members/block/{blockId}")
+    public BaseResponse<String> blockMember(@PathVariable Long blockId) {
+        Member member = memberService.getCurrentMember();
+        memberService.blockMember(member,blockId);
+        return new BaseResponse<>(SUCCESS_MEMBER_BLOCK);
+    }
 }

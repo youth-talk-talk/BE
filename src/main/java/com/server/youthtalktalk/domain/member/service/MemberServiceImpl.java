@@ -1,9 +1,11 @@
 package com.server.youthtalktalk.domain.member.service;
 
 import com.server.youthtalktalk.domain.comment.entity.Comment;
+import com.server.youthtalktalk.domain.member.entity.Block;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.entity.Role;
 import com.server.youthtalktalk.domain.member.entity.SocialType;
+import com.server.youthtalktalk.domain.member.repository.BlockRepository;
 import com.server.youthtalktalk.domain.policy.entity.Region;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.member.dto.MemberUpdateDto;
@@ -11,10 +13,7 @@ import com.server.youthtalktalk.domain.member.dto.SignUpRequestDto;
 import com.server.youthtalktalk.domain.member.dto.apple.AppleDto;
 import com.server.youthtalktalk.domain.member.dto.apple.AppleTokenResponseDto;
 import com.server.youthtalktalk.global.jwt.JwtService;
-import com.server.youthtalktalk.global.response.exception.member.AppleTokenValidationException;
-import com.server.youthtalktalk.global.response.exception.member.MemberAccessDeniedException;
-import com.server.youthtalktalk.global.response.exception.member.MemberDuplicatedException;
-import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
+import com.server.youthtalktalk.global.response.exception.member.*;
 import com.server.youthtalktalk.global.util.AppleAuthUtil;
 import com.server.youthtalktalk.global.util.HashUtil;
 import com.server.youthtalktalk.domain.comment.repository.CommentRepository;
@@ -31,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -41,6 +41,7 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final BlockRepository blockRepository;
 
     private final JwtService jwtService;
     private final HttpServletResponse httpServletResponse;
@@ -149,4 +150,20 @@ public class MemberServiceImpl implements MemberService {
         });
     }
 
+    @Override
+    public void blockMember(Member member, Long blockedId) {
+        Member blockedmember = memberRepository.findById(blockedId).orElseThrow(MemberNotFoundException::new);
+        validateDuplicatedBlock(member, blockedmember);
+        Block block = Block.builder().member(member).blockedMember(blockedmember).build();
+        member.addBlock(block);
+        blockRepository.save(block);
+    }
+
+    /**
+     * 중복 차단 확인
+     */
+    private void validateDuplicatedBlock(Member member, Member blockedmember) {
+        blockRepository.findByMemberAndBlockedMember(member, blockedmember)
+                .ifPresent(block -> { throw new BlockDuplicatedException(); });
+    }
 }
