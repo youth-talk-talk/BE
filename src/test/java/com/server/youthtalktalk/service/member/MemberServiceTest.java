@@ -5,10 +5,12 @@ import com.server.youthtalktalk.domain.comment.entity.PostComment;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.entity.Role;
 import com.server.youthtalktalk.domain.member.entity.SocialType;
+import com.server.youthtalktalk.domain.member.repository.BlockRepository;
 import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.policy.entity.Region;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.member.dto.SignUpRequestDto;
+import com.server.youthtalktalk.global.response.exception.member.BlockDuplicatedException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.global.util.HashUtil;
 import com.server.youthtalktalk.domain.comment.repository.CommentRepository;
@@ -30,6 +32,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @Transactional
@@ -44,6 +47,9 @@ class MemberServiceTest {
 
     @Autowired
     CommentRepository commentRepository;
+
+    @Autowired
+    BlockRepository blockRepository;
 
     @Autowired
     MemberService memberService;
@@ -229,6 +235,36 @@ class MemberServiceTest {
             assertThat(comment.getWriter()).isNull();
             assertThat(comment.getContent()).isNotEmpty();
         }
+
+    }
+
+    @Test
+    void 사용자_차단_성공() {
+        Member member1 = Member.builder().username("username1").role(Role.USER).build();
+        Member member2 = Member.builder().username("username2").role(Role.USER).build();
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+
+        // member1이 member2를 차단
+        memberService.blockMember(member1, member2.getId());
+
+        assertThat(memberRepository.findById(member1.getId())).isPresent();
+        assertThat(memberRepository.findById(member2.getId())).isPresent();
+        assertThat(blockRepository.findByMemberAndBlockedMember(member1, member2)).isPresent();
+        assertThat(member1.getBlocks().size()).isEqualTo(1);
+        assertThat(member2.getBlocks().size()).isEqualTo(0);
+    }
+
+    @Test
+    void 사용자_중복_차단_예외() {
+        Member member1 = Member.builder().username("username1").role(Role.USER).build();
+        Member member2 = Member.builder().username("username2").role(Role.USER).build();
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+        memberService.blockMember(member1, member2.getId()); // member1이 member2를 차단
+
+        assertThrows(BlockDuplicatedException.class,
+                () -> memberService.blockMember(member1, member2.getId())); // 중복 차단 시 예외 발생해야함
 
     }
 }
