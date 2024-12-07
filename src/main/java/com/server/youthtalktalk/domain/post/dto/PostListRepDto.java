@@ -31,6 +31,7 @@ public class PostListRepDto {
         private int comments;
         private String policyId; // 자유글 null
         private String policyTitle; // 자유글 null
+        private boolean isReported;
     }
 
     @Getter
@@ -46,6 +47,7 @@ public class PostListRepDto {
         private String policyId; // 자유글 null
         private String policyTitle; // 자유글 null
         private Long scrapId;
+        private boolean isReported;
     }
 
 }

@@ -2,6 +2,7 @@ package com.server.youthtalktalk.domain.member.entity;
 
 import com.server.youthtalktalk.domain.BaseTimeEntity;
 import com.server.youthtalktalk.domain.likes.entity.Likes;
+import com.server.youthtalktalk.domain.report.entity.Report;
 import com.server.youthtalktalk.domain.scrap.entity.Scrap;
 import com.server.youthtalktalk.domain.comment.entity.Comment;
 import com.server.youthtalktalk.domain.policy.entity.Region;
@@ -58,6 +59,9 @@ public class Member extends BaseTimeEntity {
     @Builder.Default
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Block> blocks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "reporter", cascade = CascadeType.ALL)
+    private List<Report> reports = new ArrayList<>();
 
     // refresh token 업데이트
     public void updateRefreshToken(String updateRefreshToken) {

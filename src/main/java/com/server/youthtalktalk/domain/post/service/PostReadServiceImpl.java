@@ -2,6 +2,7 @@ package com.server.youthtalktalk.domain.post.service;
 
 import com.server.youthtalktalk.domain.ItemType;
 import com.server.youthtalktalk.domain.post.dto.PostListRepDto;
+import com.server.youthtalktalk.domain.report.repository.ReportRepository;
 import com.server.youthtalktalk.domain.scrap.entity.Scrap;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.policy.entity.Category;
@@ -34,6 +35,7 @@ import static com.server.youthtalktalk.domain.post.dto.PostListRepDto.*;
 public class PostReadServiceImpl implements PostReadService {
     private final PostRepository postRepository;
     private final ScrapRepository scrapRepository;
+    private final ReportRepository reportRepository;
 
     /** 게시글, 리뷰 상세 조회 */
     @Override
@@ -131,6 +133,7 @@ public class PostReadServiceImpl implements PostReadService {
                 .comments(post.getPostComments().size())
                 .scrap(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId().toString(),ItemType.POST))
                 .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId().toString(), ItemType.POST).size())
+                .isReported(reportRepository.existsByPostAndReporter(post,member))
                 .build();
     }
 
@@ -148,6 +151,7 @@ public class PostReadServiceImpl implements PostReadService {
                 .scrap(true)
                 .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId().toString(), ItemType.POST).size())
                 .scrapId(scrap.getId())
+                .isReported(reportRepository.existsByPostAndReporter(post,member))
                 .build();
     }
 }

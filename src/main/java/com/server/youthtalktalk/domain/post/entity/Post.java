@@ -5,6 +5,7 @@ import com.server.youthtalktalk.domain.image.entity.PostImage;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.comment.entity.PostComment;
 import com.server.youthtalktalk.domain.post.dto.PostRepDto;
+import com.server.youthtalktalk.domain.report.entity.PostReport;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -50,6 +51,10 @@ public class Post extends BaseTimeEntity {
     @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private List<PostComment> postComments = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private List<PostReport> postReports = new ArrayList<>();
 
     /* 연관관계 메서드 */
     public void setWriter(Member member) {
