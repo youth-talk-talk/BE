@@ -22,4 +22,5 @@ public class PostRepDto {
     private List<String> images;
     private String category;
     private boolean isScrap;
+    private boolean isReported;
 }
