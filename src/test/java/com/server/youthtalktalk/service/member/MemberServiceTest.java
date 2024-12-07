@@ -11,7 +11,9 @@ import com.server.youthtalktalk.domain.policy.entity.Region;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.member.dto.SignUpRequestDto;
 import com.server.youthtalktalk.global.response.exception.member.BlockDuplicatedException;
+import com.server.youthtalktalk.global.response.exception.member.InvalidMemberForBlockException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
+import com.server.youthtalktalk.global.response.exception.member.NotBlockedMemberException;
 import com.server.youthtalktalk.global.util.HashUtil;
 import com.server.youthtalktalk.domain.comment.repository.CommentRepository;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
@@ -277,4 +279,47 @@ class MemberServiceTest {
                 () -> memberService.blockMember(member1, 0L));// 존재하지 않는 회원을 차단 시 예외 발생해야함
     }
 
+    @Test
+    void 차단할수없는_회원_차단_예외() {
+        Member member1 = Member.builder().username("username1").role(Role.USER).build();
+        memberRepository.save(member1);
+
+        assertThrows(InvalidMemberForBlockException.class,
+                () -> memberService.blockMember(member1, member1.getId()));// 스스로를 차단할 경우 예외 발생해야함
+    }
+
+    @Test
+    void 회원_차단_해제_성공() {
+        Member member1 = Member.builder().username("username1").role(Role.USER).build();
+        Member member2 = Member.builder().username("username2").role(Role.USER).build();
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+        memberService.blockMember(member1, member2.getId()); // member1이 member2를 차단
+
+        memberService.unblockMember(member1, member2.getId()); // member1이 member2를 차단 해제
+
+        assertThat(blockRepository.findByMemberAndBlockedMember(member1, member2)).isNotPresent();
+        assertThat(member1.getBlocks().size()).isEqualTo(0);
+        assertThat(member2.getBlocks().size()).isEqualTo(0);
+    }
+
+    @Test
+    void 존재하지않는_회원_차단해제_예외() {
+        Member member1 = Member.builder().username("username1").role(Role.USER).build();
+        memberRepository.save(member1);
+
+        assertThrows(MemberNotFoundException.class,
+                () -> memberService.unblockMember(member1, 0L));// 존재하지 않는 회원을 차단 해제 시 예외 발생해야함
+    }
+
+    @Test
+    void 차단하지않은_회원_차단해제_예외() {
+        Member member1 = Member.builder().username("username1").role(Role.USER).build();
+        Member member2 = Member.builder().username("username2").role(Role.USER).build();
+        memberRepository.save(member1);
+        memberRepository.save(member2); // member1은 member2를 차단하지 않음
+
+        assertThrows(NotBlockedMemberException.class,
+                () -> memberService.unblockMember(member1, member2.getId()));// 차단하지 않은 회원을 차단 해제 시 예외 발생해야함
+    }
 }
