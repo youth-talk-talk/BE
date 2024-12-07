@@ -84,6 +84,11 @@ public class Member extends BaseTimeEntity {
         this.blocks.add(block);
     }
 
+    // block 삭제
+    public void removeBlock(Block block) {
+        this.blocks.remove(block);
+    }
+
     /* 연관관계 편의 메서드 */
     public void removeLike(Likes like) {
         likes.remove(like);
