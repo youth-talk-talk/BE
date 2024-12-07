@@ -1,7 +1,7 @@
 package com.server.youthtalktalk.global.login;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.server.youthtalktalk.dto.member.apple.AppleTokenResponseDto;
+import com.server.youthtalktalk.domain.member.dto.apple.AppleTokenResponseDto;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.BusinessException;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
@@ -24,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import static com.server.youthtalktalk.global.response.BaseResponseCode.APPLE_USER_IDENTIFIER_ERROR;
-import static com.server.youthtalktalk.global.response.BaseResponseCode.MEMBER_ACCESS_DENIED;
 
 /**
  * "/login" 요청 왔을 때 JSON 값을 매핑 처리하는 필터

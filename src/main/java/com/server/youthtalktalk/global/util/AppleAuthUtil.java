@@ -1,10 +1,10 @@
 package com.server.youthtalktalk.global.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.server.youthtalktalk.controller.member.AppleClient;
-import com.server.youthtalktalk.dto.member.apple.AppleKeyInfo;
-import com.server.youthtalktalk.dto.member.apple.ApplePublicKeyResponse;
-import com.server.youthtalktalk.dto.member.apple.AppleTokenResponseDto;
+import com.server.youthtalktalk.domain.member.controller.AppleClient;
+import com.server.youthtalktalk.domain.member.dto.apple.AppleKeyInfo;
+import com.server.youthtalktalk.domain.member.dto.apple.ApplePublicKeyResponse;
+import com.server.youthtalktalk.domain.member.dto.apple.AppleTokenResponseDto;
 import com.server.youthtalktalk.global.response.exception.member.ApplePublicKeyException;
 import com.server.youthtalktalk.global.response.exception.member.AppleTokenValidationException;
 import io.jsonwebtoken.Claims;
@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import static com.nimbusds.oauth2.sdk.GrantType.AUTHORIZATION_CODE;
-import static com.server.youthtalktalk.dto.member.apple.AppleDto.*;
 
 @Component
 @RequiredArgsConstructor

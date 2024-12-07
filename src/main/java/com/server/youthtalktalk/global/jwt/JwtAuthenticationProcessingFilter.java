@@ -1,13 +1,11 @@
 package com.server.youthtalktalk.global.jwt;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.server.youthtalktalk.domain.member.Member;
-import com.server.youthtalktalk.domain.member.Role;
+import com.server.youthtalktalk.domain.member.entity.Member;
+import com.server.youthtalktalk.domain.member.entity.Role;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.token.InvalidTokenException;
-import com.server.youthtalktalk.repository.MemberRepository;
-import io.jsonwebtoken.Jwt;
+import com.server.youthtalktalk.domain.member.repository.MemberRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

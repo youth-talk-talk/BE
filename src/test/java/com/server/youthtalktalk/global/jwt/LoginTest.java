@@ -1,10 +1,10 @@
 package com.server.youthtalktalk.global.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.server.youthtalktalk.domain.member.Member;
-import com.server.youthtalktalk.domain.member.Role;
+import com.server.youthtalktalk.domain.member.entity.Member;
+import com.server.youthtalktalk.domain.member.entity.Role;
 import com.server.youthtalktalk.global.util.HashUtil;
-import com.server.youthtalktalk.repository.MemberRepository;
+import com.server.youthtalktalk.domain.member.repository.MemberRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

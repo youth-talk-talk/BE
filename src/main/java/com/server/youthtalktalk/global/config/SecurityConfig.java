@@ -6,7 +6,7 @@ import com.server.youthtalktalk.global.jwt.JwtAuthenticationProcessingFilter;
 import com.server.youthtalktalk.global.jwt.JwtService;
 import com.server.youthtalktalk.global.login.*;
 import com.server.youthtalktalk.global.util.AppleAuthUtil;
-import com.server.youthtalktalk.repository.MemberRepository;
+import com.server.youthtalktalk.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;

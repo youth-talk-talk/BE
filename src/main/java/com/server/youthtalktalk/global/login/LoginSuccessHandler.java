@@ -1,30 +1,24 @@
 package com.server.youthtalktalk.global.login;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.server.youthtalktalk.domain.member.Member;
-import com.server.youthtalktalk.domain.member.Role;
-import com.server.youthtalktalk.dto.member.LoginSuccessDto;
+import com.server.youthtalktalk.domain.member.entity.Member;
+import com.server.youthtalktalk.domain.member.entity.Role;
+import com.server.youthtalktalk.domain.member.dto.LoginSuccessDto;
 import com.server.youthtalktalk.global.jwt.JwtService;
 import com.server.youthtalktalk.global.response.BaseResponse;
-import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
-import com.server.youthtalktalk.repository.MemberRepository;
-import jakarta.servlet.FilterChain;
+import com.server.youthtalktalk.domain.member.repository.MemberRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 

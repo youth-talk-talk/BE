@@ -1,6 +1,6 @@
 package com.server.youthtalktalk.global.util;
 
-import com.server.youthtalktalk.domain.policy.EmploymentCode;
+import com.server.youthtalktalk.domain.policy.entity.EmploymentCode;
 
 import java.util.EnumSet;
 import java.util.Set;

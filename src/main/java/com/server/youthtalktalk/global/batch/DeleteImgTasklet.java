@@ -1,8 +1,7 @@
 package com.server.youthtalktalk.global.batch;
 
-import com.server.youthtalktalk.domain.image.Image;
-import com.server.youthtalktalk.repository.ImageRepository;
-import com.server.youthtalktalk.service.image.ImageService;
+import com.server.youthtalktalk.domain.image.repository.ImageRepository;
+import com.server.youthtalktalk.domain.image.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.StepContribution;

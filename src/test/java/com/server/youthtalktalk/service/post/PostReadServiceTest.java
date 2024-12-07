@@ -1,18 +1,16 @@
 package com.server.youthtalktalk.service.post;
 
 import com.server.youthtalktalk.domain.ItemType;
-import com.server.youthtalktalk.domain.Scrap;
-import com.server.youthtalktalk.domain.member.Member;
-import com.server.youthtalktalk.domain.member.Role;
-import com.server.youthtalktalk.domain.policy.Category;
-import com.server.youthtalktalk.domain.policy.Policy;
-import com.server.youthtalktalk.domain.post.Post;
-import com.server.youthtalktalk.dto.post.PostRepDto;
-import com.server.youthtalktalk.repository.MemberRepository;
-import com.server.youthtalktalk.repository.PostRepository;
-import com.server.youthtalktalk.repository.ScrapRepository;
+import com.server.youthtalktalk.domain.scrap.entity.Scrap;
+import com.server.youthtalktalk.domain.member.entity.Member;
+import com.server.youthtalktalk.domain.member.entity.Role;
+import com.server.youthtalktalk.domain.post.entity.Post;
+import com.server.youthtalktalk.domain.post.dto.PostRepDto;
+import com.server.youthtalktalk.domain.member.repository.MemberRepository;
+import com.server.youthtalktalk.domain.post.service.PostReadService;
+import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
+import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
 import jakarta.persistence.EntityManager;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
