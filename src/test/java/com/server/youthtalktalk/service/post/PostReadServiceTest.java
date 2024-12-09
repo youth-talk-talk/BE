@@ -1,6 +1,7 @@
 package com.server.youthtalktalk.service.post;
 
 import com.server.youthtalktalk.domain.ItemType;
+import com.server.youthtalktalk.domain.post.repostiory.PostRepositoryCustom;
 import com.server.youthtalktalk.domain.scrap.entity.Scrap;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.entity.Role;
@@ -40,6 +41,8 @@ public class PostReadServiceTest {
     private MemberRepository memberRepository;
     @Autowired
     private ScrapRepository scrapRepository;
+    @Autowired
+    private PostRepositoryCustom postRepositoryCustom;
 
     private void clear(){
         em.flush();

@@ -40,14 +40,19 @@ public class ReportTest {
     void SuccessReportPost(){
         // given
         Member reporter = memberRepository.save(Member.builder()
-                        .region(Region.SEOUL)
-                        .nickname("test")
+                        .nickname("reporter")
                         .role(Role.USER)
-                        .username("test")
+                        .username("reporter")
+                        .build());
+        Member writer = memberRepository.save(Member.builder()
+                        .nickname("writer")
+                        .role(Role.USER)
+                        .username("writer")
                         .build());
         Post post = postRepository.save(Post.builder()
                 .title("test")
                 .content("test")
+                .writer(writer)
                 .build());
         // when
         Report report = reportService.reportPost(post.getId(), reporter);

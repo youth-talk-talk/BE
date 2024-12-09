@@ -1,7 +1,9 @@
 package com.server.youthtalktalk.domain.post.service;
 
 import com.server.youthtalktalk.domain.ItemType;
+import com.server.youthtalktalk.domain.member.repository.BlockRepository;
 import com.server.youthtalktalk.domain.post.dto.PostListRepDto;
+import com.server.youthtalktalk.domain.post.repostiory.PostRepositoryCustom;
 import com.server.youthtalktalk.domain.report.repository.ReportRepository;
 import com.server.youthtalktalk.domain.scrap.entity.Scrap;
 import com.server.youthtalktalk.domain.member.entity.Member;
@@ -11,9 +13,12 @@ import com.server.youthtalktalk.domain.post.entity.Review;
 import com.server.youthtalktalk.domain.post.dto.PostRepDto;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
+import com.server.youthtalktalk.global.response.exception.member.MemberAccessDeniedException;
+import com.server.youthtalktalk.global.response.exception.post.BlockedMemberPostAccessDeniedException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
+import com.server.youthtalktalk.global.response.exception.post.ReportedPostAccessDeniedException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -36,12 +41,22 @@ public class PostReadServiceImpl implements PostReadService {
     private final PostRepository postRepository;
     private final ScrapRepository scrapRepository;
     private final ReportRepository reportRepository;
+    private final BlockRepository blockRepository;
+    private final PostRepositoryCustom postRepositoryCustom;
 
     /** 게시글, 리뷰 상세 조회 */
     @Override
     @Transactional
     public PostRepDto getPostById(Long postId, Member member) {
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
+        if(reportRepository.existsByPostAndReporter(post,member)){
+            throw new ReportedPostAccessDeniedException();
+        }
+
+        if(blockRepository.existsByMemberAndBlockedMember(member, post.getWriter())){
+            throw new BlockedMemberPostAccessDeniedException();
+        }
+
         postRepository.save(post.toBuilder().view(post.getView()+1).build());
         log.info("게시글 조회 성공, postId = {}", postId);
         return post.toPostRepDto(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId().toString(),ItemType.POST));
@@ -51,9 +66,9 @@ public class PostReadServiceImpl implements PostReadService {
     @Override
     @Transactional
     public PostListRepDto getAllPost(Pageable pageable, Member member) {
-        Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC,"id"));
-        Page<Post> postPopularPage = postRepository.findAllPostsByView(PageRequest.of(0, 5)); // 상위 5개만
-        Page<Post> postPage = postRepository.findAllPosts(pageRequest);
+        Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        Page<Post> postPopularPage = postRepositoryCustom.findAllPostsByView(member, PageRequest.of(0, 5)); // 상위 5개만
+        Page<Post> postPage = postRepositoryCustom.findAllPosts(member, pageRequest);
 
         return toPostListRepDto(postPopularPage.getContent(),postPage.getContent(),member);
     }
@@ -61,10 +76,10 @@ public class PostReadServiceImpl implements PostReadService {
     /** 리뷰 카테고리별 전체 조회 */
     @Override
     @Transactional
-    public PostListRepDto getAllReviewByCategory(Pageable pageable, List<Category> categories,Member member) {
-        Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC,"id"));
-        Page<Post> reviewPopularPage = postRepository.findAllReviewsByCategoryAndView(categories,PageRequest.of(0, 5)); // 상위 5개만
-        Page<Post> reviewPage = postRepository.findAllReviewsByCategory(categories,pageRequest);
+    public PostListRepDto getAllReviewByCategory(Pageable pageable, List<Category> categories, Member member) {
+        Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        Page<Post> reviewPopularPage = postRepositoryCustom.findAllReviewsByCategoryAndView(member, categories,PageRequest.of(0, 5)); // 상위 5개만
+        Page<Post> reviewPage = postRepositoryCustom.findAllReviewsByCategory(member, categories,pageRequest);
 
         return toPostListRepDto(reviewPopularPage.getContent(),reviewPage.getContent(),member);
     }
@@ -73,8 +88,8 @@ public class PostReadServiceImpl implements PostReadService {
     @Override
     @Transactional
     public List<PostListDto> getAllMyPost(Pageable pageable, Member member) {
-        Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC,"id"));
-        List<Post> postList= postRepository.findAllPostsByWriter(pageRequest, member).getContent();
+        Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        List<Post> postList= postRepositoryCustom.findAllPostsByWriter(pageRequest, member).getContent();
         List<PostListDto> result = new ArrayList<>();
         postList.forEach(post->result.add(toPostDto(post,member)));
 
@@ -86,11 +101,10 @@ public class PostReadServiceImpl implements PostReadService {
     @Override
     @Transactional
     public PostListResponse getAllPostByKeyword(Pageable pageable, String type, String keyword, Member member) {
-        Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC,"id"));
-        keyword = keyword.replaceAll("\\s", ""); // 키워드 공백 제거
+        Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         Page<Post> postList = switch (type) {
-            case "post" -> postRepository.findAllPostsByKeyword(keyword, pageRequest);
-            case "review" -> postRepository.findAllReviewsByKeyword(keyword, pageRequest);
+            case "post" -> postRepositoryCustom.findAllPostsByKeyword(member, keyword, pageRequest);
+            case "review" -> postRepositoryCustom.findAllReviewsByKeyword(member, keyword, pageRequest);
             default -> throw new InvalidValueException(BaseResponseCode.INVALID_INPUT_VALUE);
         };
         List<PostListDto> result = postList.getContent().stream().map(post -> toPostDto(post, member)).toList();
@@ -106,7 +120,7 @@ public class PostReadServiceImpl implements PostReadService {
     @Override
     @Transactional
     public List<ScrapPostListDto> getScrapPostList(Pageable pageable,Member member) {
-        List<Post> postList = postRepository.findAllByScrap(member, pageable).getContent();
+        List<Post> postList = postRepositoryCustom.findAllByScrap(member, pageable).getContent();
         return postList.stream().map(post -> toScrapPostDto(post,member)).toList();
     }
 
@@ -133,7 +147,6 @@ public class PostReadServiceImpl implements PostReadService {
                 .comments(post.getPostComments().size())
                 .scrap(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId().toString(),ItemType.POST))
                 .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId().toString(), ItemType.POST).size())
-                .isReported(reportRepository.existsByPostAndReporter(post,member))
                 .build();
     }
 
@@ -151,7 +164,6 @@ public class PostReadServiceImpl implements PostReadService {
                 .scrap(true)
                 .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId().toString(), ItemType.POST).size())
                 .scrapId(scrap.getId())
-                .isReported(reportRepository.existsByPostAndReporter(post,member))
                 .build();
     }
 }

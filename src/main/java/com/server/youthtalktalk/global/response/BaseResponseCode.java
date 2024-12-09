@@ -57,6 +57,8 @@ public enum BaseResponseCode {
     // Post
     POST_NOT_FOUND("PS01","해당 게시글을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),
     POST_ACCESS_DENIED("PS02","해당 게시글에 대한 권한이 없습니다.",HttpStatus.BAD_REQUEST.value()),
+    REPORTED_POST_ACCESS_DENIED("PS03", "신고한 게시글은 조회할 수 없습니다.", HttpStatus.BAD_REQUEST.value()),
+    BLOCKED_MEMBER_POST_ACCESS_DENIED("PS04","차단한 유저의 게시글은 조회할 수 없습니다.", HttpStatus.BAD_REQUEST.value()),
 
     // Comment
     COMMENT_NOT_FOUND("C01", "해당 댓글을 찾을 수 없습니다.", HttpStatus.BAD_REQUEST.value()),
@@ -71,7 +73,8 @@ public enum BaseResponseCode {
     ANNOUNCEMENT_NOT_FOUND_EXCEPTION("A01","해당 공지사항을 찾을 수 없습니다.",HttpStatus.NOT_FOUND.value()),
 
     // Report
-    REPORT_ALREADY_EXISTENCE_EXCEPTION("R01","이미 신고한 게시글입니다.",HttpStatus.CONFLICT.value());
+    REPORT_ALREADY_EXISTENCE_EXCEPTION("R01","이미 신고한 게시글입니다.",HttpStatus.CONFLICT.value()),
+    SELF_REPORT_NOT_ALLOWED_EXCEPTION("R02", "본인의 게시글은 신고할 수 없습니다.", HttpStatus.BAD_REQUEST.value());
 
     private final String code;
     private final String message;

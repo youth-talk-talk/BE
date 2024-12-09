@@ -10,6 +10,7 @@ import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.BusinessException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
 import com.server.youthtalktalk.global.response.exception.report.ReportAlreadyExistException;
+import com.server.youthtalktalk.global.response.exception.report.SelfReportNotAllowedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
@@ -25,14 +26,16 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public Report reportPost(Long postId, Member reporter) {
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
+        if(reporter.getId() == post.getWriter().getId()) { // 자신이 작성한 글을 신고할 경우
+            throw new SelfReportNotAllowedException();
+        }
         if(reportRepository.existsByPostAndReporter(post, reporter)){
             throw new ReportAlreadyExistException();
         }
-        else{
-            return reportRepository.save(PostReport.builder()
-                            .reporter(reporter)
-                            .post(post)
-                            .build());
-        }
+
+        return reportRepository.save(PostReport.builder()
+                        .reporter(reporter)
+                        .post(post)
+                        .build());
     }
 }
