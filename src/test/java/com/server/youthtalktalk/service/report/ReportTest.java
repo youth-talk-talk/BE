@@ -71,9 +71,15 @@ public class ReportTest {
                 .role(Role.USER)
                 .username("test")
                 .build());
+        Member writer = memberRepository.save(Member.builder()
+                .nickname("writer")
+                .role(Role.USER)
+                .username("writer")
+                .build());
         Post post = postRepository.save(Post.builder()
                 .title("test")
                 .content("test")
+                .writer(writer)
                 .build());
         reportRepository.save(PostReport.builder()
                         .reporter(reporter)
