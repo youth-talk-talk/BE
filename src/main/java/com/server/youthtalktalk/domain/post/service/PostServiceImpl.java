@@ -170,9 +170,15 @@ public class PostServiceImpl implements PostService{
         if(post.getWriter() == null || post.getWriter().getId()!=writer.getId()){ // 작성자가 아닐 경우
             throw new BusinessException(BaseResponseCode.POST_ACCESS_DENIED);
         }
-        imageService.deleteMultiFile(post.getImages().stream().map(PostImage::getImgUrl).toList());
+        // 1. 게시글 이미지 삭제
+        List<String> imageUrls = post.getImages().stream()
+                .map(PostImage::getImgUrl)
+                .toList();
+        imageService.deleteMultiFile(imageUrls);
+        // 2. 게시글 스크랩 삭제
+        scrapRepository.deleteAllByItemIdAndItemType(post.getId().toString(), ItemType.POST);
+        // 3. 게시글 삭제
         postRepository.delete(post);
-        scrapRepository.deleteAllByItemIdAndItemType(post.getId().toString(),ItemType.POST);
         log.info("게시글 삭제 성공, postId = {}", postId);
     }
 

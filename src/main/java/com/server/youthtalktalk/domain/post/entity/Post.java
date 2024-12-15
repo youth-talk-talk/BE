@@ -45,7 +45,7 @@ public class Post extends BaseTimeEntity {
     private List<Content> contents;
 
     @Builder.Default
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post")
     private List<PostImage> images = new ArrayList<>();
 
     @Builder.Default
