@@ -170,14 +170,19 @@ class PostServiceTest {
         String updatedImageUrl = "https://s3.region-name.amazonaws.com/bucket-name/updatedImage";
         imageRepository.save(PostImage.builder().post(null).imgUrl(updatedImageUrl).build());
 
+        List<String> addImgUrlList = new ArrayList<>();
+        addImgUrlList.add(updatedImageUrl);
+        List<String> deleteImgUrlList = new ArrayList<>();
+        deleteImgUrlList.add(IMAGE_URL);
+
         PostUpdateReqDto postUpdateReqDto = PostUpdateReqDto.builder()
                 .title("updatedTitle")
                 .contentList(getContents("updatedContent", updatedImageUrl))
-                .addImgUrlList(new ArrayList<>(List.of(updatedImageUrl)))
-                .deletedImgUrlList(new ArrayList<>(List.of(IMAGE_URL)))
+                .addImgUrlList(addImgUrlList)
+                .deletedImgUrlList(deleteImgUrlList)
                 .build();
         // When
-        PostRepDto postRepDto = postService.updatePost(post.getId(), postUpdateReqDto,this.member);
+        PostRepDto postRepDto = postService.updatePost(post.getId(), postUpdateReqDto, this.member);
         // Then
         assertThat(postRepDto.getTitle()).isEqualTo("updatedTitle");
         assertThat(postRepDto.getContentList().get(0).getContent()).isEqualTo("updatedContent");
@@ -199,12 +204,17 @@ class PostServiceTest {
                 .contents(getContents(CONTENT, IMAGE_URL))
                 .build());
 
+        List<String> addImgUrlList = new ArrayList<>();
+        addImgUrlList.add(updatedImageUrl);
+        List<String> deleteImgUrlList = new ArrayList<>();
+        deleteImgUrlList.add(IMAGE_URL);
+
         PostUpdateReqDto postUpdateReqDto = PostUpdateReqDto.builder()
                 .title("updatedTitle")
                 .contentList(getContents("updatedContent", updatedImageUrl))
                 .policyId(this.policy.getPolicyId())
-                .addImgUrlList(new ArrayList<>(List.of(updatedImageUrl)))
-                .deletedImgUrlList(new ArrayList<>(List.of(IMAGE_URL)))
+                .addImgUrlList(addImgUrlList)
+                .deletedImgUrlList(deleteImgUrlList)
                 .build();
         // When
         PostRepDto postRepDto = postService.updatePost(review.getId(), postUpdateReqDto,this.member);
@@ -338,10 +348,10 @@ class PostServiceTest {
     }
 
     List<Content> getContents(String content, String imageUrl){
-        List<Content> contentList = List.of(
+        List<Content> contentList = new ArrayList<>(List.of(
                 Content.builder().content(content).type(ContentType.TEXT).build(),
                 Content.builder().content(imageUrl).type(ContentType.IMAGE).build()
-        );
+        ));
         return contentList;
     }
 
