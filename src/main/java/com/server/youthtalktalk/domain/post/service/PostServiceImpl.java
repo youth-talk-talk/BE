@@ -23,7 +23,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,47 +39,13 @@ public class PostServiceImpl implements PostService{
     private final ScrapRepository scrapRepository;
 
     @Override
-    public PostRepDto createPost(PostCreateReqDto postCreateReqDto, List<MultipartFile> fileList, Member writer) throws IOException {
-        Post post;
-        if(postCreateReqDto.getPostType().equals("post")){ // 자유글
-            post = Post.builder()
-                    .title(postCreateReqDto.getTitle())
-                    .content(postCreateReqDto.getContent())
-                    .view(0L)
-                    .build();
-        }
-        else if(postCreateReqDto.getPostType().equals("review")){ // 리뷰
-            Review review = Review.builder()
-                    .title(postCreateReqDto.getTitle())
-                    .content(postCreateReqDto.getContent())
-                    .view(0L)
-                    .build();
-            Policy policy = policyRepository.findById(postCreateReqDto.getPolicyId()).orElseThrow(PolicyNotFoundException::new);
-            review.setPolicy(policy);
-            post = review;
-        }
-        else throw new InvalidValueException(BaseResponseCode.INVALID_INPUT_VALUE);
-
-        post.setWriter(writer);
-        Post savedPost = postRepository.save(post);
-
-        if(fileList!=null&&!fileList.isEmpty()) {
-            List<String> imageUrlList = imageService.uploadMultiFiles(fileList);
-            imageService.savePostImageList(imageUrlList, savedPost);
-        }
-        log.info("게시글 생성 성공, postId = {}", savedPost.getId());
-        return savedPost.toPostRepDto(scrapRepository.existsByMemberIdAndItemIdAndItemType(writer.getId(),post.getId().toString(),ItemType.POST));
-    }
-
-    @Override
-    public PostRepDto createPostTest(PostCreateTestReqDto postCreateReqDto, Member writer) throws IOException {
+    public PostRepDto createPost(PostCreateReqDto postCreateReqDto, Member writer){
         Post post;
         if(postCreateReqDto.getPostType().equals("post")){ // 자유글
             post = Post.builder()
                     .title(postCreateReqDto.getTitle())
                     .contents(postCreateReqDto.getContentList())
                     .view(0L)
-                    .content("")
                     .build();
         }
         else if(postCreateReqDto.getPostType().equals("review")){ // 리뷰
@@ -88,7 +53,6 @@ public class PostServiceImpl implements PostService{
                     .title(postCreateReqDto.getTitle())
                     .contents(postCreateReqDto.getContentList())
                     .view(0L)
-                    .content("")
                     .build();
             Policy policy = policyRepository.findById(postCreateReqDto.getPolicyId()).orElseThrow(PolicyNotFoundException::new);
             review.setPolicy(policy);
@@ -106,37 +70,7 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public PostRepDto updatePost(Long postId, PostUpdateReqDto postUpdateReqDto, List<MultipartFile> fileList, Member writer) throws IOException {
-        Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
-        if(post.getWriter()==null || post.getWriter().getId()!=writer.getId()){ // 작성자가 아닐 경우
-            throw new BusinessException(BaseResponseCode.POST_ACCESS_DENIED);
-        }
-
-        Post updatedPost = post.toBuilder()
-                .title(postUpdateReqDto.getTitle())
-                .content(postUpdateReqDto.getContent())
-                .build();
-        if(post instanceof Review){ // 리뷰이면
-            if(postUpdateReqDto.getPolicyId()!=null&&!postUpdateReqDto.getPolicyId().isEmpty()){
-                Policy policy = policyRepository.findById(postUpdateReqDto.getPolicyId()).orElseThrow(PolicyNotFoundException::new);
-                ((Review)updatedPost).setPolicy(policy);
-            }
-        }
-        Post savedPost = postRepository.save(updatedPost);
-
-        if(fileList!=null&&!fileList.isEmpty()) {
-            List<String> imageUrlList = imageService.uploadMultiFiles(fileList);
-            imageService.savePostImageList(imageUrlList, savedPost);
-        }
-        if(postUpdateReqDto.getDeletedImgUrlList()!=null&&!postUpdateReqDto.getDeletedImgUrlList().isEmpty()){
-            imageService.deleteMultiFile(postUpdateReqDto.getDeletedImgUrlList());
-        }
-        log.info("게시글 수정 성공, postId = {}", savedPost.getId());
-        return savedPost.toPostRepDto(scrapRepository.existsByMemberIdAndItemIdAndItemType(writer.getId(),post.getId().toString(),ItemType.POST));
-    }
-
-    @Override
-    public PostRepDto updatePostTest(Long postId, PostUpdateReqTestDto postUpdateReqDto, Member writer) throws IOException {
+    public PostRepDto updatePost(Long postId, PostUpdateReqDto postUpdateReqDto, Member writer){
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
         if(post.getWriter()==null || post.getWriter().getId()!=writer.getId()){ // 작성자가 아닐 경우
             throw new BusinessException(BaseResponseCode.POST_ACCESS_DENIED);
@@ -199,6 +133,7 @@ public class PostServiceImpl implements PostService{
         }
     }
 
+    @Override
     public List<String> extractImageUrl(Post post){
         List<String> imgUrls = new ArrayList<>();
         for(Content content : post.getContents()){

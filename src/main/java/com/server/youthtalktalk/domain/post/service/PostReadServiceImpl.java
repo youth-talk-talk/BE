@@ -43,7 +43,7 @@ public class PostReadServiceImpl implements PostReadService {
     private final ReportRepository reportRepository;
     private final BlockRepository blockRepository;
     private final PostRepositoryCustom postRepositoryCustom;
-
+    private static final int TOP = 5;
     /** 게시글, 리뷰 상세 조회 */
     @Override
     @Transactional
@@ -67,10 +67,10 @@ public class PostReadServiceImpl implements PostReadService {
     @Transactional
     public PostListRepDto getAllPost(Pageable pageable, Member member) {
         Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
-        Page<Post> postPopularPage = postRepositoryCustom.findAllPostsByView(member, PageRequest.of(0, 5)); // 상위 5개만
+        List<Post> popularPostList = postRepositoryCustom.findTopPostsByView(member, TOP); // 상위 5개만
         Page<Post> postPage = postRepositoryCustom.findAllPosts(member, pageRequest);
 
-        return toPostListRepDto(postPopularPage.getContent(),postPage.getContent(),member);
+        return toPostListRepDto(popularPostList, postPage.getContent(),member);
     }
 
     /** 리뷰 카테고리별 전체 조회 */
@@ -78,10 +78,10 @@ public class PostReadServiceImpl implements PostReadService {
     @Transactional
     public PostListRepDto getAllReviewByCategory(Pageable pageable, List<Category> categories, Member member) {
         Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
-        Page<Post> reviewPopularPage = postRepositoryCustom.findAllReviewsByCategoryAndView(member, categories,PageRequest.of(0, 5)); // 상위 5개만
-        Page<Post> reviewPage = postRepositoryCustom.findAllReviewsByCategory(member, categories,pageRequest);
+        List<Post> popularReviewList = postRepositoryCustom.findTopReviewsByCategoryAndView(member, categories, TOP); // 상위 5개만
+        Page<Post> reviewPage = postRepositoryCustom.findAllReviewsByCategory(member, categories, pageRequest);
 
-        return toPostListRepDto(reviewPopularPage.getContent(),reviewPage.getContent(),member);
+        return toPostListRepDto(popularReviewList, reviewPage.getContent(),member);
     }
 
     /** 나의 게시글, 리뷰 전체 조회 */
@@ -140,7 +140,6 @@ public class PostReadServiceImpl implements PostReadService {
         return PostListDto.builder()
                 .postId(post.getId())
                 .title(post.getTitle())
-                .content(post.getContent())
                 .writerId(post.getWriter() == null ? null : post.getWriter().getId())
                 .policyId(post instanceof Review ? ((Review) post).getPolicy().getPolicyId() : null)
                 .policyTitle(post instanceof Review ? ((Review)post).getPolicy().getTitle() : null )
@@ -156,7 +155,6 @@ public class PostReadServiceImpl implements PostReadService {
         return ScrapPostListDto.builder()
                 .postId(post.getId())
                 .title(post.getTitle())
-                .content(post.getContent())
                 .writerId(post.getWriter() == null ? null : post.getWriter().getId())
                 .policyId(post instanceof Review ? ((Review) post).getPolicy().getPolicyId() : null)
                 .policyTitle(post instanceof Review ? ((Review)post).getPolicy().getTitle() : null )
