@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,33 +27,16 @@ public class PostController {
     private final MemberService memberService;
 
     /** 게시글 생성 API */
-    @PostMapping()
-    public BaseResponse<PostRepDto> create(@RequestPart("content") @Valid PostCreateReqDto postCreateReqDto,
-                                           @RequestPart(value = "images",required = false) List<MultipartFile> images) throws IOException {
-        PostRepDto repDto = postService.createPost(postCreateReqDto,images,memberService.getCurrentMember());
-        return new BaseResponse<>(repDto, BaseResponseCode.SUCCESS);
-    }
-
-    /** 게시글 수정 API */
-    @PatchMapping("/{id}")
-    public BaseResponse<PostRepDto> update(@RequestPart("content") @Valid PostUpdateReqDto postUpdateReqDto,
-                                           @RequestPart(value = "images",required = false) List<MultipartFile> images,
-                                           @PathVariable Long id) throws IOException {
-        PostRepDto repDto = postService.updatePost(id,postUpdateReqDto,images,memberService.getCurrentMember());
-        return new BaseResponse<>(repDto, BaseResponseCode.SUCCESS);
-    }
-
-    /** 게시글 생성 API test */
     @PostMapping("/create")
-    public BaseResponse<PostRepDto> createPost(@RequestBody @Valid PostCreateTestReqDto postCreateReqDto) throws IOException {
-        PostRepDto postRepDto = postService.createPostTest(postCreateReqDto,memberService.getCurrentMember());
+    public BaseResponse<PostRepDto> create(@RequestBody @Valid PostCreateReqDto postCreateReqDto) throws IOException {
+        PostRepDto postRepDto = postService.createPost(postCreateReqDto,memberService.getCurrentMember());
         return new BaseResponse<>(postRepDto, BaseResponseCode.SUCCESS);
     }
 
-    /** 게시글 수정 API test */
+    /** 게시글 수정 API */
     @PatchMapping("/update/{id}")
-    public BaseResponse<PostRepDto> updatePost(@PathVariable Long id, @RequestBody @Valid PostUpdateReqTestDto postUpdateReqDto) throws IOException {
-        PostRepDto postRepDto = postService.updatePostTest(id,postUpdateReqDto,memberService.getCurrentMember());
+    public BaseResponse<PostRepDto> update(@PathVariable Long id, @RequestBody @Valid PostUpdateReqDto postUpdateReqDto) throws IOException {
+        PostRepDto postRepDto = postService.updatePost(id,postUpdateReqDto,memberService.getCurrentMember());
         return new BaseResponse<>(postRepDto, BaseResponseCode.SUCCESS);
     }
 

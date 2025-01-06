@@ -12,7 +12,6 @@ public class PostRepDto {
     private Long postId;
     private String postType;
     private String title;
-    private String content;
     private List<Content> contentList;
     private String policyId; // 자유글 null
     private String policyTitle; // 자유글 null

@@ -24,7 +24,6 @@ public class PostListRepDto {
     public static class PostListDto {
         private Long postId;
         private String title;
-        private String content;
         private Long writerId;
         private int scraps;
         private boolean scrap;
@@ -38,7 +37,6 @@ public class PostListRepDto {
     public static class ScrapPostListDto {
         private Long postId;
         private String title;
-        private String content;
         private Long writerId;
         private int scraps;
         private boolean scrap;
