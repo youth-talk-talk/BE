@@ -27,7 +27,7 @@ public class PostController {
     private final MemberService memberService;
 
     /** 게시글 생성 API */
-    @PostMapping("/")
+    @PostMapping("")
     public BaseResponse<PostRepDto> create(@RequestBody @Valid PostCreateReqDto postCreateReqDto) throws IOException {
         PostRepDto postRepDto = postService.createPost(postCreateReqDto,memberService.getCurrentMember());
         return new BaseResponse<>(postRepDto, BaseResponseCode.SUCCESS);
