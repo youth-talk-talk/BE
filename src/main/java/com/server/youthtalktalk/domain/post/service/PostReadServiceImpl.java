@@ -131,8 +131,8 @@ public class PostReadServiceImpl implements PostReadService {
         postList.forEach(post -> other_posts.add(toPostDto(post, member)));
 
         return builder()
-                .top5_posts(top5_posts)
-                .other_posts(other_posts)
+                .top5Posts(top5_posts)
+                .allPosts(other_posts)
                 .build();
     }
 

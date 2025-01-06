@@ -41,20 +41,20 @@ public class PostServiceImpl implements PostService{
     @Override
     public PostRepDto createPost(PostCreateReqDto postCreateReqDto, Member writer){
         Post post;
-        if(postCreateReqDto.getPostType().equals("post")){ // 자유글
+        if(postCreateReqDto.postType().equals("post")){ // 자유글
             post = Post.builder()
-                    .title(postCreateReqDto.getTitle())
-                    .contents(postCreateReqDto.getContentList())
+                    .title(postCreateReqDto.title())
+                    .contents(postCreateReqDto.contentList())
                     .view(0L)
                     .build();
         }
-        else if(postCreateReqDto.getPostType().equals("review")){ // 리뷰
+        else if(postCreateReqDto.postType().equals("review")){ // 리뷰
             Review review = Review.builder()
-                    .title(postCreateReqDto.getTitle())
-                    .contents(postCreateReqDto.getContentList())
+                    .title(postCreateReqDto.title())
+                    .contents(postCreateReqDto.contentList())
                     .view(0L)
                     .build();
-            Policy policy = policyRepository.findById(postCreateReqDto.getPolicyId()).orElseThrow(PolicyNotFoundException::new);
+            Policy policy = policyRepository.findById(postCreateReqDto.policyId()).orElseThrow(PolicyNotFoundException::new);
             review.setPolicy(policy);
             post = review;
         }

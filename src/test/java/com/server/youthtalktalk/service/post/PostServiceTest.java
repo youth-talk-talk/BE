@@ -92,12 +92,7 @@ class PostServiceTest {
     @DisplayName("자유글 생성 성공")
     void successCreateFreePost() throws IOException {
         // Given
-        PostCreateReqDto postCreateReqDto = PostCreateReqDto.builder()
-                .policyId(null)
-                .postType("post")
-                .title("post")
-                .contentList(getContents(CONTENT, IMAGE_URL))
-                .build();
+        PostCreateReqDto postCreateReqDto = new PostCreateReqDto("post", getContents(CONTENT, IMAGE_URL), "post", null);
         // When
         PostRepDto postRepDto = postService.createPost(postCreateReqDto,this.member);
 
@@ -113,13 +108,7 @@ class PostServiceTest {
     @DisplayName("리뷰 생성 성공")
     void successCreateReview() throws IOException {
         // Given
-        PostCreateReqDto postCreateReqDto = PostCreateReqDto.builder()
-                .policyId(this.policy.getPolicyId())
-                .postType("review")
-                .policyId(policy.getPolicyId())
-                .title("review")
-                .contentList(getContents(CONTENT, IMAGE_URL))
-                .build();
+        PostCreateReqDto postCreateReqDto = new PostCreateReqDto("review", getContents(CONTENT, IMAGE_URL), "review", this.policy.getPolicyId());
         // When
         PostRepDto postRepDto = postService.createPost(postCreateReqDto,this.member);
         // Then
@@ -134,13 +123,7 @@ class PostServiceTest {
     @DisplayName("존재하지 않는 정책일 경우 리뷰 생성 실패")
     void failCreateReviewIfNotExistPolicy(){
         // Given
-        PostCreateReqDto postCreateReqDto = PostCreateReqDto.builder()
-                .policyId(this.policy.getPolicyId())
-                .postType("review")
-                .policyId("notExistId")
-                .title("review")
-                .contentList(getContents(CONTENT, IMAGE_URL))
-                .build();
+        PostCreateReqDto postCreateReqDto = new PostCreateReqDto("review", getContents(CONTENT, IMAGE_URL), "review", "notExistId");
         // When
         // Then
         assertThatThrownBy(() -> postService.createPost(postCreateReqDto,this.member))
@@ -151,12 +134,7 @@ class PostServiceTest {
     @DisplayName("타입이 자유글 혹은 리뷰가 아닌 경우 리뷰 생성 실패")
     void failCreatePostIfNotExistType(){
         // Given
-        PostCreateReqDto postCreateReqDto = PostCreateReqDto.builder()
-                .policyId(null)
-                .postType("none")
-                .title("post")
-                .contentList(getContents(CONTENT, IMAGE_URL))
-                .build();
+        PostCreateReqDto postCreateReqDto = new PostCreateReqDto("post", getContents(CONTENT, IMAGE_URL), "none", null);
         // When
         // Then
         assertThatThrownBy(() -> postService.createPost(postCreateReqDto,this.member))

@@ -219,15 +219,15 @@ public class PostReadServiceTest {
         PostListRepDto postListRepDto1 = postReadService.getAllPost(pageable1, member);
         PostListRepDto postListRepDto2 = postReadService.getAllPost(pageable2, member);
         // Then
-        assertThat(postListRepDto1.getTop5_posts().get(0).getTitle()).isEqualTo("post0"); // 인기순 (조회수)
-        assertThat(postListRepDto1.getTop5_posts().get(1).getTitle()).isEqualTo("post1");
-        assertThat(postListRepDto1.getTop5_posts()).hasSize(LEN);
+        assertThat(postListRepDto1.getTop5Posts().get(0).getTitle()).isEqualTo("post0"); // 인기순 (조회수)
+        assertThat(postListRepDto1.getTop5Posts().get(1).getTitle()).isEqualTo("post1");
+        assertThat(postListRepDto1.getTop5Posts()).hasSize(LEN);
 
         for(int i = 0; i < pageSize; i++){
-            assertThat(postListRepDto1.getOther_posts().get(i).getTitle()).isEqualTo("post"+i);
+            assertThat(postListRepDto1.getAllPosts().get(i).getTitle()).isEqualTo("post"+i);
         }
-        assertThat(postListRepDto1.getOther_posts()).hasSize(pageSize);
-        assertThat(postListRepDto2.getOther_posts()).hasSize(LEN - pageSize);
+        assertThat(postListRepDto1.getAllPosts()).hasSize(pageSize);
+        assertThat(postListRepDto2.getAllPosts()).hasSize(LEN - pageSize);
 
         verify(postRepositoryCustom, times(2)).findTopPostsByView(member, TOP);
         verify(postRepositoryCustom).findAllPosts(member, pageable1);
@@ -267,9 +267,9 @@ public class PostReadServiceTest {
         // When
         PostListRepDto postListRepDto = postReadService.getAllReviewByCategory(pageable, categories, member);
         // Then
-        assertThat(postListRepDto.getOther_posts()).hasSize(LEN);
-        assertThat(postListRepDto.getOther_posts().get(0).getPolicyTitle()).isEqualTo(policy.getTitle());
-        assertThat(postListRepDto.getOther_posts().get(0).getPolicyId()).isEqualTo(policy.getPolicyId());
+        assertThat(postListRepDto.getAllPosts()).hasSize(LEN);
+        assertThat(postListRepDto.getAllPosts().get(0).getPolicyTitle()).isEqualTo(policy.getTitle());
+        assertThat(postListRepDto.getAllPosts().get(0).getPolicyId()).isEqualTo(policy.getPolicyId());
 
         verify(postRepositoryCustom).findTopReviewsByCategoryAndView(member, categories, TOP);
         verify(postRepositoryCustom).findAllReviewsByCategory(member, categories, pageable);

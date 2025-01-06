@@ -8,8 +8,8 @@ import java.util.List;
 @Getter
 @Builder
 public class PostListRepDto {
-    private List<PostListDto> top5_posts;
-    private List<PostListDto> other_posts;
+    private List<PostListDto> top5Posts;
+    private List<PostListDto> allPosts;
 
     @Getter
     @Builder
