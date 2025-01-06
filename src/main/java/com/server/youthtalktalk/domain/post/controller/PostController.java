@@ -27,14 +27,14 @@ public class PostController {
     private final MemberService memberService;
 
     /** 게시글 생성 API */
-    @PostMapping("/create")
+    @PostMapping("/")
     public BaseResponse<PostRepDto> create(@RequestBody @Valid PostCreateReqDto postCreateReqDto) throws IOException {
         PostRepDto postRepDto = postService.createPost(postCreateReqDto,memberService.getCurrentMember());
         return new BaseResponse<>(postRepDto, BaseResponseCode.SUCCESS);
     }
 
     /** 게시글 수정 API */
-    @PatchMapping("/update/{id}")
+    @PatchMapping("/{id}")
     public BaseResponse<PostRepDto> update(@PathVariable Long id, @RequestBody @Valid PostUpdateReqDto postUpdateReqDto) throws IOException {
         PostRepDto postRepDto = postService.updatePost(id,postUpdateReqDto,memberService.getCurrentMember());
         return new BaseResponse<>(postRepDto, BaseResponseCode.SUCCESS);
