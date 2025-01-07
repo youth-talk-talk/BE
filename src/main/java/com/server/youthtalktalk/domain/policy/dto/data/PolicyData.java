@@ -88,14 +88,9 @@ public class PolicyData {
     private String polyRlmCd;
 
     public Policy toPolicy() {
-        Region region = null;
-        // 지역 구분 (중앙부처 타입일 경우 지역 : 전국)
-        if(this.polyBizTy.equals("중앙부처")){
-            region = Region.ALL;
-        }
-        else{ // 지자체일 경우
-            region = Region.fromKey(this.polyBizSecd.substring(0,9));
-        }
+        log.info("bizId: {}, polyBizSecd: {}, polyBizTy: {}", bizId, polyBizSecd, polyBizTy);
+        Region region = isNotSpecificRegion() ? Region.ALL : Region.fromKey(this.polyBizSecd.substring(0, 9));
+
         // 카테고리 분류
         Category category = switch (this.polyRlmCd) {
             case "023010" -> Category.JOB;
@@ -140,8 +135,6 @@ public class PolicyData {
                 .map(String::trim) // null이 아니면 공백 제거
                 .orElseGet(()->"-"); // null은 "-"으로 대체
         LocalDate applyDue = dateExtractor.extractDue(applyTerm);
-        log.info("applyTerm={}", applyTerm);
-        log.info("applyDue={}", applyDue);
 
         // 취업상태 코드 분류
         String employment = this.empmSttsCn != null ? this.empmSttsCn : "";
@@ -192,6 +185,10 @@ public class PolicyData {
                 .submitDoc(cDataConvert(this.pstnPaprCn))
                 .supportDetail(cDataConvert(this.sporCn))
                 .build();
+    }
+
+    public boolean isNotSpecificRegion(){
+        return this.polyBizTy == null || this.polyBizTy.equals("중앙부처");
     }
 
     public String cDataConvert(String value){
