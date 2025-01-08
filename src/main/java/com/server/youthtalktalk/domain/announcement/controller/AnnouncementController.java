@@ -22,7 +22,7 @@ import java.util.Map;
 
 import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 public class AnnouncementController {
     private final AnnouncementService announcementService;
