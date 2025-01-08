@@ -5,6 +5,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.entity.Role;
+import com.server.youthtalktalk.domain.policy.entity.Region;
+import com.server.youthtalktalk.global.config.SecurityConfig;
 import com.server.youthtalktalk.global.util.HashUtil;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
 import jakarta.persistence.EntityManager;
@@ -23,6 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.server.youthtalktalk.domain.member.entity.Role.*;
+import static com.server.youthtalktalk.domain.policy.entity.Region.*;
+import static com.server.youthtalktalk.global.config.SecurityConfig.*;
+import static com.server.youthtalktalk.global.config.SecurityConfig.LOGIN_URL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -59,7 +65,7 @@ class JwtAuthenticationProcessingFilterTest {
     @Value("${jwt.refresh.header}")
     private String refreshHeader;
 
-    private static String LOGIN_URL = "/login";
+    private static final String TEST_URL = API_PREFIX + "/members/me";
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
     private static final String BEARER = "Bearer ";
@@ -67,7 +73,8 @@ class JwtAuthenticationProcessingFilterTest {
     private static String KEY_SOCIAL_TYPE = "socialType";
     private static String KEY_SOCIAL_ID = "socialId";
     private static String SOCIAL_TYPE = "kakao";
-    private static String SOCIAL_ID = "77777";
+    private static String SOCIAL_ID = "1234567";
+    private static String NICKNAME = "member1";
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -78,11 +85,13 @@ class JwtAuthenticationProcessingFilterTest {
 
     @BeforeEach
     public void init(){
+        clear();
         memberRepository.save(Member.builder()
                 .username(hashUtil.hash(SOCIAL_ID))
-                .role(Role.USER)
+                .nickname(NICKNAME)
+                .region(SEOUL)
+                .role(USER)
                 .build());
-        clear();
     }
 
     private Map<String, String> createRequestBodyMap(String socialType, String socialId){
@@ -131,7 +140,7 @@ class JwtAuthenticationProcessingFilterTest {
         System.out.println("Received accessToken = " + accessToken);
 
         // when, then
-        MvcResult result = mockMvc.perform(get("/")
+        MvcResult result = mockMvc.perform(get(TEST_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(accessHeader, BEARER + accessToken))
                 .andExpect(status().isOk())
@@ -149,7 +158,7 @@ class JwtAuthenticationProcessingFilterTest {
     void access_refresh_모두_존재_X() throws Exception {
         // when, then
         mockMvc.perform(
-                        get("/"))
+                        get(TEST_URL))
                 .andDo(print()).andExpect(status().isUnauthorized());
     }
 
@@ -164,7 +173,7 @@ class JwtAuthenticationProcessingFilterTest {
 
         // when, then
         mockMvc.perform(
-                get("/")
+                get(TEST_URL)
                         .header(accessHeader,accessToken+"1"))
                 .andExpectAll(status().isUnauthorized());
     }
@@ -180,7 +189,7 @@ class JwtAuthenticationProcessingFilterTest {
 
         // when, then
         MvcResult result = mockMvc.perform(
-                get("/")
+                get(TEST_URL)
                         .header(refreshHeader, BEARER + refreshToken))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -201,7 +210,7 @@ class JwtAuthenticationProcessingFilterTest {
         String refreshToken= accessAndRefreshToken.get(refreshHeader);
 
         // when, then
-        mockMvc.perform(get("/")
+        mockMvc.perform(get(TEST_URL)
                         .header(refreshHeader, BEARER + refreshToken+"1")) // 유효하지 않은 refresh token
                 .andExpect(status().isUnauthorized());
     }
@@ -218,7 +227,7 @@ class JwtAuthenticationProcessingFilterTest {
 
         // when, then
         MvcResult result = mockMvc.perform(
-                get("/")
+                get(TEST_URL)
                         .header(refreshHeader, BEARER + refreshToken)
                         .header(accessHeader, BEARER + accessToken))
                 .andExpect(status().isOk())

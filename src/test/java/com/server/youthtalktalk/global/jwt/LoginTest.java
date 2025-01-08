@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.server.youthtalktalk.global.config.SecurityConfig.LOGIN_URL;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -47,7 +48,7 @@ public class LoginTest {
     private static String KEY_SOCIAL_ID = "socialId";
     private static String SOCIAL_TYPE = "kakao";
     private static String SOCIAL_ID = "777777";
-    private static String LOGIN_URL = "/login";
+//    private static String LOGIN_URL = "/login";
 
     private void clear(){
         em.flush();
