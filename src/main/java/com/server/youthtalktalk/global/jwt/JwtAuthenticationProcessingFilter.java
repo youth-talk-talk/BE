@@ -132,6 +132,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                     .flatMap(memberRepository::findByUsername)
                     .ifPresentOrElse(
                             member -> {
+                                log.info("인증 성공");
                                 saveAuthentication(member); // 인증 허가 처리
                                 try {
                                     filterChain.doFilter(request, response);
