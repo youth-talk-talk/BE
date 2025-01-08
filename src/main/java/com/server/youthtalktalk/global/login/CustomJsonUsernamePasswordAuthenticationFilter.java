@@ -2,6 +2,7 @@ package com.server.youthtalktalk.global.login;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.youthtalktalk.domain.member.dto.apple.AppleTokenResponseDto;
+import com.server.youthtalktalk.global.config.SecurityConfig;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.BusinessException;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import static com.server.youthtalktalk.global.config.SecurityConfig.*;
 import static com.server.youthtalktalk.global.response.BaseResponseCode.APPLE_USER_IDENTIFIER_ERROR;
 
 /**
@@ -33,7 +35,6 @@ import static com.server.youthtalktalk.global.response.BaseResponseCode.APPLE_US
 @Slf4j
 public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
-    private static final String DEFAULT_LOGIN_REQUEST_URL = "/login";
     private static final String HTTP_METHOD = "POST";
     private static final String CONTENT_TYPE = "application/json";
     private static final String SOCIAL_ID_KEY = "socialId";
@@ -41,7 +42,7 @@ public class CustomJsonUsernamePasswordAuthenticationFilter extends AbstractAuth
     private static final String AUTHORIZATION_CODE = "authorizationCode"; // 애플 로그인
     private static final String IDENTITY_TOKEN = "identityToken";
     private static final AntPathRequestMatcher DEFAULT_LOGIN_PATH_REQUEST_MATCHER =
-            new AntPathRequestMatcher(DEFAULT_LOGIN_REQUEST_URL, HTTP_METHOD); // POST "/login" 으로 온 요청
+            new AntPathRequestMatcher(LOGIN_URL, HTTP_METHOD); // 로그인 요청
 
     private final ObjectMapper objectMapper;
     private final AppleAuthUtil appleAuthUtil;
