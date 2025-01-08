@@ -1,8 +1,11 @@
 package com.server.youthtalktalk.global.jwt;
 
+import static com.server.youthtalktalk.global.config.SecurityConfig.*;
+
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.entity.Role;
+import com.server.youthtalktalk.global.config.SecurityConfig;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.token.InvalidTokenException;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
@@ -30,7 +33,7 @@ import java.util.*;
 public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
 
     /**
-     * JWT 인증 필터 - "/login" 이외의 요청을 처리
+     * JWT 인증 필터 - 로그인 이외의 요청을 처리
      * 기본적으로 사용자는 요청 헤더에 AccessToken만 담아서 요청
      * AccessToken 만료 시에만 RefreshToken을 요청 헤더에 AccessToken과 함께 요청
      * 1. RefreshToken이 없고, AccessToken이 유효한 경우 -> 인증 성공, RefreshToken 재발급 X
@@ -40,13 +43,13 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      * 유효하지 않은 refresh token -> 인증 실패 (401)
      */
 
-    private static final List<String> NO_CHECK_URL = Arrays.asList("/login", "/signUp","/admin/login","/css/**", "admin/login");
-    private static final String HEALTH_CHECK = "/actuator/health";
-
+    private final List<String> NO_CHECK_URL =
+            Arrays.asList(LOGIN_URL, SIGNUP_URL, ADMIN_LOGIN_URL, STATIC_RESOURCE);
     private final JwtService jwtService;
     private final MemberRepository memberRepository;
     private final GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
     private final AntPathMatcher antPathMatcher = new AntPathMatcher();
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, InvalidTokenException {
         for (String path : NO_CHECK_URL) {
@@ -56,7 +59,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
             }
         }
 
-        if(request.getRequestURI().equals(HEALTH_CHECK)) {
+        if(request.getRequestURI().equals(HEALTH_CHECK_URL)) {
             authenticationForHealthCheck(request);
             filterChain.doFilter(request, response);
             return;
