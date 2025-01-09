@@ -8,8 +8,8 @@ import java.util.List;
 @Getter
 @Builder
 public class PostListRepDto {
-    private List<PostListDto> top5_posts;
-    private List<PostListDto> other_posts;
+    private List<PostListDto> top5Posts;
+    private List<PostListDto> allPosts;
 
     @Getter
     @Builder
@@ -24,7 +24,6 @@ public class PostListRepDto {
     public static class PostListDto {
         private Long postId;
         private String title;
-        private String content;
         private Long writerId;
         private int scraps;
         private boolean scrap;
@@ -38,7 +37,6 @@ public class PostListRepDto {
     public static class ScrapPostListDto {
         private Long postId;
         private String title;
-        private String content;
         private Long writerId;
         private int scraps;
         private boolean scrap;

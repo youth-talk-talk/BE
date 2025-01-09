@@ -50,7 +50,6 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .leftJoin(block).on(blockJoinWithPost(member))
                 .leftJoin(report).on(reportJoinWithPost(member))
                 .where(postConditionsExcludeReportAndBlocked())
-                .orderBy(post.id.desc())
                 .fetchOne();
 
         return new PageImpl<>(posts, pageable, total == null ? 0 : total);
@@ -58,27 +57,17 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
 
     /** 조회수별 게시글 검색 */
     @Override
-    public Page<Post> findAllPostsByView(Member member, Pageable pageable) {
+    public List<Post> findTopPostsByView(Member member, int top) {
         List<Post> posts = queryFactory
                 .selectFrom(post)
                 .leftJoin(block).on(blockJoinWithPost(member))
                 .leftJoin(report).on(reportJoinWithPost(member))
                 .where(postConditionsExcludeReportAndBlocked())
                 .orderBy(post.view.desc(), post.id.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
+                .limit(top)
                 .fetch();
 
-        Long total = queryFactory
-                .select(post.count())
-                .from(post)
-                .leftJoin(block).on(blockJoinWithPost(member))
-                .leftJoin(report).on(reportJoinWithPost(member))
-                .where(postConditionsExcludeReportAndBlocked())
-                .orderBy(post.view.desc(), post.id.desc())
-                .fetchOne();
-
-        return new PageImpl<>(posts, pageable, total == null ? 0 : total);
+        return posts;
     }
 
     /** 모든 게시글 키워드 검색 */
@@ -103,7 +92,6 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .leftJoin(block).on(blockJoinWithPost(member))
                 .leftJoin(report).on(reportJoinWithPost(member))
                 .where(postConditionsExcludeReportAndBlocked().and(deleteSpaces.like(keywordWithoutSpaces)))
-                .orderBy(post.id.desc())
                 .fetchOne();
 
         return new PageImpl<>(posts, pageable, total == null ? 0 : total);
@@ -124,7 +112,6 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .select(post.count())
                 .from(post)
                 .where(post.writer.eq(writer))
-                .orderBy(post.id.desc())
                 .fetchOne();
 
         return new PageImpl<>(posts, pageable, total == null ? 0 : total);
@@ -151,14 +138,13 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .leftJoin(report).on(reportJoinWithPost(member))
                 .where(reviewConditionsExcludeReportAndBlocked()
                         .and(JPAExpressions.treat(post, QReview.class).policy.category.in(categories)))
-                .orderBy(post.id.desc())
                 .fetchOne();
 
         return new PageImpl<>(reviews, pageable, total == null ? 0 : total);
     }
 
     @Override
-    public Page<Post> findAllReviewsByCategoryAndView(Member member, List<Category> categories, Pageable pageable) {
+    public List<Post> findTopReviewsByCategoryAndView(Member member, List<Category> categories, int top) {
         List<Post> reviews = queryFactory
                 .selectFrom(post)
                 .leftJoin(block).on(blockJoinWithPost(member))
@@ -166,21 +152,10 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .where(reviewConditionsExcludeReportAndBlocked()
                         .and(JPAExpressions.treat(post, QReview.class).policy.category.in(categories)))
                 .orderBy(post.view.desc(), post.id.desc())
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
+                .limit(top)
                 .fetch();
 
-        Long total = queryFactory
-                .select(post.count())
-                .from(post)
-                .leftJoin(block).on(blockJoinWithPost(member))
-                .leftJoin(report).on(reportJoinWithPost(member))
-                .where(reviewConditionsExcludeReportAndBlocked()
-                        .and(JPAExpressions.treat(post, QReview.class).policy.category.in(categories)))
-                .orderBy(post.view.desc(), post.id.desc())
-                .fetchOne();
-
-        return new PageImpl<>(reviews, pageable, total == null ? 0 : total);
+        return reviews;
     }
 
     /** 모든 리뷰 키워드 검색 */
@@ -207,7 +182,6 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .leftJoin(report).on(reportJoinWithPost(member))
                 .where(reviewConditionsExcludeReportAndBlocked()
                         .and(deleteSpaces.like(keywordWithoutSpaces)))
-                .orderBy(post.id.desc())
                 .fetchOne();
 
         return new PageImpl<>(reviews, pageable, total == null ? 0 : total);
@@ -234,7 +208,6 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .leftJoin(report).on(reportJoinWithPost(member))
                 .join(scrap).on(post.id.stringValue().eq(scrap.itemId))
                 .where(report.id.isNull().and(block.id.isNull()).and(scrap.member.eq(member)))
-                .orderBy(scrap.id.desc())
                 .fetchOne();
 
         return new PageImpl<>(posts, pageable, total == null ? 0 : total);

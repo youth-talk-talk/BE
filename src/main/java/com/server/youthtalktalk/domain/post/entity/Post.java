@@ -39,7 +39,6 @@ public class Post extends BaseTimeEntity {
     @JoinColumn(name = "member_id")
     private Member writer;
 
-    // 임시 추가
     @ElementCollection
     @CollectionTable(name = "post_contents", joinColumns = @JoinColumn(name = "post_id"))
     private List<Content> contents;
@@ -68,7 +67,6 @@ public class Post extends BaseTimeEntity {
         return PostRepDto.builder()
                 .postId(this.getId())
                 .title(this.getTitle())
-                .content(this.getContent())
                 .contentList(this.getContents())
                 .policyId(this instanceof Review ? ((Review)this).getPolicy().getPolicyId() : null)
                 .policyTitle(this instanceof Review ? ((Review)this).getPolicy().getTitle() : null)
