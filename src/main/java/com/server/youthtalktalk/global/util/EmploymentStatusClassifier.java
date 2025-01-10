@@ -21,9 +21,8 @@ public class EmploymentStatusClassifier {
         if (employment.contains("창업")) employmentCode.add(EmploymentCode.ENTREPRENEUR);
         if (employment.contains("단기근로자")) employmentCode.add(EmploymentCode.TEMPORARY_WORKER);
         if (employment.contains("영농종사자") || employment.contains("농업인")) employmentCode.add(EmploymentCode.FARMER);
-
         if (employmentCode.isEmpty()) {
-            if (employment.equals("-") || employment.contains("제한없음") || employment.contains("상관없음") || employment.equals("무관")) {
+            if (employment.isEmpty()) {
                 employmentCode.add(EmploymentCode.NO_RESTRICTION);
             } else {
                 employmentCode.add(EmploymentCode.OTHER);
