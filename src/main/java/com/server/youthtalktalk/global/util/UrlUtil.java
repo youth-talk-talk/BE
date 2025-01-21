@@ -22,6 +22,6 @@ public class UrlUtil {
         Pattern pt = Pattern.compile(urlPattern);
         Matcher mc = pt.matcher(url);
 
-        return mc.find() ? mc.group() : "";
+        return mc.find() ? mc.group() : null;
     }
 }

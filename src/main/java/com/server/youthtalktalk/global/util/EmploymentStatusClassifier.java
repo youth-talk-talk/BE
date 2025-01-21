@@ -9,6 +9,8 @@ public class EmploymentStatusClassifier {
 
     public static String classify(String employmentText) {
 
+        if (employmentText == null)
+            employmentText = "";
         String employment = employmentText.trim();
 
         Set<EmploymentCode> employmentCode = EnumSet.noneOf(EmploymentCode.class);
