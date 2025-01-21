@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.youthtalktalk.global.jwt.JwtAuthenticationExceptionHandler;
 import com.server.youthtalktalk.global.jwt.JwtAuthenticationProcessingFilter;
 import com.server.youthtalktalk.global.jwt.JwtService;
+import com.server.youthtalktalk.global.log.LoggingFilter;
 import com.server.youthtalktalk.global.login.*;
 import com.server.youthtalktalk.global.util.AppleAuthUtil;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
@@ -56,7 +57,7 @@ public class SecurityConfig {
         http.addFilterAfter(customJsonUsernamePasswordAuthenticationFilter(), LogoutFilter.class);
         http.addFilterBefore(jwtAuthenticationProcessingFilter(), CustomJsonUsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(jwtAuthenticationExceptionHandler(), JwtAuthenticationProcessingFilter.class);
-
+        http.addFilterBefore(new LoggingFilter(), LogoutFilter.class);
         return http.build();
     }
 
