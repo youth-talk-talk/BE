@@ -1,5 +1,6 @@
 package com.server.youthtalktalk.domain.member.controller;
 
+import com.server.youthtalktalk.domain.image.service.ImageService;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.dto.MemberInfoDto;
 import com.server.youthtalktalk.domain.member.dto.MemberUpdateDto;
@@ -8,8 +9,10 @@ import com.server.youthtalktalk.domain.member.dto.apple.AppleDto;
 import com.server.youthtalktalk.global.response.BaseResponse;
 import com.server.youthtalktalk.domain.member.service.MemberService;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
@@ -17,7 +20,9 @@ import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 @RequiredArgsConstructor
 public class MemberController {
 
+    private static final int MAX_PROFILE_SIZE = 1024 * 1024;
     private final MemberService memberService;
+    private final ImageService imageService;
 
     /**
      * 회원가입 api
@@ -78,4 +83,27 @@ public class MemberController {
         memberService.unblockMember(member,unblockId);
         return new BaseResponse<>(SUCCESS_MEMBER_UNBLOCK);
     }
+
+    /**
+     * 프로필 이미지 등록 api
+     */
+    @PostMapping("/members/profile")
+    public BaseResponse<String> updateProfile(@RequestParam("image") MultipartFile image) throws IOException {
+        if (image.getSize() > MAX_PROFILE_SIZE) { // 1MB 용량 제한
+            return new BaseResponse<>(EXCEED_PROFILE_SIZE);
+        }
+        String imgUrl = imageService.uploadMultiFile(image);
+        imageService.saveProfileImage(imgUrl, memberService.getCurrentMember());
+        return new BaseResponse<>(imgUrl, SUCCESS);
+    }
+
+    /**
+     * 프로필 이미지 삭제 api
+     */
+    @DeleteMapping("/members/profile")
+    public BaseResponse<String> deleteProfile() {
+        imageService.deleteProfileImage(memberService.getCurrentMember());
+        return new BaseResponse<>(SUCCESS);
+    }
+
 }
