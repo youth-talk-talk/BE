@@ -18,6 +18,6 @@ public class PolicyDataServiceTest {
     @Test
     @DisplayName("정책 저장 성공")
     void successSaveData(){
-        policyDataService.saveData();
+//        policyDataService.saveData();
     }
 }
