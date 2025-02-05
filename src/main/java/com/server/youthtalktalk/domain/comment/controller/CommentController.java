@@ -87,13 +87,12 @@ public class CommentController {
      */
     @GetMapping("/members/me/comments/likes")
     public BaseResponse<List<MyCommentDto>> getLikedComments() {
-        Member member = memberService.getCurrentMember();
-        List<Comment> likedComments = commentService.getLikedComments(member);
+        List<Comment> likedComments = commentService.getLikedComments(memberService.getCurrentMember());
 
         if(likedComments.isEmpty()) // 회원이 좋아요한 댓글이 없는 경우
             return new BaseResponse<>(SUCCESS_COMMENT_EMPTY);
 
-        List<MyCommentDto> likedCommentDtoList = commentService.toMyCommentDtoList(likedComments, member.getNickname());
+        List<MyCommentDto> likedCommentDtoList = commentService.toMyCommentDtoList(likedComments, null);
         return new BaseResponse<>(likedCommentDtoList, SUCCESS);
     }
 
