@@ -1,5 +1,6 @@
 package com.server.youthtalktalk.domain.post.controller;
 
+import com.server.youthtalktalk.domain.image.service.ImageService;
 import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.post.dto.*;
 import com.server.youthtalktalk.global.response.BaseResponse;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 import static com.server.youthtalktalk.domain.post.dto.PostListRepDto.*;
 
@@ -22,9 +24,11 @@ import static com.server.youthtalktalk.domain.post.dto.PostListRepDto.*;
 @RestController
 @RequiredArgsConstructor
 public class PostController {
+
     private final PostService postService;
     private final PostReadService postReadService;
     private final MemberService memberService;
+    private final ImageService imageService;
 
     /** 게시글 생성 API */
     @PostMapping("")
@@ -54,6 +58,14 @@ public class PostController {
             return new BaseResponse<>(BaseResponseCode.SUCCESS_SCRAP);
         else
             return new BaseResponse<>(BaseResponseCode.SUCCESS_SCRAP_CANCEL);
+    }
+
+    /** 이미지 업로드 API **/
+    @PostMapping("/image")
+    public BaseResponse<String> uploadImage(@RequestParam("image") MultipartFile image) throws IOException {
+        String imgUrl = imageService.uploadMultiFile(image);
+        imageService.createPostImage(imgUrl);
+        return new BaseResponse<>(imgUrl, BaseResponseCode.SUCCESS);
     }
 
     // READ

@@ -50,6 +50,7 @@ public enum BaseResponseCode {
     BLOCK_DUPLICATED("M09", "이미 차단한 회원입니다.", HttpStatus.BAD_REQUEST.value()),
     NOT_BLOCKED_MEMBER("M10", "차단한 회원이 아닙니다.", HttpStatus.BAD_REQUEST.value()),
     INVALID_MEMBER_FOR_BLOCK("M11", "차단(해제)할 수 없는 회원입니다.", HttpStatus.BAD_REQUEST.value()),
+    EXCEED_PROFILE_SIZE("M12", "프로필 이미지는 최대 1MB까지 업로드할 수 있습니다.", HttpStatus.BAD_REQUEST.value()),
 
     // Policy
     POLICY_NOT_FOUND("PC01","해당 정책을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),
