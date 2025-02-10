@@ -132,11 +132,12 @@ public class CommentServiceImpl implements CommentService {
     public List<MyCommentDto> toMyCommentDtoList(List<Comment> comments, String nickname) {
         return comments.stream()
                 .map(comment -> {
+                    String writerNickname = (nickname != null) ? nickname : comment.getWriter().getNickname();
                     Object relatedEntityId = comment.getRelatedEntityId();
                     if (relatedEntityId instanceof String) {
-                        return new PolicyCommentDto(comment.getId(), nickname, comment.getContent(), (String) relatedEntityId);
+                        return new PolicyCommentDto(comment.getId(), writerNickname, comment.getContent(), (String) relatedEntityId);
                     } else {
-                        return new PostCommentDto(comment.getId(), nickname, comment.getContent(), (Long) relatedEntityId);
+                        return new PostCommentDto(comment.getId(), writerNickname, comment.getContent(), (Long) relatedEntityId);
                     }
                 })
                 .collect(Collectors.toList());
