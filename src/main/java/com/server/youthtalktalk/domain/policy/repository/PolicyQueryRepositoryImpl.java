@@ -7,7 +7,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.entity.QPolicy;
-import com.server.youthtalktalk.domain.policy.entity.Region;
+import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -45,14 +45,14 @@ public class PolicyQueryRepositoryImpl implements PolicyQueryRepository {
             predicate.and(policy.minAge.loe(age).and(policy.maxAge.goe(age)));
         }
 
-        // 취업 상태 코드 필터
-        if (employmentCodes != null && !employmentCodes.isEmpty()) {
-            BooleanBuilder employmentCodePredicate = new BooleanBuilder();
-            for (String code : employmentCodes) {
-                employmentCodePredicate.or(policy.employmentCode.containsIgnoreCase(code));
-            }
-            predicate.and(employmentCodePredicate);
-        }
+//        // 취업 상태 코드 필터
+//        if (employmentCodes != null && !employmentCodes.isEmpty()) {
+//            BooleanBuilder employmentCodePredicate = new BooleanBuilder();
+//            for (String code : employmentCodes) {
+//                employmentCodePredicate.or(policy.employment.containsIgnoreCase(code));
+//            }
+//            predicate.and(employmentCodePredicate);
+//        }
 
         // 마감여부 필터
         if (isFinished != null) {

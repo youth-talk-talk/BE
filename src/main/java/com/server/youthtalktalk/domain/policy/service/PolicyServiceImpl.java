@@ -5,7 +5,7 @@ import com.server.youthtalktalk.domain.scrap.entity.Scrap;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
-import com.server.youthtalktalk.domain.policy.entity.Region;
+import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.dto.*;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
@@ -64,8 +64,6 @@ public class PolicyServiceImpl implements PolicyService {
         log.info("상위 5개 정책 조회 성공");
         return result;
     }
-
-
 
 
     /**
@@ -134,8 +132,8 @@ public class PolicyServiceImpl implements PolicyService {
         }
 
         List<String> employmentCodes = null;
-        if (condition.getEmploymentCodeList() != null) {
-            employmentCodes = condition.getEmploymentCodeList().stream()
+        if (condition.getEmploymentList() != null) {
+            employmentCodes = condition.getEmploymentList().stream()
                     .map(Enum::name)
                     .collect(Collectors.toList());
         }

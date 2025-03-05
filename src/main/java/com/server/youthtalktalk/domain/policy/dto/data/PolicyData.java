@@ -1,201 +1,157 @@
 package com.server.youthtalktalk.domain.policy.dto.data;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.server.youthtalktalk.domain.policy.entity.Category;
-import com.server.youthtalktalk.domain.policy.entity.Policy;
-import com.server.youthtalktalk.domain.policy.entity.Region;
-import com.server.youthtalktalk.domain.policy.entity.RepeatCode;
-import com.server.youthtalktalk.global.util.DateExtractor;
-import com.server.youthtalktalk.global.util.EmploymentStatusClassifier;
-import com.server.youthtalktalk.global.util.UrlUtil;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+
+import com.server.youthtalktalk.domain.policy.entity.*;
+import com.server.youthtalktalk.domain.policy.entity.condition.*;
+import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
-
 @Slf4j
-@Getter
-@NoArgsConstructor(access=AccessLevel.PROTECTED)
-public class PolicyData {
-    @JacksonXmlProperty(localName = "rnum")
-    private String rnum;
-    @JacksonXmlProperty(localName = "bizId")
-    private String bizId;
-    @JacksonXmlProperty(localName = "polyBizSecd")
-    private String polyBizSecd;
-    @JacksonXmlProperty(localName = "polyBizTy")
-    private String polyBizTy;
-    @JacksonXmlProperty(localName = "polyBizSjnm")
-    private String polyBizSjnm;
-    @JacksonXmlProperty(localName = "polyItcnCn")
-    private String polyItcnCn;
-    @JacksonXmlProperty(localName = "sporCn")
-    private String sporCn;
-    @JacksonXmlProperty(localName = "sporScvl")
-    private String sporScvl;
-    @JacksonXmlProperty(localName = "bizPrdCn")
-    private String bizPrdCn;
-    @JacksonXmlProperty(localName = "prdRpttSecd")
-    private String prdRpttSecd;
-    @JacksonXmlProperty(localName = "rqutPrdCn")
-    private String rqutPrdCn;
-    @JacksonXmlProperty(localName = "ageInfo")
-    private String ageInfo;
-    @JacksonXmlProperty(localName = "majrRqisCn")
-    private String majrRqisCn;
-    @JacksonXmlProperty(localName = "empmSttsCn")
-    private String empmSttsCn;
-    @JacksonXmlProperty(localName = "splzRlmRqisCn")
-    private String splzRlmRqisCn;
-    @JacksonXmlProperty(localName = "accrRqisCn")
-    private String accrRqisCn;
-    @JacksonXmlProperty(localName = "prcpCn")
-    private String prcpCn;
-    @JacksonXmlProperty(localName = "aditRscn")
-    private String aditRscn;
-    @JacksonXmlProperty(localName = "prcpLmttTrgtCn")
-    private String prcpLmttTrgtCn;
-    @JacksonXmlProperty(localName = "rqutProcCn")
-    private String rqutProcCn;
-    @JacksonXmlProperty(localName = "pstnPaprCn")
-    private String pstnPaprCn;
-    @JacksonXmlProperty(localName = "jdgnPresCn")
-    private String jdgnPresCn;
-    @JacksonXmlProperty(localName = "rqutUrla")
-    private String rqutUrla;
-    @JacksonXmlProperty(localName = "rfcSiteUrla1")
-    private String rfcSiteUrla1;
-    @JacksonXmlProperty(localName = "rfcSiteUrla2")
-    private String rfcSiteUrla2;
-    @JacksonXmlProperty(localName = "mngtMson")
-    private String mngtMson;
-    @JacksonXmlProperty(localName = "mngtMrofCherCn")
-    private String mngtMrofCherCn;
-    @JacksonXmlProperty(localName = "cherCtpcCn")
-    private String cherCtpcCn;
-    @JacksonXmlProperty(localName = "cnsgNmor")
-    private String cnsgNmor;
-    @JacksonXmlProperty(localName = "tintCherCn")
-    private String tintCherCn;
-    @JacksonXmlProperty(localName = "tintCherCtpcCn")
-    private String tintCherCtpcCn;
-    @JacksonXmlProperty(localName = "etct")
-    private String etct;
-    @JacksonXmlProperty(localName = "polyRlmCd")
-    private String polyRlmCd;
+public record PolicyData(
+        String operInstCdNm,
+        String bscPlanAsmtNo,
+        String sprvsnInstCd,
+        String sprvsnInstCdNm,
+        String sprvsnInstPicNm,
+        String operInstCd,
+        String srngMthdCn,
+        String operInstPicNm,
+        String sprtSclLmtYn,
+        String aplyPrdSeCd,
+        String bizPrdSeCd,
+        String bizPrdBgngYmd,
+        String bizPrdEndYmd,
+        String bizPrdEtcCn,
+        String plcyAplyMthdCn,
+        String aplyUrlAddr,
+        String sbmsnDcmntCn,
+        String etcMttrCn,
+        String refUrlAddr1,
+        String refUrlAddr2,
+        String inqCnt,
+        String zipCd,
+        String plcyMajorCd,
+        String jobCd,
+        String sbizCd,
+        String schoolCd,
+        String bscPlanCycl,
+        String sprtSclCnt,
+        String sprtArvlSeqYn,
+        String sprtTrgtMinAge,
+        String sprtTrgtMaxAge,
+        String sprtTrgtAgeLmtYn,
+        String mrgSttsCd,
+        String earnCndSeCd,
+        String earnMinAmt,
+        String earnMaxAmt,
+        String earnEtcCn,
+        String addAplyQlfcCndCn,
+        String rgtrUpInstCd,
+        String rgtrUpInstCdNm,
+        String frstRegDt,
+        String lastMdfcnDt,
+        String bscPlanPlcyWayNo,
+        String bscPlanFcsAsmtNo,
+        String ptcpPrpTrgtCn,
+        String pvsnInstGroupCd,
+        String plcyPvsnMthdCd,
+        String plcyAprvSttsCd,
+        String plcyNm,
+        String plcyExplnCn,
+        String plcySprtCn,
+        String plcyNo,
+        String aplyYmd,
+        String rgtrInstCd,
+        String rgtrInstCdNm,
+        String rgtrHghrkInstCd,
+        String rgtrHghrkInstCdNm
+) {
+    private static final String regionCode = "0054002";
 
-    public Policy toPolicy() {
-        log.info("bizId: {}, polyBizSecd: {}, polyBizTy: {}", bizId, polyBizSecd, polyBizTy);
-        Region region = isNotSpecificRegion() ? Region.ALL : Region.fromKey(this.polyBizSecd.substring(0, 9));
+    public Policy toPolicy(){
+        try{
+            // 신청 기간 파싱(상시인 경우 x)
+            if(aplyYmd.length() > 20){
+                log.info("aplyYmd policyId = {}", plcyNo);
+            }
+            LocalDate[] applyDates = parsingApplyYmd();
+            LocalDate applyStart = applyDates[0];
+            LocalDate applyDue = applyDates[1];
 
-        // 카테고리 분류
-        Category category = switch (this.polyRlmCd) {
-            case "023010" -> Category.JOB;
-            case "023020", "023040" -> Category.LIFE;
-            case "023030" -> Category.EDUCATION;
-            case "023050" -> Category.PARTICIPATION;
-            default -> null;
-        };
+            Earn earn = Earn.fromKey(plcyNo, earnCndSeCd);
+            boolean isLimitedAge = sprtTrgtAgeLmtYn.equals("N");
+            Region region = findRegion();
 
-        // 연령정보 분류
-        int minAge = 0;
-        int maxAge = 100;
-        String ageInfo = cDataConvert(this.ageInfo);
-        if(ageInfo!=null){
-            String[] ages = ageInfo.replaceAll("[^0-9~]", "").split("~");
-            if (ages.length == 1 && ageInfo.contains("이상")){
-                minAge = Integer.parseInt(ages[0].trim());
-            }
-            else if (ages.length == 1 && ageInfo.contains("이하")){
-                maxAge = Integer.parseInt(ages[0].trim());
-            }
-            else if (ages.length == 2){
-                minAge = Integer.parseInt(ages[0].trim());
-                maxAge = Integer.parseInt(ages[1].trim());
-            }
+
+            return Policy.builder()
+                    .policyId(plcyNo)
+                    .region(region)
+                    .title(plcyNm)
+                    .isLimitedAge(isLimitedAge)
+                    .minAge(isLimitedAge && !sprtTrgtMinAge.isEmpty() ? Integer.parseInt(sprtTrgtMinAge) : 0)
+                    .maxAge(isLimitedAge && !sprtTrgtMaxAge.isEmpty() ? Integer.parseInt(sprtTrgtMaxAge) : 0)
+                    .repeatCode(RepeatCode.fromKey(plcyNo, aplyPrdSeCd))
+                    .applyStart(applyStart)
+                    .applyDue(applyDue)
+                    .addition(addAplyQlfcCndCn)
+                    .etc(etcMttrCn)
+                    .applLimit(ptcpPrpTrgtCn)
+                    .applStep(plcyAplyMthdCn)
+                    .applUrl(aplyUrlAddr)
+                    .category(Category.fromKey(plcyNo, bscPlanPlcyWayNo))
+                    .education(Education.findEducationList(plcyNo, schoolCd))
+                    .employment(Employment.findEmploymentList(plcyNo, jobCd))
+                    .hostDep(sprvsnInstCdNm)
+                    .refUrl1(refUrlAddr1)
+                    .refUrl2(refUrlAddr2)
+                    .evaluation(srngMthdCn)
+                    .introduction(plcyExplnCn)
+                    .operatingOrg(operInstCdNm)
+                    .specialization(Specialization.findSpecializationList(plcyNo, sbizCd))
+                    .major(Major.findMajorList(plcyNo, plcyMajorCd))
+                    .submitDoc(sbmsnDcmntCn)
+                    .supportDetail(plcySprtCn)
+                    .subCategory(SubCategory.fromKey(plcyNo, bscPlanFcsAsmtNo))
+                    .earn(earn)
+                    .maxEarn(earn.equals(Earn.ANNUL_INCOME) && !earnMaxAmt.isEmpty() ? Integer.parseInt(earnMaxAmt) : 0)
+                    .minEarn(earn.equals(Earn.ANNUL_INCOME) && !earnMinAmt.isEmpty() ? Integer.parseInt(earnMinAmt) : 0)
+                    .earnEtc(earnEtcCn)
+                    .marriage(Marriage.fromKey(plcyNo, mrgSttsCd))
+                    .zipCd(zipCd)
+                    .build();
+        }catch (Exception e){
+            log.info("policyId = {}", plcyNo, e);
+            throw new RuntimeException(e);
         }
-
-        // 반복코드 분류
-        RepeatCode repeatCode = switch(this.prdRpttSecd) {
-            case "002001" -> RepeatCode.ALWAYS;
-            case "002002" -> RepeatCode.ANNUALLY;
-            case "002003" -> RepeatCode.MONTHLY;
-            case "002004" -> RepeatCode.PERIOD;
-            case "002005" -> RepeatCode.UNDEFINED;
-            default -> null;
-        };
-
-        // 날짜 데이터 전처리
-        DateExtractor dateExtractor = new DateExtractor();
-        String applyTerm = Optional
-                .ofNullable(this.rqutPrdCn)
-                .map(String::trim) // null이 아니면 공백 제거
-                .orElseGet(()->"-"); // null은 "-"으로 대체
-        LocalDate applyDue = dateExtractor.extractDue(applyTerm);
-
-        // 취업상태 코드 분류
-        String employment = this.empmSttsCn != null ? this.empmSttsCn : "";
-        String employmentCode = EmploymentStatusClassifier.classify(employment);
-
-        // 지원 사이트 전처리
-        String applUrl = this.rqutUrla;
-        String formattedApplUrl = UrlUtil.formatUrl(applUrl);
-
-        // 참고 사이트 전처리
-        String refUrl1 = this.rfcSiteUrla1;
-        String formattedRefUrl1 = UrlUtil.formatUrl(refUrl1);
-
-        String refUrl2 = this.rfcSiteUrla2;
-        String formattedRefUrl2 = UrlUtil.formatUrl(refUrl2);
-
-
-        // Policy 객체 생성
-        return Policy.builder()
-                .policyId(cDataConvert(this.bizId))
-                .region(region)
-                .title(cDataConvert(this.polyBizSjnm))
-                .minAge(minAge)
-                .maxAge(maxAge)
-                .repeatCode(repeatCode)
-                .applyTerm(applyTerm)
-                .operationTerm(this.bizPrdCn)
-                .applyDue(applyDue)
-                .addition(cDataConvert(this.aditRscn))
-                .etc(cDataConvert(this.etct))
-                .addrIncome(cDataConvert(this.prcpCn))
-                .applLimit(cDataConvert(this.prcpLmttTrgtCn))
-                .applStep(cDataConvert(this.rqutProcCn))
-                .applUrl(cDataConvert(this.rqutUrla))
-                .formattedApplUrl(cDataConvert(formattedApplUrl))
-                .category(category)
-                .education(cDataConvert(this.accrRqisCn))
-                .employment(cDataConvert(this.empmSttsCn))
-                .employmentCode(employmentCode)
-                .hostDep(cDataConvert(this.mngtMson))
-                .refUrl1(cDataConvert(formattedRefUrl1))
-                .refUrl2(cDataConvert(formattedRefUrl2))
-                .evaluation(cDataConvert(this.jdgnPresCn))
-                .introduction(cDataConvert(this.polyItcnCn))
-                .operatingOrg(cDataConvert(this.cnsgNmor))
-                .specialization(cDataConvert(this.splzRlmRqisCn))
-                .major(cDataConvert(this.majrRqisCn))
-                .submitDoc(cDataConvert(this.pstnPaprCn))
-                .supportDetail(cDataConvert(this.sporCn))
-                .build();
     }
 
-    public boolean isNotSpecificRegion(){
-        return this.polyBizTy == null || this.polyBizTy.equals("중앙부처");
-    }
-
-    public String cDataConvert(String value){
-        if (value != null && value.startsWith("<![CDATA[") && value.endsWith("]]>")) {
-            return value.substring(9, value.length() - 3);
+    private Region findRegion(){
+        if(this.pvsnInstGroupCd.equals(regionCode)){ // 지자체 타입인 경우
+            return Optional.ofNullable(Region.fromKey(rgtrHghrkInstCd)) // 등록자 최상위 코드 우선 검사
+                    .or(() -> Optional.ofNullable(Region.fromKey(sprvsnInstCd))) // 주관 기관 코드 검사
+                    //.orElseThrow(() -> new RuntimeException("Region not found : " + plcyNo));
+                    .orElse(null);
         }
-        return value;
+        else{
+            return Region.ALL; // 이외는 중앙부처 처리
+        }
     }
 
+    private boolean isEmptyApplyYmd(){
+        return !aplyPrdSeCd.equals("0057001") || aplyYmd.isEmpty();
+    }
+
+    private LocalDate[] parsingApplyYmd(){
+        if(!isEmptyApplyYmd()){
+            String[] dates = this.aplyYmd.split(" ~ ");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+            LocalDate applyStart = LocalDate.parse(dates[0], formatter);
+            LocalDate applyDue = LocalDate.parse(dates[1].substring(0, 8), formatter);
+            return new LocalDate[]{applyStart, applyDue};
+        }
+        return new LocalDate[]{null, null};
+    }
 }

@@ -1,8 +1,14 @@
 package com.server.youthtalktalk.domain.policy.dto;
 
-import com.server.youthtalktalk.domain.policy.entity.Policy;
+import com.server.youthtalktalk.domain.policy.entity.*;
+import com.server.youthtalktalk.domain.policy.entity.condition.Education;
+import com.server.youthtalktalk.domain.policy.entity.condition.Employment;
+import com.server.youthtalktalk.domain.policy.entity.condition.Major;
+import com.server.youthtalktalk.domain.policy.entity.condition.Specialization;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.util.List;
 
 @Getter
 @Builder
@@ -14,10 +20,10 @@ public class PolicyDetailResponseDto {
     private String operationTerm; // 운영기간
     private String age; // 연령
     private String addrIncome; // 거주지 및 소득 조건
-    private String education; // 학력 요건
-    private String major; // 전공 요건
-    private String employment; // 취업 상태
-    private String specialization; // 특화 분야
+    private List<Education> education; // 학력 요건
+    private List<Major> major; // 전공 요건
+    private List<Employment> employment; // 취업 상태
+    private List<Specialization> specialization; // 특화 분야
     private String applLimit; // 참여 제한 대상
     private String addition; // 추가 사항
     private String applStep; // 신청 절차
@@ -42,10 +48,10 @@ public class PolicyDetailResponseDto {
                 .title(policy.getTitle()) // 정책명
                 .introduction(policy.getIntroduction()) // 정책 소개
                 .supportDetail(policy.getSupportDetail()) // 지원 내용
-                .applyTerm(policy.getApplyTerm()) // 신청기간
+                //.applyTerm(policy.getApplyTerm()) // 신청기간
                 .operationTerm(policy.getOperationTerm()) // 운영기간
                 .age("만 "+ policy.getMinAge() + "세 ~ 만 " + policy.getMaxAge() + "세") // 연령
-                .addrIncome(policy.getAddrIncome()) // 거주지 및 소득 조건
+                //.addrIncome(policy.getAddrIncome()) // 거주지 및 소득 조건
                 .education(policy.getEducation()) // 학력 요건
                 .major(policy.getMajor()) // 전공 요건
                 .employment(policy.getEmployment()) // 취업 상태
@@ -61,7 +67,7 @@ public class PolicyDetailResponseDto {
                 .operatingOrg(policy.getOperatingOrg()) // 운영 기관명
                 .refUrl1(policy.getRefUrl1()) // 참고 사이트 1
                 .refUrl2(policy.getRefUrl2()) // 참고 사이트 2
-                .formattedApplUrl(policy.getFormattedApplUrl()) // 신청 사이트 (전처리)
+                //.formattedApplUrl(policy.getFormattedApplUrl()) // 신청 사이트 (전처리)
                 .isScrap(isScrap)// 스크랩 여부
                 .build();
     }

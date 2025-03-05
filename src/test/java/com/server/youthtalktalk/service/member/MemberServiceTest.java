@@ -7,7 +7,7 @@ import com.server.youthtalktalk.domain.member.entity.Role;
 import com.server.youthtalktalk.domain.member.entity.SocialType;
 import com.server.youthtalktalk.domain.member.repository.BlockRepository;
 import com.server.youthtalktalk.domain.member.service.MemberService;
-import com.server.youthtalktalk.domain.policy.entity.Region;
+import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.member.dto.SignUpRequestDto;
 import com.server.youthtalktalk.global.response.exception.member.BlockDuplicatedException;

@@ -11,7 +11,7 @@ import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
 import com.server.youthtalktalk.domain.member.entity.Role;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
-import com.server.youthtalktalk.domain.policy.entity.Region;
+import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepository;

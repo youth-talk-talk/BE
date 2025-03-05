@@ -3,7 +3,6 @@ package com.server.youthtalktalk.service.report;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.entity.Role;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
-import com.server.youthtalktalk.domain.policy.entity.Region;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import com.server.youthtalktalk.domain.report.entity.PostReport;
