@@ -26,6 +26,9 @@ public class Policy extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Region region; // 지역
 
+    @Enumerated(EnumType.STRING)
+    private InstitutionType institutionType; // 담당기관 구분(중앙부처, 지자체)
+
     private String title; // 정책명
 
     @Column(columnDefinition = "TEXT")
@@ -34,11 +37,8 @@ public class Policy extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String supportDetail; // 지원 내용
 
-    //@Column(columnDefinition = "TEXT")
-    //private String applyTerm; // 신청기간
-
     @Column(columnDefinition = "TEXT")
-    private String operationTerm; // 운영기간
+    private String applyTerm; // 신청기간
 
     @Enumerated(EnumType.STRING)
     private RepeatCode repeatCode; // 신청 기간 반복 코드
@@ -139,6 +139,10 @@ public class Policy extends BaseTimeEntity {
     @ElementCollection
     @Enumerated(EnumType.STRING)
     private List<Employment> employment; // 취업 요건
+
+    private LocalDate bizStart; // 운영 시작일
+
+    private LocalDate bizDue; // 운영 종료일
 
     @Builder.Default
     @OneToMany(mappedBy = "policy")

@@ -9,6 +9,7 @@ import com.server.youthtalktalk.domain.policy.entity.region.SubRegion;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.policy.repository.region.PolicySubRegionRepository;
 import com.server.youthtalktalk.domain.policy.repository.region.SubRegionRepository;
+import com.server.youthtalktalk.global.response.exception.policy.FailPolicyDataFetchException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
+
+import java.time.Duration;
 import java.util.*;
 
 @Slf4j
@@ -46,15 +51,15 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                     return policy;
                 })
                 .toList();
-//        List<Policy> savedPolicyList = policyRepository.saveAll(policyList);
-//
-//        policySubRegionRepository.deleteAllByPolicyIn(policyList);
-//        // 하위 지역 코드 매핑
-//        List<PolicySubRegion> policySubRegionList = new ArrayList<>();
-//        savedPolicyList.stream()
-//                .filter(policy -> !policy.getRegion().equals(Region.ALL))
-//                .forEach(policy -> policySubRegionList.addAll(setPolicySubRegions(policy)));
-//        policySubRegionRepository.saveAll(policySubRegionList);
+        List<Policy> savedPolicyList = policyRepository.saveAll(policyList);
+
+        policySubRegionRepository.deleteAllByPolicyIn(policyList);
+        // 하위 지역 코드 매핑
+        List<PolicySubRegion> policySubRegionList = new ArrayList<>();
+        savedPolicyList.stream()
+                .filter(policy -> !policy.getRegion().equals(Region.ALL))
+                .forEach(policy -> policySubRegionList.addAll(setPolicySubRegions(policy)));
+        policySubRegionRepository.saveAll(policySubRegionList);
     }
 
     @Override
@@ -80,7 +85,12 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                             .queryParam("pageType", "1") // 목록 출력
                             .build())
                     .retrieve()
-                    .bodyToMono(PolicyDataList.class);
+                    .bodyToMono(PolicyDataList.class)
+                    .retryWhen(Retry.backoff(5, Duration.ofSeconds(2))
+                            .filter(throwable -> throwable instanceof WebClientResponseException
+                                    && ((WebClientResponseException) throwable).getStatusCode().is5xxServerError()))
+                    .onErrorResume(e -> Mono.error(new FailPolicyDataFetchException()));
+
             // 정책 리스트 추출
             List<PolicyData> youthPolicies = Optional
                     .ofNullable(response.block().result().youthPolicyList())
