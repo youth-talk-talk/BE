@@ -1,6 +1,7 @@
 package com.server.youthtalktalk.domain.member.entity;
 
 import com.server.youthtalktalk.domain.BaseTimeEntity;
+import com.server.youthtalktalk.domain.image.entity.ProfileImage;
 import com.server.youthtalktalk.domain.likes.entity.Likes;
 import com.server.youthtalktalk.domain.report.entity.Report;
 import com.server.youthtalktalk.domain.scrap.entity.Scrap;
@@ -63,6 +64,10 @@ public class Member extends BaseTimeEntity {
     @OneToMany(mappedBy = "reporter", cascade = CascadeType.ALL)
     private List<Report> reports = new ArrayList<>();
 
+    @JoinColumn(name = "img_id")
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private ProfileImage profileImage;
+
     // refresh token 업데이트
     public void updateRefreshToken(String updateRefreshToken) {
         this.refreshToken = updateRefreshToken;
@@ -91,6 +96,11 @@ public class Member extends BaseTimeEntity {
     // block 삭제
     public void removeBlock(Block block) {
         this.blocks.remove(block);
+    }
+
+    // profileImage 업데이트
+    public void updateProfileImage(ProfileImage updateProfileImage) {
+        this.profileImage = updateProfileImage;
     }
 
     /* 연관관계 편의 메서드 */
