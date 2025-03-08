@@ -54,6 +54,7 @@ public enum BaseResponseCode {
 
     // Policy
     POLICY_NOT_FOUND("PC01","해당 정책을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),
+    FAIL_POLICY_DATA_FETCH("PC02", "정책 데이터 패치 실패", HttpStatus.INTERNAL_SERVER_ERROR.value()),
 
     // Post
     POST_NOT_FOUND("PS01","해당 게시글을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),

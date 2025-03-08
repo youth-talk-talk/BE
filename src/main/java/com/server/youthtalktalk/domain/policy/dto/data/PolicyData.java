@@ -1,241 +1,202 @@
 package com.server.youthtalktalk.domain.policy.dto.data;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
-import com.server.youthtalktalk.domain.policy.entity.Category;
-import com.server.youthtalktalk.domain.policy.entity.Policy;
-import com.server.youthtalktalk.domain.policy.entity.Region;
-import com.server.youthtalktalk.domain.policy.entity.RepeatCode;
-import com.server.youthtalktalk.global.util.DateExtractor;
-import com.server.youthtalktalk.global.util.EmploymentStatusClassifier;
-import com.server.youthtalktalk.global.util.UrlUtil;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+
+import com.server.youthtalktalk.domain.policy.entity.*;
+import com.server.youthtalktalk.domain.policy.entity.condition.*;
+import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
-import static com.server.youthtalktalk.global.util.InvalidValueFilter.filterInvalidValue;
-
-
 @Slf4j
-@Getter
-@NoArgsConstructor(access=AccessLevel.PROTECTED)
-public class PolicyData {
-    @JacksonXmlProperty(localName = "rnum")
-    private String rnum;
-    @JacksonXmlProperty(localName = "bizId")
-    private String bizId;
-    @JacksonXmlProperty(localName = "polyBizSecd")
-    private String polyBizSecd;
-    @JacksonXmlProperty(localName = "polyBizTy")
-    private String polyBizTy;
-    @JacksonXmlProperty(localName = "polyBizSjnm")
-    private String polyBizSjnm;
-    @JacksonXmlProperty(localName = "polyItcnCn")
-    private String polyItcnCn;
-    @JacksonXmlProperty(localName = "sporCn")
-    private String sporCn;
-    @JacksonXmlProperty(localName = "sporScvl")
-    private String sporScvl;
-    @JacksonXmlProperty(localName = "bizPrdCn")
-    private String bizPrdCn;
-    @JacksonXmlProperty(localName = "prdRpttSecd")
-    private String prdRpttSecd;
-    @JacksonXmlProperty(localName = "rqutPrdCn")
-    private String rqutPrdCn;
-    @JacksonXmlProperty(localName = "ageInfo")
-    private String ageInfo;
-    @JacksonXmlProperty(localName = "majrRqisCn")
-    private String majrRqisCn;
-    @JacksonXmlProperty(localName = "empmSttsCn")
-    private String empmSttsCn;
-    @JacksonXmlProperty(localName = "splzRlmRqisCn")
-    private String splzRlmRqisCn;
-    @JacksonXmlProperty(localName = "accrRqisCn")
-    private String accrRqisCn;
-    @JacksonXmlProperty(localName = "prcpCn")
-    private String prcpCn;
-    @JacksonXmlProperty(localName = "aditRscn")
-    private String aditRscn;
-    @JacksonXmlProperty(localName = "prcpLmttTrgtCn")
-    private String prcpLmttTrgtCn;
-    @JacksonXmlProperty(localName = "rqutProcCn")
-    private String rqutProcCn;
-    @JacksonXmlProperty(localName = "pstnPaprCn")
-    private String pstnPaprCn;
-    @JacksonXmlProperty(localName = "jdgnPresCn")
-    private String jdgnPresCn;
-    @JacksonXmlProperty(localName = "rqutUrla")
-    private String rqutUrla;
-    @JacksonXmlProperty(localName = "rfcSiteUrla1")
-    private String rfcSiteUrla1;
-    @JacksonXmlProperty(localName = "rfcSiteUrla2")
-    private String rfcSiteUrla2;
-    @JacksonXmlProperty(localName = "mngtMson")
-    private String mngtMson;
-    @JacksonXmlProperty(localName = "mngtMrofCherCn")
-    private String mngtMrofCherCn;
-    @JacksonXmlProperty(localName = "cherCtpcCn")
-    private String cherCtpcCn;
-    @JacksonXmlProperty(localName = "cnsgNmor")
-    private String cnsgNmor;
-    @JacksonXmlProperty(localName = "tintCherCn")
-    private String tintCherCn;
-    @JacksonXmlProperty(localName = "tintCherCtpcCn")
-    private String tintCherCtpcCn;
-    @JacksonXmlProperty(localName = "etct")
-    private String etct;
-    @JacksonXmlProperty(localName = "polyRlmCd")
-    private String polyRlmCd;
+public record PolicyData(
+        String operInstCdNm,
+        String bscPlanAsmtNo,
+        String sprvsnInstCd,
+        String sprvsnInstCdNm,
+        String sprvsnInstPicNm,
+        String operInstCd,
+        String srngMthdCn,
+        String operInstPicNm,
+        String sprtSclLmtYn,
+        String aplyPrdSeCd,
+        String bizPrdSeCd,
+        String bizPrdBgngYmd,
+        String bizPrdEndYmd,
+        String bizPrdEtcCn,
+        String plcyAplyMthdCn,
+        String aplyUrlAddr,
+        String sbmsnDcmntCn,
+        String etcMttrCn,
+        String refUrlAddr1,
+        String refUrlAddr2,
+        String inqCnt,
+        String zipCd,
+        String plcyMajorCd,
+        String jobCd,
+        String sbizCd,
+        String schoolCd,
+        String bscPlanCycl,
+        String sprtSclCnt,
+        String sprtArvlSeqYn,
+        String sprtTrgtMinAge,
+        String sprtTrgtMaxAge,
+        String sprtTrgtAgeLmtYn,
+        String mrgSttsCd,
+        String earnCndSeCd,
+        String earnMinAmt,
+        String earnMaxAmt,
+        String earnEtcCn,
+        String addAplyQlfcCndCn,
+        String rgtrUpInstCd,
+        String rgtrUpInstCdNm,
+        String frstRegDt,
+        String lastMdfcnDt,
+        String bscPlanPlcyWayNo,
+        String bscPlanFcsAsmtNo,
+        String ptcpPrpTrgtCn,
+        String pvsnInstGroupCd,
+        String plcyPvsnMthdCd,
+        String plcyAprvSttsCd,
+        String plcyNm,
+        String plcyExplnCn,
+        String plcySprtCn,
+        String plcyNo,
+        String aplyYmd,
+        String rgtrInstCd,
+        String rgtrInstCdNm,
+        String rgtrHghrkInstCd,
+        String rgtrHghrkInstCdNm
+) {
+    private static final String regionCode = "0054002";
 
     public Policy toPolicy() {
-        log.info("bizId: {}, polyBizSecd: {}, polyBizTy: {}", bizId, polyBizSecd, polyBizTy);
-        Region region = isNotSpecificRegion() ? Region.ALL : Region.fromKey(this.polyBizSecd.substring(0, 9));
+        try {
+            RepeatCode repeatCode = RepeatCode.fromKey(plcyNo, aplyPrdSeCd);
 
-        // 카테고리 분류
-        Category category = switch (this.polyRlmCd) {
-            case "023010" -> Category.JOB;
-            case "023020", "023040" -> Category.LIFE;
-            case "023030" -> Category.EDUCATION;
-            case "023050" -> Category.PARTICIPATION;
-            default -> null;
-        };
+            // 신청 기간 파싱(상시인 경우 x)
+            if (aplyYmd.length() > 20) {
+                log.info("aplyYmd policyId = {}", plcyNo);
+            }
 
-        // 연령정보 분류
-        int minAge = 0;
-        int maxAge = 100;
-        String ageInfo = cDataConvert(this.ageInfo);
-        if(ageInfo!=null){
-            String[] ages = ageInfo.replaceAll("[^0-9~]", "").split("~");
-            if (ages.length == 1 && ageInfo.contains("이상")){
-                minAge = Integer.parseInt(ages[0].trim());
+            String[] dates = aplyYmd.split("\\\\N");
+            if (dates.length > 1 && !isEqualApplyDates(dates)) { // 서로 다른 신청 기간이 여러 개인 경우
+                repeatCode = RepeatCode.ALWAYS; // 상시 처리
             }
-            else if (ages.length == 1 && ageInfo.contains("이하")){
-                maxAge = Integer.parseInt(ages[0].trim());
-            }
-            else if (ages.length == 2){
-                minAge = Integer.parseInt(ages[0].trim());
-                maxAge = Integer.parseInt(ages[1].trim());
-            }
+
+            LocalDate[] applyDates = parsingApplyYmd(dates[0]);
+            LocalDate applyStart = applyDates[0];
+            LocalDate applyDue = applyDates[1];
+
+            Earn earn = Earn.fromKey(plcyNo, earnCndSeCd);
+            boolean isLimitedAge = sprtTrgtAgeLmtYn.equals("N");
+            Region region = findRegion();
+            InstitutionType institutionType = findType(pvsnInstGroupCd);
+            LocalDate[] bizTerm = parsingBizTerm();
+
+            return Policy.builder()
+                    .policyId(plcyNo)
+                    .region(region)
+                    .title(plcyNm)
+                    .institutionType(institutionType)
+                    .isLimitedAge(isLimitedAge)
+                    .minAge(isLimitedAge && !sprtTrgtMinAge.isEmpty() ? Integer.parseInt(sprtTrgtMinAge) : 0)
+                    .maxAge(isLimitedAge && !sprtTrgtMaxAge.isEmpty() ? Integer.parseInt(sprtTrgtMaxAge) : 0)
+                    .repeatCode(repeatCode)
+                    .applyTerm(aplyYmd)
+                    .applyStart(applyStart)
+                    .applyDue(applyDue)
+                    .addition(addAplyQlfcCndCn)
+                    .etc(etcMttrCn)
+                    .applLimit(ptcpPrpTrgtCn)
+                    .applStep(plcyAplyMthdCn)
+                    .applUrl(aplyUrlAddr)
+                    .category(Category.fromKey(plcyNo, bscPlanPlcyWayNo))
+                    .education(Education.findEducationList(plcyNo, schoolCd))
+                    .employment(Employment.findEmploymentList(plcyNo, jobCd))
+                    .hostDep(sprvsnInstCdNm)
+                    .refUrl1(refUrlAddr1)
+                    .refUrl2(refUrlAddr2)
+                    .evaluation(srngMthdCn)
+                    .introduction(plcyExplnCn)
+                    .operatingOrg(operInstCdNm)
+                    .specialization(Specialization.findSpecializationList(plcyNo, sbizCd))
+                    .major(Major.findMajorList(plcyNo, plcyMajorCd))
+                    .submitDoc(sbmsnDcmntCn)
+                    .supportDetail(plcySprtCn)
+                    .subCategory(SubCategory.fromKey(plcyNo, bscPlanFcsAsmtNo))
+                    .earn(earn)
+                    .maxEarn(earn.equals(Earn.ANNUL_INCOME) && !earnMaxAmt.isEmpty() ? Integer.parseInt(earnMaxAmt) : 0)
+                    .minEarn(earn.equals(Earn.ANNUL_INCOME) && !earnMinAmt.isEmpty() ? Integer.parseInt(earnMinAmt) : 0)
+                    .earnEtc(earnEtcCn)
+                    .marriage(Marriage.fromKey(plcyNo, mrgSttsCd))
+                    .zipCd(zipCd)
+                    .bizStart(bizTerm[0])
+                    .bizDue(bizTerm[1])
+                    .build();
+
+        } catch (Exception e) {
+            log.info("policyId = {}", plcyNo, e);
+            throw new RuntimeException(e);
         }
-
-        // 반복코드 분류
-        RepeatCode repeatCode = switch(this.prdRpttSecd) {
-            case "002001" -> RepeatCode.ALWAYS;
-            case "002002" -> RepeatCode.ANNUALLY;
-            case "002003" -> RepeatCode.MONTHLY;
-            case "002004" -> RepeatCode.PERIOD;
-            case "002005" -> RepeatCode.UNDEFINED;
-            default -> null;
-        };
-
-        // 날짜 데이터 전처리
-        DateExtractor dateExtractor = new DateExtractor();
-        String applyTerm = Optional
-                .ofNullable(this.rqutPrdCn)
-                .map(String::trim) // null이 아니면 공백 제거
-                .orElseGet(()->"-"); // null은 "-"으로 대체
-        LocalDate applyDue = dateExtractor.extractDue(applyTerm);
-
-        // 취업상태 코드 분류
-        String employment = filterInvalidValue(cDataConvert(this.empmSttsCn));
-        String employmentCode = EmploymentStatusClassifier.classify(employment != null ? employment : "");
-
-        // 지원 사이트 전처리
-        String applUrl = filterInvalidValue(cDataConvert(this.rqutUrla));
-        String formattedApplUrl = UrlUtil.formatUrl(cDataConvert(this.rqutUrla));
-
-        // 참고 사이트 전처리
-        String formattedRefUrl1 = UrlUtil.formatUrl(cDataConvert(this.rfcSiteUrla1));
-        String formattedRefUrl2 = UrlUtil.formatUrl(cDataConvert(this.rfcSiteUrla2));
-
-        // 추가 사항 전처리
-        String addition = filterInvalidValue(cDataConvert(this.aditRscn));
-
-        // 거주지 및 소득 조건 전처리
-        String addrIncome = filterInvalidValue(cDataConvert(this.prcpCn));
-
-        // 참여 제한 대상 전처리
-        String applLimit = filterInvalidValue(cDataConvert(this.prcpLmttTrgtCn));
-
-        // 신청 절차 전처리
-        String applStep = filterInvalidValue(cDataConvert(this.rqutProcCn));
-
-        // 학력 요건 전처리
-        String education = filterInvalidValue(cDataConvert(this.accrRqisCn));
-
-        // 기타 사항 전처리
-        String etc = filterInvalidValue(cDataConvert(this.etct));
-
-        // 심사 발표 전처리
-        String evaluation = filterInvalidValue(cDataConvert(this.jdgnPresCn));
-
-        // 전공 요건 전처리
-        String major = filterInvalidValue(cDataConvert(this.majrRqisCn));
-
-        // 정책 소개 전처리
-        String introduction = filterInvalidValue(cDataConvert(this.polyItcnCn));
-
-        // 운영기간 전처리
-        String operationTerm = filterInvalidValue(this.bizPrdCn);
-
-        // 주관 기관명 전처리
-        String hostDep = filterInvalidValue(cDataConvert(this.mngtMson));
-
-        // 운영 기관명 전처리
-        String operatingOrg = filterInvalidValue(cDataConvert(this.cnsgNmor));
-
-        // 특화 분야 전처리
-        String specialization = filterInvalidValue(cDataConvert(this.splzRlmRqisCn));
-
-        // 제출 서류 전처리
-        String submitDoc = filterInvalidValue(cDataConvert(this.pstnPaprCn));
-
-        // Policy 객체 생성
-        return Policy.builder()
-                .policyId(cDataConvert(this.bizId))
-                .region(region)
-                .title(cDataConvert(this.polyBizSjnm))
-                .minAge(minAge)
-                .maxAge(maxAge)
-                .repeatCode(repeatCode)
-                .applyTerm(applyTerm)
-                .operationTerm(operationTerm)
-                .applyDue(applyDue)
-                .addition(addition)
-                .etc(etc)
-                .addrIncome(addrIncome)
-                .applLimit(applLimit)
-                .applStep(applStep)
-                .applUrl(applUrl)
-                .formattedApplUrl(cDataConvert(formattedApplUrl))
-                .category(category)
-                .education(education)
-                .employment(employment)
-                .employmentCode(employmentCode)
-                .hostDep(hostDep)
-                .refUrl1(formattedRefUrl1)
-                .refUrl2(formattedRefUrl2)
-                .evaluation(evaluation)
-                .introduction(introduction)
-                .operatingOrg(operatingOrg)
-                .specialization(specialization)
-                .major(major)
-                .submitDoc(submitDoc)
-                .supportDetail(cDataConvert(this.sporCn))
-                .build();
     }
 
-    public boolean isNotSpecificRegion(){
-        return this.polyBizTy == null || this.polyBizTy.equals("중앙부처");
-    }
-
-    public String cDataConvert(String value){
-        if (value != null && value.startsWith("<![CDATA[") && value.endsWith("]]>")) {
-            return value.substring(9, value.length() - 3);
+    // 지역 코드 매핑
+    private Region findRegion(){
+        if(this.pvsnInstGroupCd.equals(regionCode)){ // 지자체 타입인 경우
+            return Optional.ofNullable(Region.fromKey(rgtrHghrkInstCd)) // 등록자 최상위 코드 우선 검사
+                    .or(() -> Optional.ofNullable(Region.fromKey(sprvsnInstCd))) // 주관 기관 코드 검사
+                    //.orElseThrow(() -> new RuntimeException("Region not found : " + plcyNo));
+                    .orElse(null);
         }
-        return value;
+        else{
+            return Region.ALL; // 이외는 중앙부처 처리
+        }
     }
 
+    private boolean isEmptyApplyYmd(){
+        return !aplyPrdSeCd.equals("0057001") || aplyYmd.isEmpty();
+    }
+
+    // 신청 기간 파싱
+    private LocalDate[] parsingApplyYmd(String applyDate){
+        if(!isEmptyApplyYmd()){
+            String[] dates = applyDate.split(" ~ ");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+            LocalDate applyStart = LocalDate.parse(dates[0], formatter);
+            LocalDate applyDue = LocalDate.parse(dates[1].substring(0, 8), formatter);
+            return new LocalDate[]{applyStart, applyDue};
+        }
+        return new LocalDate[]{null, null};
+    }
+
+    // 사업 운영 기간 파싱
+    private LocalDate[] parsingBizTerm(){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDate bizStart = bizPrdBgngYmd.isBlank() ? null : LocalDate.parse(bizPrdBgngYmd, formatter);
+        LocalDate bizDue = bizPrdEndYmd.isBlank() ? null : LocalDate.parse(bizPrdEndYmd, formatter);
+        return new LocalDate[]{bizStart, bizDue};
+    }
+
+    // 신청 기간이 여러 개인 경우, 같은 값들인지 아닌지 판단
+    private boolean isEqualApplyDates(String[] dates){
+        String compare = dates[0];
+        for(String date : dates){
+            if(!compare.equals(date)){
+                return false;
+            }
+            compare = date;
+        }
+        return true;
+    }
+
+    // 담당 기관 타입 매핑
+    private InstitutionType findType(String pvsnInstGroupCd){
+        return switch(pvsnInstGroupCd){
+            case "0054001" -> InstitutionType.CENTER;
+            case "0054002" -> InstitutionType.LOCAL;
+            default -> throw new RuntimeException("Invalid InstitutionType");
+        };
+    }
 }

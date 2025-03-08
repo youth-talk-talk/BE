@@ -4,9 +4,6 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.youthtalktalk.domain.member.entity.Member;
-import com.server.youthtalktalk.domain.member.entity.Role;
-import com.server.youthtalktalk.domain.policy.entity.Region;
-import com.server.youthtalktalk.global.config.SecurityConfig;
 import com.server.youthtalktalk.global.util.HashUtil;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
 import jakarta.persistence.EntityManager;
@@ -26,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.server.youthtalktalk.domain.member.entity.Role.*;
-import static com.server.youthtalktalk.domain.policy.entity.Region.*;
+import static com.server.youthtalktalk.domain.policy.entity.region.Region.*;
 import static com.server.youthtalktalk.global.config.SecurityConfig.*;
 import static com.server.youthtalktalk.global.config.SecurityConfig.LOGIN_URL;
 import static org.assertj.core.api.Assertions.assertThat;

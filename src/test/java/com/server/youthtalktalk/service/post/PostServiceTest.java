@@ -7,7 +7,6 @@ import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.entity.Role;
 import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
-import com.server.youthtalktalk.domain.policy.entity.Region;
 import com.server.youthtalktalk.domain.post.dto.PostCreateReqDto;
 import com.server.youthtalktalk.domain.post.dto.PostUpdateReqDto;
 import com.server.youthtalktalk.domain.post.entity.Content;
@@ -25,8 +24,6 @@ import com.server.youthtalktalk.global.response.exception.BusinessException;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
-import com.server.youthtalktalk.global.response.exception.report.ReportAlreadyExistException;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,7 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;

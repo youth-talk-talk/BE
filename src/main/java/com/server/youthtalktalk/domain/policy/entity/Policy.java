@@ -2,8 +2,12 @@ package com.server.youthtalktalk.domain.policy.entity;
 
 import com.server.youthtalktalk.domain.BaseTimeEntity;
 import com.server.youthtalktalk.domain.comment.entity.PolicyComment;
+import com.server.youthtalktalk.domain.policy.entity.condition.*;
+import com.server.youthtalktalk.domain.policy.entity.region.PolicySubRegion;
+import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.post.entity.Review;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -22,6 +26,9 @@ public class Policy extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Region region; // 지역
 
+    @Enumerated(EnumType.STRING)
+    private InstitutionType institutionType; // 담당기관 구분(중앙부처, 지자체)
+
     private String title; // 정책명
 
     @Column(columnDefinition = "TEXT")
@@ -30,14 +37,13 @@ public class Policy extends BaseTimeEntity {
     @Column(columnDefinition = "TEXT")
     private String supportDetail; // 지원 내용
 
-    @Enumerated(EnumType.STRING)
-    private RepeatCode repeatCode; // 반복 코드
-
     @Column(columnDefinition = "TEXT")
     private String applyTerm; // 신청기간
 
-    @Column(columnDefinition = "TEXT")
-    private String operationTerm; // 운영기간
+    @Enumerated(EnumType.STRING)
+    private RepeatCode repeatCode; // 신청 기간 반복 코드
+
+    private LocalDate applyStart; // 신청 시작일
 
     private LocalDate applyDue; // 신청 마감일
 
@@ -45,19 +51,19 @@ public class Policy extends BaseTimeEntity {
 
     private int maxAge; // 최대 연령
 
-    @Column(columnDefinition = "TEXT")
-    private String employment; // 취업 상태
+    //@Column(columnDefinition = "TEXT")
+    //private String employment; // 취업 상태
 
-    private String employmentCode; // 취업 상태 코드 리스트
+    //private String employmentCode; // 취업 상태 코드 리스트
 
-    private String specialization; // 특화 분야
+    //private String specialization; // 특화 분야
 
-    private String major; // 전공 요건
+    //private String major; // 전공 요건
 
-    private String education; // 학력 요건
+    //private String education; // 학력 요건
 
-    @Column(columnDefinition = "TEXT")
-    private String addrIncome; // 거주지 및 소득 조건
+    //@Column(columnDefinition = "TEXT")
+    //private String addrIncome; // 거주지 및 소득 조건
 
     @Column(columnDefinition = "TEXT")
     private String addition; // 추가 사항
@@ -72,13 +78,10 @@ public class Policy extends BaseTimeEntity {
     private String submitDoc; // 제출 서류
 
     @Column(columnDefinition = "TEXT")
-    private String evaluation; // 심사 발표
+    private String evaluation; // 평가 방법
 
     @Column(length = 500)
     private String applUrl; // 신청 사이트
-
-    @Column(length = 500)
-    private String formattedApplUrl; // 신청 사이트 (전처리)
 
     @Column(length = 500)
     private String refUrl1; // 참고 사이트 1
@@ -98,6 +101,49 @@ public class Policy extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Category category; // 카테고리
 
+    /** 신규 필드 */
+    @NotNull
+    private boolean isLimitedAge;
+
+    @Enumerated(EnumType.STRING)
+    private SubCategory subCategory;
+
+    @Enumerated(EnumType.STRING)
+    private Earn earn; // 소득 제한 요건
+
+    private int minEarn; // 최소 소득
+
+    private int maxEarn; // 최대 소득
+
+    @Column(columnDefinition = "TEXT")
+    private String earnEtc; // 소득 기타 내용
+
+    @Column(columnDefinition = "TEXT")
+    private String zipCd;
+
+    @ElementCollection
+    @Enumerated(EnumType.STRING)
+    private List<Specialization> specialization; // 특화 분야 조건
+
+    @ElementCollection
+    @Enumerated(EnumType.STRING)
+    private List<Major> major; // 전공 요건
+
+    @ElementCollection
+    @Enumerated(EnumType.STRING)
+    private List<Education> education; // 학력 요건
+
+    @Enumerated(EnumType.STRING)
+    private Marriage marriage; // 결혼 요건
+
+    @ElementCollection
+    @Enumerated(EnumType.STRING)
+    private List<Employment> employment; // 취업 요건
+
+    private LocalDate bizStart; // 운영 시작일
+
+    private LocalDate bizDue; // 운영 종료일
+
     @Builder.Default
     @OneToMany(mappedBy = "policy")
     private List<Review> reviews = new ArrayList<>();
@@ -105,4 +151,8 @@ public class Policy extends BaseTimeEntity {
     @Builder.Default
     @OneToMany(mappedBy = "policy")
     private List<PolicyComment> policyComments = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "policy", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PolicySubRegion> policySubRegions = new ArrayList<>();
 }

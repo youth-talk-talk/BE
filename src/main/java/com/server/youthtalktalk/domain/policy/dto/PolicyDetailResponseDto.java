@@ -1,8 +1,16 @@
 package com.server.youthtalktalk.domain.policy.dto;
 
-import com.server.youthtalktalk.domain.policy.entity.Policy;
+import com.server.youthtalktalk.domain.policy.entity.*;
+import com.server.youthtalktalk.domain.policy.entity.condition.Education;
+import com.server.youthtalktalk.domain.policy.entity.condition.Employment;
+import com.server.youthtalktalk.domain.policy.entity.condition.Major;
+import com.server.youthtalktalk.domain.policy.entity.condition.Specialization;
+import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Builder
@@ -43,13 +51,13 @@ public class PolicyDetailResponseDto {
                 .introduction(policy.getIntroduction()) // 정책 소개
                 .supportDetail(policy.getSupportDetail()) // 지원 내용
                 .applyTerm(policy.getApplyTerm()) // 신청기간
-                .operationTerm(policy.getOperationTerm()) // 운영기간
+                .operationTerm(null) // 운영기간
                 .age("만 "+ policy.getMinAge() + "세 ~ 만 " + policy.getMaxAge() + "세") // 연령
-                .addrIncome(policy.getAddrIncome()) // 거주지 및 소득 조건
-                .education(policy.getEducation()) // 학력 요건
-                .major(policy.getMajor()) // 전공 요건
-                .employment(policy.getEmployment()) // 취업 상태
-                .specialization(policy.getSpecialization()) // 특화 분야
+                .addrIncome(null) // 거주지 및 소득 조건
+                .education(null) // 학력 요건
+                .major(null) // 전공 요건
+                .employment(null) // 취업 상태
+                .specialization(null) // 특화 분야
                 .applLimit(policy.getApplLimit()) // 참여 제한 대상
                 .addition(policy.getAddition()) // 추가 사항
                 .applStep(policy.getApplStep()) // 신청 절차
@@ -61,7 +69,7 @@ public class PolicyDetailResponseDto {
                 .operatingOrg(policy.getOperatingOrg()) // 운영 기관명
                 .refUrl1(policy.getRefUrl1()) // 참고 사이트 1
                 .refUrl2(policy.getRefUrl2()) // 참고 사이트 2
-                .formattedApplUrl(policy.getFormattedApplUrl()) // 신청 사이트 (전처리)
+                .formattedApplUrl(null) // 신청 사이트 (전처리)
                 .isScrap(isScrap)// 스크랩 여부
                 .build();
     }
