@@ -73,8 +73,8 @@ public class PolicyController {
     /**
      * 조건 적용 정책 조회
      */
-    @PostMapping("/policies/search1")
-    public BaseResponse<SearchConditionResponseDto> getPoliciesByCondition1(@RequestBody SearchConditionRequestDto request,
+    @PostMapping("/policies/search")
+    public BaseResponse<SearchConditionResponseDto> getPoliciesByCondition(@RequestBody SearchConditionRequestDto request,
                                                                             @RequestParam(defaultValue = "10") int size,
                                                                             @RequestParam(defaultValue = "0") int page) {
         Pageable pageable = PageRequest.of(page, size);
@@ -106,8 +106,5 @@ public class PolicyController {
         List<PolicyListResponseDto> listResponseDto = policyService.getScrappedPoliciesWithUpcomingDeadline(memberService.getCurrentMember());
         return new BaseResponse<>(listResponseDto, BaseResponseCode.SUCCESS);
     }
-
-
-
 
 }
