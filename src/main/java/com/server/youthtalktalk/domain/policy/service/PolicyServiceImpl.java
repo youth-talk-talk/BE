@@ -1,17 +1,33 @@
 package com.server.youthtalktalk.domain.policy.service;
 
+import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_INPUT_VALUE;
+import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_REGION_NAME;
+
 import com.server.youthtalktalk.domain.ItemType;
+import com.server.youthtalktalk.domain.policy.dto.SearchConditionDto;
+import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
+import com.server.youthtalktalk.domain.policy.entity.SubCategory;
+import com.server.youthtalktalk.domain.policy.entity.condition.Education;
+import com.server.youthtalktalk.domain.policy.entity.condition.Employment;
+import com.server.youthtalktalk.domain.policy.entity.condition.Major;
+import com.server.youthtalktalk.domain.policy.entity.condition.Marriage;
+import com.server.youthtalktalk.domain.policy.entity.condition.Specialization;
+import com.server.youthtalktalk.domain.policy.entity.region.SubRegion;
+import com.server.youthtalktalk.domain.policy.repository.region.SubRegionRepository;
 import com.server.youthtalktalk.domain.scrap.entity.Scrap;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.dto.*;
+import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
 import com.server.youthtalktalk.domain.member.service.MemberService;
+import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -24,16 +40,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @Service
 @Slf4j
 @Transactional
 @RequiredArgsConstructor
 public class PolicyServiceImpl implements PolicyService {
 
+    public static final int MIN_AGE_INPUT = 8;
+    public static final int MAX_AGE_INPUT = 100;
+    public static final int MIN_EARN_INPUT = 0;
+    public static final int MAX_EARN_INPUT = 2_000_000_000;
+
     private final PolicyRepository policyRepository;
     private final ScrapRepository scrapRepository;
     private final MemberService memberService;
+    private final SubRegionRepository subRegionRepository;
 
     /**
      * top 5 정책 조회
@@ -121,36 +142,11 @@ public class PolicyServiceImpl implements PolicyService {
     /**
      * 조건 적용 정책 조회
      */
-    public SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto condition, Pageable pageable) {
-        Long memberId;
-        Region region;
-        try {
-            memberId = memberService.getCurrentMember().getId();
-            region = memberService.getCurrentMember().getRegion();
-        } catch (Exception e) {
-            throw new MemberNotFoundException();
-        }
+    public SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto conditionDto, Pageable pageable) {
 
-        List<String> employmentCodes = null;
-        if (condition.getEmploymentList() != null) {
-            employmentCodes = condition.getEmploymentList().stream()
-                    .map(Enum::name)
-                    .collect(Collectors.toList());
-        }
+        SearchConditionDto searchCondition = setSearchCondition(conditionDto);
 
-        log.info("Filtering policies with conditions: categories={}, age={}, employmentCodes={}, isFinished={}, keyword={}", condition.getCategories(), condition.getAge(), employmentCodes, condition.getIsFinished(), condition.getKeyword());
-
-        Page<Policy> policies = policyRepository.findByCondition(
-                region,
-                condition.getCategories(),
-                condition.getAge(),
-                employmentCodes,
-                condition.getIsFinished(),
-                condition.getKeyword(),
-                pageable
-        );
-
-        log.info("Filtered policies count: {}", policies.getTotalElements());
+        Page<Policy> policies = policyRepository.findByCondition(searchCondition, pageable);
 
         if (policies.isEmpty()) {
             log.info("조건에 맞는 정책이 존재하지 않습니다");
@@ -159,14 +155,130 @@ public class PolicyServiceImpl implements PolicyService {
 
         List<PolicyListResponseDto> result = policies.stream()
                 .map(policy -> {
-                    boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), ItemType.POLICY);
+                    boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(
+                            memberService.getCurrentMember().getId(), policy.getPolicyId(), ItemType.POLICY);
                     return PolicyListResponseDto.toListDto(policy, isScrap);
                 })
                 .collect(Collectors.toList());
         log.info("조건 적용 정책 조회 성공");
+
         return SearchConditionResponseDto.toListDto(result, policies.getTotalElements());
     }
 
+    private SearchConditionDto setSearchCondition(SearchConditionRequestDto conditionDto) {
+        InstitutionType institutionType = InstitutionType.fromString(conditionDto.getInstitutionType());
+        List<SubCategory> subCategories = getSubCategories(conditionDto);
+        List<SubRegion> subRegions = getSubRegions(conditionDto);
+        Marriage marriage = getMarriage(conditionDto);
+        Integer age = getAge(conditionDto);
+        Integer minEarn = getEarn(conditionDto.getEarn().getFirst());
+        Integer maxEarn = getEarn(conditionDto.getEarn().getLast());
+        List<Education> educations = getEnumListFromStrings(conditionDto.getEducation(), Education.class);
+        List<Major> majors = getEnumListFromStrings(conditionDto.getMajor(), Major.class);
+        List<Employment> employments = getEnumListFromStrings(conditionDto.getEmployment(), Employment.class);
+        List<Specialization> specializations = getEnumListFromStrings(conditionDto.getSpecialization(), Specialization.class);
+
+        return SearchConditionDto.builder()
+                .keyword(conditionDto.getKeyword().trim())
+                .institutionType(institutionType)
+                .subCategories(subCategories)
+                .subRegions(subRegions)
+                .marriage(marriage)
+                .age(age)
+                .minEarn(minEarn)
+                .maxEarn(maxEarn)
+                .educations(educations)
+                .majors(majors)
+                .employments(employments)
+                .specializations(specializations)
+                .build();
+    }
+
+    private <T extends Enum<T>> List<T> getEnumListFromStrings(List<String> values, Class<T> enumType) {
+        List<T> enumList = new ArrayList<>();
+        try {
+            for (String value : values) {
+                enumList.add(Enum.valueOf(enumType, trimmedValue(value))); // enumType에 맞춰서 valueOf 호출
+            }
+        } catch (IllegalArgumentException e) {
+            throw new InvalidValueException(INVALID_INPUT_VALUE);
+        }
+        return enumList;
+    }
+
+    private String trimmedValue(String value) {
+        return value.trim().replaceAll("\\s+", "");
+    }
+
+    private List<SubCategory> getSubCategories(SearchConditionRequestDto conditionDto) {
+        List<SubCategory> subCategories = new ArrayList<>();
+        List<String> categoryNames = conditionDto.getCategory();
+        for (String categoryName : categoryNames) {
+            if (Category.fromName(categoryName) != null) { // 상위 카테고리를 전체 선택하는 경우
+                Category category = Category.fromName(categoryName);
+                subCategories.addAll(SubCategory.fromCategory(category));
+                continue;
+            }
+            subCategories.add(SubCategory.fromName(categoryName));
+        }
+        return subCategories;
+    }
+
+    private List<SubRegion> getSubRegions(SearchConditionRequestDto conditionDto) {
+        List<SubRegion> subRegions = new ArrayList<>();
+        List<String> regionNames = conditionDto.getRegion();
+        for (String regionName : regionNames) {
+            if (Region.fromName(regionName) != null) { // 상위 지역을 전체 선택하는 경우
+                Region region = Region.fromName(regionName);
+                List<SubRegion> allSubRegionsByRegion = subRegionRepository.findAllByRegion(region);
+                if (allSubRegionsByRegion.isEmpty()) {
+                    throw new InvalidValueException(INVALID_REGION_NAME);
+                }
+                subRegions.addAll(allSubRegionsByRegion);
+                continue;
+            }
+            subRegionRepository.findByName(regionName)
+                    .map(subRegions::add)
+                    .orElseThrow(() -> new InvalidValueException(INVALID_REGION_NAME));
+        }
+        return subRegions;
+    }
+
+    private Marriage getMarriage(SearchConditionRequestDto conditionDto) {
+        Marriage marriage;
+        try {
+            marriage = Marriage.valueOf(trimmedValue(conditionDto.getMarriage()));
+        } catch (IllegalArgumentException e) {
+            throw new InvalidValueException(INVALID_INPUT_VALUE);
+        }
+        return marriage;
+    }
+
+    private Integer getAge(SearchConditionRequestDto conditionDto) {
+        Integer age;
+        try {
+            age = Integer.parseInt(trimmedValue(conditionDto.getAge()));
+            if (age < MIN_AGE_INPUT || age > MAX_AGE_INPUT) {
+                throw new IllegalArgumentException();
+            }
+        } catch (IllegalArgumentException e) {
+            throw new InvalidValueException(INVALID_INPUT_VALUE);
+        }
+        return age;
+    }
+
+    private int getEarn(String input) {
+        Integer earn;
+        try {
+            earn = Integer.parseInt(trimmedValue(input));
+            if (earn < MIN_EARN_INPUT || earn > MAX_EARN_INPUT) {
+                throw new IllegalArgumentException();
+            }
+        } catch (IllegalArgumentException e) {
+            throw new InvalidValueException(INVALID_INPUT_VALUE);
+        }
+        return earn;
+    }
 
     /**
      * 이름으로 정책 조회

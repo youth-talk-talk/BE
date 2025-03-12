@@ -1,6 +1,7 @@
 package com.server.youthtalktalk.global.response;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.HttpStatus;
 
 @Getter
@@ -55,6 +56,7 @@ public enum BaseResponseCode {
     // Policy
     POLICY_NOT_FOUND("PC01","해당 정책을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),
     FAIL_POLICY_DATA_FETCH("PC02", "정책 데이터 패치 실패", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    INVALID_REGION_NAME("PC03", "유효하지 않은 지역 이름입니다.", HttpStatus.BAD_REQUEST.value()),
 
     // Post
     POST_NOT_FOUND("PS01","해당 게시글을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),

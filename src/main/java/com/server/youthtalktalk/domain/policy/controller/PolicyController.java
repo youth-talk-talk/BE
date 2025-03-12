@@ -73,10 +73,10 @@ public class PolicyController {
     /**
      * 조건 적용 정책 조회
      */
-    @PostMapping("/policies/search")
-    public BaseResponse<SearchConditionResponseDto> getPoliciesByCondition(@RequestBody SearchConditionRequestDto request,
-                                                                           @RequestParam(defaultValue = "10") int size,
-                                                                           @RequestParam(defaultValue = "0") int page) {
+    @PostMapping("/policies/search1")
+    public BaseResponse<SearchConditionResponseDto> getPoliciesByCondition1(@RequestBody SearchConditionRequestDto request,
+                                                                            @RequestParam(defaultValue = "10") int size,
+                                                                            @RequestParam(defaultValue = "0") int page) {
         Pageable pageable = PageRequest.of(page, size);
         SearchConditionResponseDto listResponseDto = policyService.getPoliciesByCondition(request, pageable);
         if(listResponseDto.getPolicyList().isEmpty())

@@ -41,7 +41,9 @@ public class PolicyDataServiceImpl implements PolicyDataService {
     @Transactional
     @Scheduled(cron = "${youthpolicy.cron}")
     public void saveData() {
+        log.info("fetch Data 시작");
         List<PolicyData> policyDataList = fetchData();
+        log.info("fetch Data 종료");
         List<Policy> policyList = policyDataList.stream()
                 .map(policyData -> {
                     Policy policy = policyData.toPolicy();
@@ -75,6 +77,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
         while(hasMoreData){
             // api 호출 response 받기
             int pageNum = pageIndex;
+            log.info("Requesting data from page {}", pageIndex);
             Mono<PolicyDataList> response = webClient.get()
                     .uri(uriBuilder -> uriBuilder
                             .path("/go/ythip/getPlcy")
@@ -86,7 +89,8 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                             .build())
                     .retrieve()
                     .bodyToMono(PolicyDataList.class)
-                    .retryWhen(Retry.backoff(5, Duration.ofSeconds(2))
+                    .retryWhen(
+                            Retry.backoff(5, Duration.ofSeconds(2))
                             .filter(throwable -> throwable instanceof WebClientResponseException
                                     && ((WebClientResponseException) throwable).getStatusCode().is5xxServerError()))
                     .onErrorResume(e -> Mono.error(new FailPolicyDataFetchException()));
@@ -95,6 +99,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
             List<PolicyData> youthPolicies = Optional
                     .ofNullable(response.block().result().youthPolicyList())
                     .orElse(Collections.emptyList());
+            log.info("Fetched {} items from page {}", youthPolicies.size(), pageIndex);
 
             if (youthPolicies.isEmpty()) {
                 log.info("No more policies available");
