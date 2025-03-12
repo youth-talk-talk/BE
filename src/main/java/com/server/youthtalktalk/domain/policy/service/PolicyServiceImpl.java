@@ -166,20 +166,22 @@ public class PolicyServiceImpl implements PolicyService {
     }
 
     private SearchConditionDto setSearchCondition(SearchConditionRequestDto conditionDto) {
+        String keyword = getKeyword(conditionDto.getKeyword());
         InstitutionType institutionType = InstitutionType.fromString(conditionDto.getInstitutionType());
         List<SubCategory> subCategories = getSubCategories(conditionDto);
         List<SubRegion> subRegions = getSubRegions(conditionDto);
         Marriage marriage = getMarriage(conditionDto);
         Integer age = getAge(conditionDto);
-        Integer minEarn = getEarn(conditionDto.getEarn().getFirst());
-        Integer maxEarn = getEarn(conditionDto.getEarn().getLast());
+        List<String> earnList = conditionDto.getEarn();
+        Integer minEarn = (earnList != null && !earnList.isEmpty()) ? getEarn(earnList.getFirst()) : null;
+        Integer maxEarn = (earnList != null && !earnList.isEmpty()) ? getEarn(earnList.getLast()) : null;
         List<Education> educations = getEnumListFromStrings(conditionDto.getEducation(), Education.class);
         List<Major> majors = getEnumListFromStrings(conditionDto.getMajor(), Major.class);
         List<Employment> employments = getEnumListFromStrings(conditionDto.getEmployment(), Employment.class);
         List<Specialization> specializations = getEnumListFromStrings(conditionDto.getSpecialization(), Specialization.class);
 
         return SearchConditionDto.builder()
-                .keyword(conditionDto.getKeyword().trim())
+                .keyword(keyword)
                 .institutionType(institutionType)
                 .subCategories(subCategories)
                 .subRegions(subRegions)
@@ -197,8 +199,10 @@ public class PolicyServiceImpl implements PolicyService {
     private <T extends Enum<T>> List<T> getEnumListFromStrings(List<String> values, Class<T> enumType) {
         List<T> enumList = new ArrayList<>();
         try {
-            for (String value : values) {
-                enumList.add(Enum.valueOf(enumType, trimmedValue(value))); // enumType에 맞춰서 valueOf 호출
+            if (values != null && !values.isEmpty()) {
+                for (String value : values) {
+                    enumList.add(Enum.valueOf(enumType, trimmedValue(value))); // enumType에 맞춰서 valueOf 호출
+                }
             }
         } catch (IllegalArgumentException e) {
             throw new InvalidValueException(INVALID_INPUT_VALUE);
@@ -210,9 +214,17 @@ public class PolicyServiceImpl implements PolicyService {
         return value.trim().replaceAll("\\s+", "");
     }
 
+    private String getKeyword(String input) {
+        return (input == null || input.isBlank()) ? null : input.trim();
+    }
+
     private List<SubCategory> getSubCategories(SearchConditionRequestDto conditionDto) {
-        List<SubCategory> subCategories = new ArrayList<>();
         List<String> categoryNames = conditionDto.getCategory();
+        if (categoryNames == null || categoryNames.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<SubCategory> subCategories = new ArrayList<>();
         for (String categoryName : categoryNames) {
             if (Category.fromName(categoryName) != null) { // 상위 카테고리를 전체 선택하는 경우
                 Category category = Category.fromName(categoryName);
@@ -225,8 +237,12 @@ public class PolicyServiceImpl implements PolicyService {
     }
 
     private List<SubRegion> getSubRegions(SearchConditionRequestDto conditionDto) {
-        List<SubRegion> subRegions = new ArrayList<>();
         List<String> regionNames = conditionDto.getRegion();
+        if (regionNames == null || regionNames.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<SubRegion> subRegions = new ArrayList<>();
         for (String regionName : regionNames) {
             if (Region.fromName(regionName) != null) { // 상위 지역을 전체 선택하는 경우
                 Region region = Region.fromName(regionName);
@@ -245,9 +261,11 @@ public class PolicyServiceImpl implements PolicyService {
     }
 
     private Marriage getMarriage(SearchConditionRequestDto conditionDto) {
-        Marriage marriage;
+        Marriage marriage = null;
         try {
-            marriage = Marriage.valueOf(trimmedValue(conditionDto.getMarriage()));
+            if (conditionDto.getMarriage() != null) {
+                marriage = Marriage.valueOf(trimmedValue(conditionDto.getMarriage()));
+            }
         } catch (IllegalArgumentException e) {
             throw new InvalidValueException(INVALID_INPUT_VALUE);
         }
@@ -255,11 +273,13 @@ public class PolicyServiceImpl implements PolicyService {
     }
 
     private Integer getAge(SearchConditionRequestDto conditionDto) {
-        Integer age;
+        Integer age = null;
         try {
-            age = Integer.parseInt(trimmedValue(conditionDto.getAge()));
-            if (age < MIN_AGE_INPUT || age > MAX_AGE_INPUT) {
-                throw new IllegalArgumentException();
+            if (conditionDto.getAge() != null) {
+                age = Integer.parseInt(trimmedValue(conditionDto.getAge()));
+                if (age < MIN_AGE_INPUT || age > MAX_AGE_INPUT) {
+                    throw new IllegalArgumentException();
+                }
             }
         } catch (IllegalArgumentException e) {
             throw new InvalidValueException(INVALID_INPUT_VALUE);
@@ -267,12 +287,14 @@ public class PolicyServiceImpl implements PolicyService {
         return age;
     }
 
-    private int getEarn(String input) {
-        Integer earn;
+    private Integer getEarn(String input) {
+        Integer earn = null;
         try {
-            earn = Integer.parseInt(trimmedValue(input));
-            if (earn < MIN_EARN_INPUT || earn > MAX_EARN_INPUT) {
-                throw new IllegalArgumentException();
+            if (input != null && input.isBlank()) {
+                earn = Integer.parseInt(trimmedValue(input));
+                if (earn < MIN_EARN_INPUT || earn > MAX_EARN_INPUT) {
+                    throw new IllegalArgumentException();
+                }
             }
         } catch (IllegalArgumentException e) {
             throw new InvalidValueException(INVALID_INPUT_VALUE);
