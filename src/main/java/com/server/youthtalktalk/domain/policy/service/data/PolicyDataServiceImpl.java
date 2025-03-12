@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -34,16 +35,15 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
     @Value("${youthpolicy.api.secret-key}")
     private String secretKey;
-    private int pageSize = 100;
-    private static final String regionCode = "0054002";
+    private static final int PAGE_SIZE = 27;
+    private static final int LIMIT = 500;
 
     @Override
     @Transactional
     @Scheduled(cron = "${youthpolicy.cron}")
     public void saveData() {
-        log.info("fetch Data 시작");
+        log.info("[온통청년 Data Fetch] Data fetch start");
         List<PolicyData> policyDataList = fetchData();
-        log.info("fetch Data 종료");
         List<Policy> policyList = policyDataList.stream()
                 .map(policyData -> {
                     Policy policy = policyData.toPolicy();
@@ -53,9 +53,11 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                     return policy;
                 })
                 .toList();
-        List<Policy> savedPolicyList = policyRepository.saveAll(policyList);
 
-        policySubRegionRepository.deleteAllByPolicyIn(policyList);
+        log.info("[온통청년 Data Fetch] Fetched policies save to DB");
+        List<Policy> savedPolicyList = policyRepository.saveAll(policyList);
+        log.info("[온통청년 Data Fetch] Mapping with sub regions");
+        policySubRegionRepository.deleteAllByPolicyIn(savedPolicyList);
         // 하위 지역 코드 매핑
         List<PolicySubRegion> policySubRegionList = new ArrayList<>();
         savedPolicyList.stream()
@@ -69,41 +71,50 @@ public class PolicyDataServiceImpl implements PolicyDataService {
         List<PolicyData> dataList = new ArrayList<>();
         WebClient webClient = WebClient.builder()
                 .baseUrl("https://www.youthcenter.go.kr/")
-                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))  // 예: 16MB
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024)) // 16MB 설정
+                .filter(logRequest())
                 .build();
 
-        int pageIndex = 1; // 페이지 인덱스는 1부터 시작
+        int pageIndex = 1;
         boolean hasMoreData = true;
-        while(hasMoreData){
-            // api 호출 response 받기
+        while (pageIndex < LIMIT) {
             int pageNum = pageIndex;
-            log.info("Requesting data from page {}", pageIndex);
-            Mono<PolicyDataList> response = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/go/ythip/getPlcy")
-                            .queryParam("apiKeyNm", secretKey)
-                            .queryParam("pageSize", pageSize)
-                            .queryParam("pageNum", pageNum)
-                            .queryParam("rtnType", "json")
-                            .queryParam("pageType", "1") // 목록 출력
-                            .build())
-                    .retrieve()
-                    .bodyToMono(PolicyDataList.class)
-                    .retryWhen(
-                            Retry.backoff(5, Duration.ofSeconds(2))
-                            .filter(throwable -> throwable instanceof WebClientResponseException
-                                    && ((WebClientResponseException) throwable).getStatusCode().is5xxServerError()))
-                    .onErrorResume(e -> Mono.error(new FailPolicyDataFetchException()));
+            PolicyDataList policyDataList = null;
+            try {
+                Mono<PolicyDataList> response = webClient.get()
+                        .uri(uriBuilder -> uriBuilder
+                                .path("/go/ythip/getPlcy")
+                                .queryParam("apiKeyNm", secretKey)
+                                .queryParam("pageSize", PAGE_SIZE)
+                                .queryParam("pageNum", pageNum)
+                                .queryParam("rtnType", "json")
+                                .queryParam("pageType", "1")
+                                .build())
+                        .retrieve()
+                        .bodyToMono(PolicyDataList.class)
+                        .retryWhen(Retry.backoff(5, Duration.ofSeconds(2))
+                                .doBeforeRetry(before -> log.info("[온통청년 Data Fetch] Retry : {}", before.toString()))
+                                .filter(throwable -> throwable instanceof WebClientResponseException
+                                        && ((WebClientResponseException) throwable).getStatusCode().is5xxServerError()))
+                        .onErrorResume(e -> {
+                            log.error("[온통청년 Data Fetch] API 호출 실패: {}", e.getMessage());
+                            throw new FailPolicyDataFetchException();
+                        });
+                policyDataList = response.block();
+            } catch (Exception e) {
+                throw new FailPolicyDataFetchException();
+            }
 
-            // 정책 리스트 추출
-            List<PolicyData> youthPolicies = Optional
-                    .ofNullable(response.block().result().youthPolicyList())
+            if(policyDataList == null || policyDataList.result() == null){
+                throw new RuntimeException("[온통청년 Data Fetch] data fetch null error");
+            }
+
+            List<PolicyData> youthPolicies = Optional.ofNullable(policyDataList.result().youthPolicyList())
                     .orElse(Collections.emptyList());
-            log.info("Fetched {} items from page {}", youthPolicies.size(), pageIndex);
 
             if (youthPolicies.isEmpty()) {
-                log.info("No more policies available");
-                hasMoreData=false;
+                log.info("[온통청년 Data Fetch] No more data found, loop break");
+                break;
             }
             dataList.addAll(youthPolicies);
             pageIndex++;
@@ -147,6 +158,13 @@ public class PolicyDataServiceImpl implements PolicyDataService {
         } else {
             return policy.toBuilder().region(region).build();
         }
+    }
+
+    private ExchangeFilterFunction logRequest() {
+        return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
+            log.info("Request URL: {}", clientRequest.url()); // 요청 URL + 파라미터 출력
+            return Mono.just(clientRequest);
+        });
     }
 
 }
