@@ -16,17 +16,10 @@ public class PolicyDataServiceTest {
     @Autowired
     private PolicyDataService policyDataService;
 
-    @Test
-<<<<<<< HEAD
-    @DisplayName("정책 저장 성공")
-    void successSaveData(){
-//        policyDataService.saveData();
-=======
     @DisplayName("신청 기간 파싱 성공")
     void successParsingApplyDate(){
         String applyDate = "20250401 ~ 20250430\\N20250801 ~ 20250829";
         String[] dates = applyDate.split("\\\\N");
         Assertions.assertThat(dates[0]).isEqualTo("20250401 ~ 20250430");
->>>>>>> dev/eunhye
     }
 }
