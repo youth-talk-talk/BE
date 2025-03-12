@@ -55,7 +55,8 @@ public class PolicyQueryRepositoryImpl implements PolicyQueryRepository {
 
         // 데이터 조회 쿼리
         List<Policy> policies = queryFactory
-                .selectFrom(policy)
+                .selectDistinct(policy)
+                .from(policy)
                 .leftJoin(policy.policySubRegions, policySubRegion).fetchJoin()
                 .where(predicate)
                 .orderBy(policy.policyId.desc())
@@ -68,7 +69,6 @@ public class PolicyQueryRepositoryImpl implements PolicyQueryRepository {
                 queryFactory
                         .select(policy.count())
                         .from(policy)
-                        .leftJoin(policy.policySubRegions, policySubRegion)
                         .where(predicate)
                         .fetchOne()
         ).orElse(0L);
