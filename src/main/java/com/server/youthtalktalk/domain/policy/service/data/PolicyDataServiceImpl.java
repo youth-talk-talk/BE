@@ -141,12 +141,27 @@ public class PolicyDataServiceImpl implements PolicyDataService {
         return policySubRegionList;
     }
 
+//    private Region searchRegionByZipCd(Policy policy){
+//        String[] regionCodes = policy.getZipCd().split(",");
+//        if(!regionCodes[0].isBlank()){
+//            log.info("regionCodes[0] = {}", regionCodes[0]);
+//            SubRegion subRegion = subRegionRepository.findByCode(regionCodes[0])
+//                    .orElseThrow(() -> new RuntimeException("Not Existed Region Code"));
+//            return subRegion.getRegion();
+//        }
+//        return null;
+//    }
+
     private Region searchRegionByZipCd(Policy policy){
         String[] regionCodes = policy.getZipCd().split(",");
-        if(!regionCodes[0].isBlank()){
-            SubRegion subRegion = subRegionRepository.findByCode(regionCodes[0])
-                    .orElseThrow(() -> new RuntimeException("Not Existed Region Code"));
-            return subRegion.getRegion();
+        if (!regionCodes[0].isBlank()) {
+            log.info("regionCodes[0] = {}", regionCodes[0]);
+            return subRegionRepository.findByCode(regionCodes[0])
+                    .map(SubRegion::getRegion)
+                    .orElseGet(() -> {
+                        log.warn("Region code {} not found", regionCodes[0]);
+                        return null;
+                    });
         }
         return null;
     }
