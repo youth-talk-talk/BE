@@ -55,6 +55,12 @@ public enum BaseResponseCode {
     // Policy
     POLICY_NOT_FOUND("PC01","해당 정책을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),
     FAIL_POLICY_DATA_FETCH("PC02", "정책 데이터 패치 실패", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    FAIL_POLICY_DATA_EDUCATION("PC03", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 교육 요건", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    FAIL_POLICY_DATA_EMPLOYMENT("PC04", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 고용 요건", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    FAIL_POLICY_DATA_MAJOR("PC05", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 전공 요건", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    FAIL_POLICY_DATA_SPECIALIZATION("PC06", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 특화 요건", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    FAIL_POLICY_DATA_CATEGORY("PC07", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 카테고리", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    FAIL_POLICY_DATA_SUB_CATEGORY("PC08", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 하위 카테고리", HttpStatus.INTERNAL_SERVER_ERROR.value()),
 
     // Post
     POST_NOT_FOUND("PS01","해당 게시글을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),

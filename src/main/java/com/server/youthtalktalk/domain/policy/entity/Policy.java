@@ -51,20 +51,6 @@ public class Policy extends BaseTimeEntity {
 
     private int maxAge; // 최대 연령
 
-    //@Column(columnDefinition = "TEXT")
-    //private String employment; // 취업 상태
-
-    //private String employmentCode; // 취업 상태 코드 리스트
-
-    //private String specialization; // 특화 분야
-
-    //private String major; // 전공 요건
-
-    //private String education; // 학력 요건
-
-    //@Column(columnDefinition = "TEXT")
-    //private String addrIncome; // 거주지 및 소득 조건
-
     @Column(columnDefinition = "TEXT")
     private String addition; // 추가 사항
 

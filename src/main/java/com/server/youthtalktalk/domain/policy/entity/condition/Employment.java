@@ -1,12 +1,16 @@
 package com.server.youthtalktalk.domain.policy.entity.condition;
 
+import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.global.response.exception.policy.FailPolicyDataException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
 @Getter
 @RequiredArgsConstructor
+@Slf4j
 public enum Employment {
     EMPLOYED("0013001", "재직자"),
     SELF_EMPLOYED("0013002", "자영업자"),
@@ -28,7 +32,8 @@ public enum Employment {
                 return employment;
             }
         }
-        throw new RuntimeException("Not Existed Employment");
+        log.error("[Policy Data] Not Existed Employment = {}", key);
+        throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_EMPLOYMENT);
     }
 
     public static List<Employment> findEmploymentList(String policyId, String data){
@@ -44,7 +49,8 @@ public enum Employment {
         }
 
         if(set.size() != employmentList.size()) {
-            throw new RuntimeException("Not Existed Employment : " + policyId);
+            log.error("[Policy Data] Not Existed Employment = {} policyId = {}", data, policyId);
+            throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_EMPLOYMENT);
         }
         return employmentList;
     }

@@ -1,10 +1,14 @@
 package com.server.youthtalktalk.domain.policy.entity;
 
+import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.global.response.exception.policy.FailPolicyDataException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @RequiredArgsConstructor
+@Slf4j
 public enum Category {
     JOB("일자리"),
     DWELLING("주거"),
@@ -21,7 +25,10 @@ public enum Category {
             case "003" -> Category.EDUCATION;
             case "004" -> Category.LIFE;
             case "005" -> Category.PARTICIPATION;
-            default -> throw new RuntimeException("Illegal Category :" + policyId);
+            default -> {
+                log.error("[Policy Data] Not Existed Category = {}, policyId = {}", key, policyId);
+                throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_CATEGORY);
+            }
         };
     }
 }
