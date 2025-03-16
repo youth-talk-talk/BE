@@ -18,8 +18,7 @@ public enum Earn {
             case "0043001" -> Earn.UNRESTRICTED;
             case "0043002" -> Earn.ANNUL_INCOME;
             case "0043003" -> Earn.OTHER;
-            //default -> throw new RuntimeException("Illegal Earn : " + policyId);
-            default -> Earn.UNRESTRICTED;
+            default -> Earn.UNRESTRICTED; // 기본값은 제한 없음
         };
     }
 }

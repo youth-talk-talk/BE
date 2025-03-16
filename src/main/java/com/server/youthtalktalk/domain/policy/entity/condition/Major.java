@@ -1,12 +1,16 @@
 package com.server.youthtalktalk.domain.policy.entity.condition;
 
+import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.global.response.exception.policy.FailPolicyDataException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
 @Getter
 @RequiredArgsConstructor
+@Slf4j
 public enum Major {
     HUMANITIES("0011001", "인문계열"),
     SOCIETY("0011002", "사회계열"),
@@ -27,7 +31,8 @@ public enum Major {
                 return major;
             }
         }
-        throw new RuntimeException("Not Existed Major");
+        log.error("[Policy Data] Not Existed Major = {}", key);
+        throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_MAJOR);
     }
 
     public static List<Major> findMajorList(String policyId, String data){
@@ -43,7 +48,8 @@ public enum Major {
         }
 
         if(set.size() != majorList.size()) {
-            throw new RuntimeException("Not Existed Major : " + policyId);
+            log.error("[Policy Data] Not Existed Major = {} policyId = {}", data, policyId);
+            throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_MAJOR);
         }
         return majorList;
     }

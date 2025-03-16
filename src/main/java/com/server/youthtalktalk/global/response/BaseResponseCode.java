@@ -1,7 +1,6 @@
 package com.server.youthtalktalk.global.response;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.http.HttpStatus;
 
 @Getter
@@ -67,6 +66,12 @@ public enum BaseResponseCode {
     INVALID_MAJOR("PC11", "전공요건이 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
     INVALID_SPECIALIZATION("PC12", "특화분야가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
     INVALID_EMPLOYMENT("PC13", "취업상태가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    FAIL_POLICY_DATA_EDUCATION("PC03", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 교육 요건", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    FAIL_POLICY_DATA_EMPLOYMENT("PC04", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 고용 요건", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    FAIL_POLICY_DATA_MAJOR("PC05", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 전공 요건", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    FAIL_POLICY_DATA_SPECIALIZATION("PC06", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 특화 요건", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    FAIL_POLICY_DATA_CATEGORY("PC07", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 카테고리", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    FAIL_POLICY_DATA_SUB_CATEGORY("PC08", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 하위 카테고리", HttpStatus.INTERNAL_SERVER_ERROR.value()),
 
     // Post
     POST_NOT_FOUND("PS01","해당 게시글을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),

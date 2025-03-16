@@ -4,11 +4,15 @@ import static com.server.youthtalktalk.domain.policy.entity.Category.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.global.response.exception.policy.FailPolicyDataException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @RequiredArgsConstructor
+@Slf4j
 public enum SubCategory {
     JOB_EXPANSION("001","일자리 확대 및 역량 강화", JOB),
     JOB_STARTUP("002","창업", JOB),
@@ -41,16 +45,8 @@ public enum SubCategory {
                 return subCategory;
             }
         }
-        throw new RuntimeException("Illegal SubCategory : " + policyId);
-    }
-
-    public static SubCategory fromName(String name) {
-        for (SubCategory subCategory : SubCategory.values()) {
-            if (subCategory.getName().equals(name)) {
-                return subCategory;
-            }
-        }
-        return null;
+        log.error("[Policy Data] Not Existed SubCategory = {} policyId = {}", key, policyId);
+        throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_SUB_CATEGORY);
     }
 
     public static List<SubCategory> fromCategory(Category category) {

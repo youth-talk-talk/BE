@@ -82,6 +82,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.mockito:mockito-core:4.8.0'
+	testImplementation 'org.mockito:mockito-inline:3.12.4'
 	testRuntimeOnly 'com.h2database:h2'
 
 	// JUnit 5 (JUnit Jupiter) 의존성 명시적 선언
