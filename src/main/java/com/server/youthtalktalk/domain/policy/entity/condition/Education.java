@@ -1,12 +1,16 @@
 package com.server.youthtalktalk.domain.policy.entity.condition;
 
+import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.global.response.exception.policy.FailPolicyDataException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
 @Getter
 @RequiredArgsConstructor
+@Slf4j
 public enum Education {
     HIGHSCHOOL_BELOW("0049001", "고졸 미만"),
     HIGHSCHOOL_STUDENT("0049002", "고교 재학"),
@@ -28,7 +32,8 @@ public enum Education {
                 return education;
             }
         }
-        throw new RuntimeException("Not Existed Education");
+        log.error("[Policy Data] Not Existed Education = {}", key);
+        throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_EDUCATION);
     }
 
     public static List<Education> findEducationList(String policyId, String data){
@@ -44,7 +49,8 @@ public enum Education {
         }
 
         if(set.size() != educationList.size()) {
-            throw new RuntimeException("Not Existed Education : " + policyId);
+            log.error("[Policy Data] Not Existed Education = {} policyId = {}", data, policyId);
+            throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_EDUCATION);
         }
         return educationList;
     }

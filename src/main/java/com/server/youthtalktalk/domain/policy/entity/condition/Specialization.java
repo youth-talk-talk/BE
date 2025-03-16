@@ -1,12 +1,16 @@
 package com.server.youthtalktalk.domain.policy.entity.condition;
 
+import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.global.response.exception.policy.FailPolicyDataException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 
 @Getter
 @RequiredArgsConstructor
+@Slf4j
 public enum Specialization {
     SMALL_BUSINESS("0014001", "중소기업"),
     WOMEN("0014002", "여성"),
@@ -28,7 +32,8 @@ public enum Specialization {
                 return specialization;
             }
         }
-        throw new RuntimeException("Not Existed Specialization");
+        log.error("[Policy Data] Not Existed Specialization = {}, policyId = {}", key, policyId);
+        throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_SPECIALIZATION);
     }
 
     public static List<Specialization> findSpecializationList(String policyId, String data){
@@ -44,7 +49,8 @@ public enum Specialization {
         }
 
         if(set.size() != specializationList.size()) {
-            throw new RuntimeException("Not Existed Specialization : " + policyId);
+            log.error("[Policy Data] Not Existed Specialization = {}, policyId = {}", data, policyId);
+            throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_SPECIALIZATION);
         }
         return specializationList;
     }

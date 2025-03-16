@@ -18,8 +18,7 @@ public enum Marriage {
                 case "0055001" -> Marriage.MARRIED;
                 case "0055002" -> Marriage.SINGLE;
                 case "0055003" -> Marriage.UNRESTRICTED;
-                //default -> throw new RuntimeException("Illegal Marriage : " + policyId);
-                default -> Marriage.UNRESTRICTED;
+                default -> Marriage.UNRESTRICTED; // 기본값
         };
     }
 }

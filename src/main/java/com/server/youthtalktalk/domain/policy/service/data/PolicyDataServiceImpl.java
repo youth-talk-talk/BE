@@ -16,8 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 
@@ -34,26 +36,22 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
     @Value("${youthpolicy.api.secret-key}")
     private String secretKey;
-    private int pageSize = 100;
-    private static final String regionCode = "0054002";
+    private static final int PAGE_SIZE = 50;
+    private static final int LIMIT = 1000;
 
     @Override
     @Transactional
     @Scheduled(cron = "${youthpolicy.cron}")
     public void saveData() {
+        log.info("[온통청년 Data Fetch] Data fetch start");
         List<PolicyData> policyDataList = fetchData();
-        List<Policy> policyList = policyDataList.stream()
-                .map(policyData -> {
-                    Policy policy = policyData.toPolicy();
-                    if (policy.getRegion() == null) { // 지역이 설정되지 않은 경우
-                        policy = setRegionForPolicy(policy); // 지역 설정 로직을 메서드로 분리
-                    }
-                    return policy;
-                })
-                .toList();
-        List<Policy> savedPolicyList = policyRepository.saveAll(policyList);
+        List<Policy> policyList = getPolicyEntityList(policyDataList);
 
-        policySubRegionRepository.deleteAllByPolicyIn(policyList);
+        log.info("[온통청년 Data Fetch] Fetched policies save to DB");
+        List<Policy> savedPolicyList = policyRepository.saveAll(policyList);
+        log.info("[온통청년 Data Fetch] Mapping with sub regions");
+        policySubRegionRepository.deleteAllByPolicyIn(savedPolicyList);
+
         // 하위 지역 코드 매핑
         List<PolicySubRegion> policySubRegionList = new ArrayList<>();
         savedPolicyList.stream()
@@ -63,51 +61,81 @@ public class PolicyDataServiceImpl implements PolicyDataService {
     }
 
     @Override
+    public List<Policy> getPolicyEntityList(List<PolicyData> policyDataList) {
+        return policyDataList.stream()
+                .map(policyData -> {
+                    try {
+                        Policy policy = policyData.toPolicy(); // policy 생성
+                        if (policy.getRegion() == null) { // 지역이 설정되지 않은 경우
+                            policy = setRegionForPolicy(policy); // 지역 설정 로직을 메서드로 분리
+                        }
+                        return policy; // 정상적으로 생성된 policy 반환
+                    } catch (Exception e) {
+                        // 예외 발생 시 로깅하거나 예외를 처리하고, null을 반환하여 리스트에 추가되지 않도록 함
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull) // null인 항목은 필터링하여 제거
+                .toList();
+    }
+
+    @Override
     public List<PolicyData> fetchData() {
         List<PolicyData> dataList = new ArrayList<>();
         WebClient webClient = WebClient.builder()
                 .baseUrl("https://www.youthcenter.go.kr/")
-                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))  // 예: 16MB
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(16 * 1024 * 1024)) // 16MB 설정
+                //.filter(logRequest())
                 .build();
 
-        int pageIndex = 1; // 페이지 인덱스는 1부터 시작
-        boolean hasMoreData = true;
-        while(hasMoreData){
-            // api 호출 response 받기
+        int pageIndex = 1;
+        while (pageIndex < LIMIT) {
             int pageNum = pageIndex;
-            Mono<PolicyDataList> response = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/go/ythip/getPlcy")
-                            .queryParam("apiKeyNm", secretKey)
-                            .queryParam("pageSize", pageSize)
-                            .queryParam("pageNum", pageNum)
-                            .queryParam("rtnType", "json")
-                            .queryParam("pageType", "1") // 목록 출력
-                            .build())
-                    .retrieve()
-                    .bodyToMono(PolicyDataList.class)
-                    .retryWhen(Retry.backoff(5, Duration.ofSeconds(2))
-                            .filter(throwable -> throwable instanceof WebClientResponseException
-                                    && ((WebClientResponseException) throwable).getStatusCode().is5xxServerError()))
-                    .onErrorResume(e -> Mono.error(new FailPolicyDataFetchException()));
+            PolicyDataList policyDataList = null;
+            try {
+                Mono<PolicyDataList> response = webClient.get()
+                        .uri(uriBuilder -> uriBuilder
+                                .path("/go/ythip/getPlcy")
+                                .queryParam("apiKeyNm", secretKey)
+                                .queryParam("pageSize", PAGE_SIZE)
+                                .queryParam("pageNum", pageNum)
+                                .queryParam("rtnType", "json")
+                                .queryParam("pageType", "1")
+                                .build())
+                        .retrieve()
+                        .bodyToMono(PolicyDataList.class)
+                        .retryWhen(Retry.backoff(5, Duration.ofSeconds(2))
+                                .doBeforeRetry(before -> log.info("[온통청년 Data Fetch] Retry : {}", before.toString()))
+                                .filter(throwable -> throwable instanceof WebClientResponseException))
+                        .onErrorResume(e -> {
+                            log.error("[온통청년 Data Fetch] API 호출 실패: {}", e.getMessage());
+                            throw new FailPolicyDataFetchException();
+                        });
+                policyDataList = response.block();
+            } catch (Exception e) {
+                throw new FailPolicyDataFetchException();
+            }
 
-            // 정책 리스트 추출
-            List<PolicyData> youthPolicies = Optional
-                    .ofNullable(response.block().result().youthPolicyList())
+            if(policyDataList == null || policyDataList.result() == null){
+                throw new RuntimeException("[온통청년 Data Fetch] data fetch null error");
+            }
+
+            List<PolicyData> youthPolicies = Optional.ofNullable(policyDataList.result().youthPolicyList())
                     .orElse(Collections.emptyList());
 
             if (youthPolicies.isEmpty()) {
-                log.info("No more policies available");
-                hasMoreData=false;
+                log.info("[온통청년 Data Fetch] No more data found, loop break");
+                break;
             }
             dataList.addAll(youthPolicies);
             pageIndex++;
         }
+
         return dataList;
     }
 
-
-    private List<PolicySubRegion> setPolicySubRegions(Policy policy) {
+    @Override
+    public List<PolicySubRegion> setPolicySubRegions(Policy policy) {
         // zipCd 거주 지역 코드 파싱
         String[] regionCodes = policy.getZipCd().split(",");
         List<String> codeList = Arrays.stream(regionCodes).toList();
@@ -125,23 +153,33 @@ public class PolicyDataServiceImpl implements PolicyDataService {
         return policySubRegionList;
     }
 
-    private Region searchRegionByZipCd(Policy policy){
+    @Override
+    public Region searchRegionByZipCd(Policy policy){
         String[] regionCodes = policy.getZipCd().split(",");
         if(!regionCodes[0].isBlank()){
-            SubRegion subRegion = subRegionRepository.findByCode(regionCodes[0])
-                    .orElseThrow(() -> new RuntimeException("Not Existed Region Code"));
-            return subRegion.getRegion();
+            Region region = Region.fromNum(Integer.valueOf(regionCodes[0].substring(0,2)));
+            if(region == null){
+                return Region.ALL;
+            }
+            return region;
         }
-        return null;
+        return Region.ALL;
     }
 
     private Policy setRegionForPolicy(Policy policy) {
         Region region = searchRegionByZipCd(policy);
-        if (region == null) {
-            return policy.toBuilder().region(Region.ALL).build();
-        } else {
-            return policy.toBuilder().region(region).build();
-        }
+        return policy.toBuilder().region(region).build();
     }
 
+    private ExchangeFilterFunction logRequest() {
+        return ExchangeFilterFunction.ofRequestProcessor(clientRequest -> {
+            log.info("Request URL: {}", clientRequest.url()); // 요청 URL + 파라미터 출력
+            return Mono.just(clientRequest);
+        });
+    }
 }
+
+
+
+
+
