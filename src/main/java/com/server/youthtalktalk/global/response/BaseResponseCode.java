@@ -1,6 +1,7 @@
 package com.server.youthtalktalk.global.response;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.HttpStatus;
 
 @Getter
@@ -55,16 +56,17 @@ public enum BaseResponseCode {
     // Policy
     POLICY_NOT_FOUND("PC01","해당 정책을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),
     FAIL_POLICY_DATA_FETCH("PC02", "정책 데이터 패치 실패", HttpStatus.INTERNAL_SERVER_ERROR.value()),
-    INVALID_INSTITUTION_TYPE("PC03", "운영기관이 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
-    INVALID_CATEGORY("PC04", "카테고리가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
-    INVALID_REGION("PC05", "지역이 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
-    INVALID_MARRIAGE("PC06", "결혼여부가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
-    INVALID_AGE("PC07", "나이가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
-    INVALID_EARN("PC08", "소득이 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
-    INVALID_EDUCATION("PC09", "학력이 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
-    INVALID_MAJOR("PC10", "전공요건이 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
-    INVALID_SPECIALIZATION("PC11", "특화분야가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
-    INVALID_EMPLOYMENT("PC12", "취업상태가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_KEYWORD("PC03", "검색어(키워드)가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_INSTITUTION_TYPE("PC04", "운영기관이 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_CATEGORY("PC05", "카테고리가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_REGION("PC06", "지역이 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_MARRIAGE("PC07", "결혼여부가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_AGE("PC08", "나이가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_EARN("PC09", "소득이 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_EDUCATION("PC10", "학력이 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_MAJOR("PC11", "전공요건이 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_SPECIALIZATION("PC12", "특화분야가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_EMPLOYMENT("PC13", "취업상태가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
 
     // Post
     POST_NOT_FOUND("PS01","해당 게시글을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),

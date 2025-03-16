@@ -6,6 +6,7 @@ import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_
 import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_EDUCATION;
 import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_EMPLOYMENT;
 import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_INSTITUTION_TYPE;
+import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_KEYWORD;
 import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_MAJOR;
 import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_MARRIAGE;
 import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_REGION;
@@ -28,6 +29,7 @@ import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.dto.*;
+import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
@@ -228,7 +230,14 @@ public class PolicyServiceImpl implements PolicyService {
     }
 
     private String parseKeyword(String input) {
-        return (input == null || input.isBlank()) ? null : trimmedValue(input);
+        if (input == null) {
+            return null;
+        }
+        String trimmed = input.trim();
+        if (trimmed.isBlank()) {
+            throw new InvalidValueException(INVALID_KEYWORD); // 공백 검색어 예외
+        }
+        return trimmed;
     }
 
     private InstitutionType parseInstitutionType(String input) {
