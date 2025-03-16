@@ -75,8 +75,8 @@ public class PolicyController {
      */
     @PostMapping("/policies/search")
     public BaseResponse<SearchConditionResponseDto> getPoliciesByCondition(@RequestBody SearchConditionRequestDto request,
-                                                                           @RequestParam(defaultValue = "10") int size,
-                                                                           @RequestParam(defaultValue = "0") int page) {
+                                                                            @RequestParam(defaultValue = "10") int size,
+                                                                            @RequestParam(defaultValue = "0") int page) {
         Pageable pageable = PageRequest.of(page, size);
         SearchConditionResponseDto listResponseDto = policyService.getPoliciesByCondition(request, pageable);
         if(listResponseDto.getPolicyList().isEmpty())
@@ -106,8 +106,5 @@ public class PolicyController {
         List<PolicyListResponseDto> listResponseDto = policyService.getScrappedPoliciesWithUpcomingDeadline(memberService.getCurrentMember());
         return new BaseResponse<>(listResponseDto, BaseResponseCode.SUCCESS);
     }
-
-
-
 
 }

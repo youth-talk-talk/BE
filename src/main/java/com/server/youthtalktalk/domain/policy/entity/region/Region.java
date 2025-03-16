@@ -1,7 +1,5 @@
 package com.server.youthtalktalk.domain.policy.entity.region;
 
-import com.server.youthtalktalk.global.response.BaseResponseCode;
-import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -31,13 +29,13 @@ public enum Region {
     private final String name;
     private final int num;
 
-    public static Region fromRegionStr(String regionStr) {
+    public static Region fromName(String name) {
         for (Region region : Region.values()) {
-            if (region.getName().equalsIgnoreCase(regionStr)) {
+            if (region.getName().equals(name)) {
                 return region;
             }
         }
-        throw new InvalidValueException(BaseResponseCode.INVALID_INPUT_VALUE); // 맞는 Region이 없는 경우
+        return null;
     }
 
     public static Region fromKey(String key) {
@@ -46,7 +44,7 @@ public enum Region {
                 return region;
             }
         }
-        return null; // 맞는 Region이 없는 경우
+        return null;
     }
 
     public static Region fromNum(int num) {
