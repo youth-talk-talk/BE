@@ -1,14 +1,9 @@
 package com.server.youthtalktalk.domain.policy.entity;
 
 import static com.server.youthtalktalk.domain.policy.entity.Category.*;
-import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
-import com.server.youthtalktalk.global.response.BaseResponseCode;
-import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -39,13 +34,6 @@ public enum SubCategory {
     private final String key;
     private final String name;
     private final Category category;
-    private static final Set<String> SUBCATEGORY_NAME_SET = new HashSet<>();
-
-    static {
-        for (SubCategory category : values()) {
-            SUBCATEGORY_NAME_SET.add(category.name);
-        }
-    }
 
     public static SubCategory fromKey(String policyId, String key) {
         for (SubCategory subCategory : SubCategory.values()) {
@@ -57,15 +45,12 @@ public enum SubCategory {
     }
 
     public static SubCategory fromName(String name) {
-        SubCategory subCategory = null;
-        if (SUBCATEGORY_NAME_SET.contains(name)) {
-            try {
-                subCategory = SubCategory.valueOf(name);
-            } catch (IllegalArgumentException e) {
-                throw new InvalidValueException(INVALID_INPUT_VALUE);
+        for (SubCategory subCategory : SubCategory.values()) {
+            if (subCategory.getName().equals(name)) {
+                return subCategory;
             }
         }
-        return subCategory;
+        return null;
     }
 
     public static List<SubCategory> fromCategory(Category category) {

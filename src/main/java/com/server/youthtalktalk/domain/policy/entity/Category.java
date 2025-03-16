@@ -1,10 +1,5 @@
 package com.server.youthtalktalk.domain.policy.entity;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -19,13 +14,6 @@ public enum Category {
 
     private final String key;
     private final String name;
-    private static final Set<String> CATEGORY_NAME_SET = new HashSet<>();
-
-    static {
-        for (Category category : values()) {
-            CATEGORY_NAME_SET.add(category.name);
-        }
-    }
 
     public static Category fromKey(String policyId, String key){
         return switch(key){
@@ -39,8 +27,10 @@ public enum Category {
     }
 
     public static Category fromName(String name) {
-        if (CATEGORY_NAME_SET.contains(name)) {
-            return Category.valueOf(name);
+        for (Category category : Category.values()) {
+            if (category.name.equals(name)) {
+                return category;
+            }
         }
         return null;
     }

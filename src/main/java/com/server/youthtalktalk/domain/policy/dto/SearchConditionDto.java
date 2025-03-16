@@ -16,7 +16,6 @@ public record SearchConditionDto(
         String keyword,
         InstitutionType institutionType,
         List<SubCategory> subCategories,
-        List<SubRegion> subRegions,
         Marriage marriage,
         Integer age,
         Integer minEarn,
@@ -24,6 +23,8 @@ public record SearchConditionDto(
         List<Education> educations,
         List<Major> majors,
         List<Employment> employments,
-        List<Specialization> specializations
-) {
+        List<Specialization> specializations,
+        List<Long> subRegionIds,
+        Boolean isFinished
+        ) {
 }

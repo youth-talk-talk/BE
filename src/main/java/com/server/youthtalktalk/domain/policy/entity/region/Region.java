@@ -1,11 +1,5 @@
 package com.server.youthtalktalk.domain.policy.entity.region;
 
-import com.server.youthtalktalk.domain.policy.entity.Category;
-import com.server.youthtalktalk.global.response.BaseResponseCode;
-import com.server.youthtalktalk.global.response.exception.InvalidValueException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -33,21 +27,14 @@ public enum Region {
 
     private final String key;
     private final String name;
-    private static final Set<String> REGION_NAME_SET = new HashSet<>();
-    static {
-        for (Region region : values()) {
-            REGION_NAME_SET.add(region.name);
-        }
-    }
 
-    // TODO 아래 fromName 메서드와 같은 기능 - 리팩토링 예정
-    public static Region fromRegionStr(String regionStr) {
+    public static Region fromName(String name) {
         for (Region region : Region.values()) {
-            if (region.getName().equalsIgnoreCase(regionStr)) {
+            if (region.getName().equals(name)) {
                 return region;
             }
         }
-        throw new InvalidValueException(BaseResponseCode.INVALID_INPUT_VALUE); // 맞는 Region이 없는 경우
+        return null;
     }
 
     public static Region fromKey(String key) {
@@ -55,13 +42,6 @@ public enum Region {
             if (region.getKey().equals(key)) {
                 return region;
             }
-        }
-        return null; // 맞는 Region이 없는 경우
-    }
-
-    public static Region fromName(String name) {
-        if (REGION_NAME_SET.contains(name)) {
-            return Region.valueOf(name);
         }
         return null;
     }

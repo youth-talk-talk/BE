@@ -1,7 +1,15 @@
 package com.server.youthtalktalk.domain.policy.service;
 
-import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_INPUT_VALUE;
-import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_REGION_NAME;
+import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_AGE;
+import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_CATEGORY;
+import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_EARN;
+import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_EDUCATION;
+import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_EMPLOYMENT;
+import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_INSTITUTION_TYPE;
+import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_MAJOR;
+import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_MARRIAGE;
+import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_REGION;
+import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_SPECIALIZATION;
 
 import com.server.youthtalktalk.domain.ItemType;
 import com.server.youthtalktalk.domain.policy.dto.SearchConditionDto;
@@ -20,7 +28,6 @@ import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.dto.*;
-import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
@@ -28,6 +35,9 @@ import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
 import com.server.youthtalktalk.domain.member.service.MemberService;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -143,11 +153,9 @@ public class PolicyServiceImpl implements PolicyService {
      * 조건 적용 정책 조회
      */
     public SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto conditionDto, Pageable pageable) {
-
         SearchConditionDto searchCondition = setSearchCondition(conditionDto);
 
         Page<Policy> policies = policyRepository.findByCondition(searchCondition, pageable);
-
         if (policies.isEmpty()) {
             log.info("조건에 맞는 정책이 존재하지 않습니다");
             return SearchConditionResponseDto.toListDto(Collections.emptyList(), 0L); // 빈 리스트 반환
@@ -166,25 +174,23 @@ public class PolicyServiceImpl implements PolicyService {
     }
 
     private SearchConditionDto setSearchCondition(SearchConditionRequestDto conditionDto) {
-        String keyword = getKeyword(conditionDto.getKeyword());
-        InstitutionType institutionType = InstitutionType.fromString(conditionDto.getInstitutionType());
-        List<SubCategory> subCategories = getSubCategories(conditionDto);
-        List<SubRegion> subRegions = getSubRegions(conditionDto);
-        Marriage marriage = getMarriage(conditionDto);
-        Integer age = getAge(conditionDto);
-        List<String> earnList = conditionDto.getEarn();
-        Integer minEarn = (earnList != null && !earnList.isEmpty()) ? getEarn(earnList.getFirst()) : null;
-        Integer maxEarn = (earnList != null && !earnList.isEmpty()) ? getEarn(earnList.getLast()) : null;
+        String keyword = parseKeyword(conditionDto.getKeyword());
+        InstitutionType institutionType = parseInstitutionType(conditionDto.getInstitutionType());
+        List<SubCategory> subCategories = parseSubCategories(conditionDto.getCategory());
+        Marriage marriage = parseMarriage(conditionDto.getMarriage());
+        Integer age = parseAge(conditionDto.getAge());
+        Integer minEarn = parseEarn(conditionDto.getMinEarn());
+        Integer maxEarn = parseEarn(conditionDto.getMaxEarn());
         List<Education> educations = getEnumListFromStrings(conditionDto.getEducation(), Education.class);
         List<Major> majors = getEnumListFromStrings(conditionDto.getMajor(), Major.class);
         List<Employment> employments = getEnumListFromStrings(conditionDto.getEmployment(), Employment.class);
         List<Specialization> specializations = getEnumListFromStrings(conditionDto.getSpecialization(), Specialization.class);
+        List<Long> subRegionIds = parseSubRegionIds(conditionDto.getRegion());
 
         return SearchConditionDto.builder()
                 .keyword(keyword)
                 .institutionType(institutionType)
                 .subCategories(subCategories)
-                .subRegions(subRegions)
                 .marriage(marriage)
                 .age(age)
                 .minEarn(minEarn)
@@ -193,19 +199,26 @@ public class PolicyServiceImpl implements PolicyService {
                 .majors(majors)
                 .employments(employments)
                 .specializations(specializations)
+                .subRegionIds(subRegionIds)
+                .isFinished(conditionDto.getIsFinished())
                 .build();
     }
 
     private <T extends Enum<T>> List<T> getEnumListFromStrings(List<String> values, Class<T> enumType) {
         List<T> enumList = new ArrayList<>();
-        try {
-            if (values != null && !values.isEmpty()) {
-                for (String value : values) {
-                    enumList.add(Enum.valueOf(enumType, trimmedValue(value))); // enumType에 맞춰서 valueOf 호출
+        if (values != null && !values.isEmpty()) {
+            for (String value : values) {
+                try {
+                    enumList.add(Enum.valueOf(enumType, trimmedValue(value).toUpperCase()));
+                } catch (IllegalArgumentException e) {
+                    switch (enumType.getSimpleName()) {
+                        case "Education" -> throw new InvalidValueException(INVALID_EDUCATION);
+                        case "Major" -> throw new InvalidValueException(INVALID_MAJOR);
+                        case "Specialization" -> throw new InvalidValueException(INVALID_SPECIALIZATION);
+                        case "Employment" -> throw new InvalidValueException(INVALID_EMPLOYMENT);
+                    }
                 }
             }
-        } catch (IllegalArgumentException e) {
-            throw new InvalidValueException(INVALID_INPUT_VALUE);
         }
         return enumList;
     }
@@ -214,80 +227,80 @@ public class PolicyServiceImpl implements PolicyService {
         return value.trim().replaceAll("\\s+", "");
     }
 
-    private String getKeyword(String input) {
-        return (input == null || input.isBlank()) ? null : input.trim();
+    private String parseKeyword(String input) {
+        return (input == null || input.isBlank()) ? null : trimmedValue(input);
     }
 
-    private List<SubCategory> getSubCategories(SearchConditionRequestDto conditionDto) {
-        List<String> categoryNames = conditionDto.getCategory();
+    private InstitutionType parseInstitutionType(String input) {
+        InstitutionType institutionType = null;
+        try {
+            if (input != null && !input.isBlank()) {
+                institutionType = InstitutionType.valueOf(trimmedValue(input).toUpperCase());
+            }
+        } catch (IllegalArgumentException e) {
+            throw new InvalidValueException(INVALID_INSTITUTION_TYPE);
+        }
+        return institutionType;
+    }
+
+    private List<SubCategory> parseSubCategories(List<String> categoryNames) {
         if (categoryNames == null || categoryNames.isEmpty()) {
             return Collections.emptyList();
         }
 
-        List<SubCategory> subCategories = new ArrayList<>();
+        Set<SubCategory> subCategorySet = new LinkedHashSet<>();
         for (String categoryName : categoryNames) {
-            if (Category.fromName(categoryName) != null) { // 상위 카테고리를 전체 선택하는 경우
-                Category category = Category.fromName(categoryName);
-                subCategories.addAll(SubCategory.fromCategory(category));
-                continue;
-            }
-            subCategories.add(SubCategory.fromName(categoryName));
+            String trimmedName = trimmedValue(categoryName).toUpperCase();
+            resolveToSubCategory(subCategorySet, trimmedName);
         }
-        return subCategories;
+        return new ArrayList<>(subCategorySet); // 중복 제거 및 순서 유지
     }
 
-    private List<SubRegion> getSubRegions(SearchConditionRequestDto conditionDto) {
-        List<String> regionNames = conditionDto.getRegion();
-        if (regionNames == null || regionNames.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        List<SubRegion> subRegions = new ArrayList<>();
-        for (String regionName : regionNames) {
-            if (Region.fromName(regionName) != null) { // 상위 지역을 전체 선택하는 경우
-                Region region = Region.fromName(regionName);
-                List<SubRegion> allSubRegionsByRegion = subRegionRepository.findAllByRegion(region);
-                if (allSubRegionsByRegion.isEmpty()) {
-                    throw new InvalidValueException(INVALID_REGION_NAME);
-                }
-                subRegions.addAll(allSubRegionsByRegion);
-                continue;
+    private void resolveToSubCategory(Set<SubCategory> subCategories, String name) {
+        try {
+            // 이름으로 상위 카테고리 매핑 시도
+            Category category = Category.valueOf(name);
+            subCategories.addAll(SubCategory.fromCategory(category));
+        } catch (IllegalArgumentException e1) {
+            // 상위 카테고리랑 매핑이 안된 경우, 하위 카테고리로 매핑 시도
+            try {
+                SubCategory subCategory = SubCategory.valueOf(name);
+                subCategories.add(subCategory);
+            } catch (IllegalArgumentException e2) {
+                // 하위 카테고리도 못 찾은 경우
+                throw new InvalidValueException(INVALID_CATEGORY);
             }
-            subRegionRepository.findByName(regionName)
-                    .map(subRegions::add)
-                    .orElseThrow(() -> new InvalidValueException(INVALID_REGION_NAME));
         }
-        return subRegions;
     }
 
-    private Marriage getMarriage(SearchConditionRequestDto conditionDto) {
+    private Marriage parseMarriage(String input) {
         Marriage marriage = null;
         try {
-            if (conditionDto.getMarriage() != null) {
-                marriage = Marriage.valueOf(trimmedValue(conditionDto.getMarriage()));
+            if (input != null && !input.isBlank()) {
+                marriage = Marriage.valueOf(trimmedValue(input).toUpperCase());
             }
         } catch (IllegalArgumentException e) {
-            throw new InvalidValueException(INVALID_INPUT_VALUE);
+            throw new InvalidValueException(INVALID_MARRIAGE);
         }
         return marriage;
     }
 
-    private Integer getAge(SearchConditionRequestDto conditionDto) {
+    private Integer parseAge(String input) {
         Integer age = null;
         try {
-            if (conditionDto.getAge() != null) {
-                age = Integer.parseInt(trimmedValue(conditionDto.getAge()));
+            if (input != null && !input.isBlank()) {
+                age = Integer.parseInt(trimmedValue(input));
                 if (age < MIN_AGE_INPUT || age > MAX_AGE_INPUT) {
                     throw new IllegalArgumentException();
                 }
             }
         } catch (IllegalArgumentException e) {
-            throw new InvalidValueException(INVALID_INPUT_VALUE);
+            throw new InvalidValueException(INVALID_AGE);
         }
         return age;
     }
 
-    private Integer getEarn(String input) {
+    private Integer parseEarn(String input) {
         Integer earn = null;
         try {
             if (input != null && input.isBlank()) {
@@ -297,9 +310,42 @@ public class PolicyServiceImpl implements PolicyService {
                 }
             }
         } catch (IllegalArgumentException e) {
-            throw new InvalidValueException(INVALID_INPUT_VALUE);
+            throw new InvalidValueException(INVALID_EARN);
         }
         return earn;
+    }
+
+    private List<Long> parseSubRegionIds(List<String> regionNames) {
+        if (regionNames == null || regionNames.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Set<Long> subRegionIds = new LinkedHashSet<>();
+        for (String regionName : regionNames) {
+            String trimmedRegionName = trimmedValue(regionName);
+            resolveToSubRegionId(subRegionIds, trimmedRegionName);
+        }
+        return new ArrayList<>(subRegionIds); // 중복 제거 및 순서 유지
+    }
+
+    private void resolveToSubRegionId(Set<Long> subRegionIds, String name) {
+        Region region = Region.fromName(name); // 지역 입력값이 상위 지역 이름과 매핑 시도
+
+        // 상위 지역과 매핑 성공 시, 상위 지역이 갖고 있는 모든 하위 지역 저장
+        if (region != null) {
+            subRegionIds.addAll(
+                    subRegionRepository.findAllByRegion(region).stream().map(SubRegion::getId).toList()
+            );
+            return;
+        }
+
+        // 상위 지역과 매핑 실패 시, 하위 지역과 직접 매핑 시도
+        subRegionRepository.findByName(name)
+                .map(SubRegion::getId)
+                .ifPresentOrElse(
+                        subRegionIds::add,
+                        () -> {throw new InvalidValueException(INVALID_REGION);} // 하위 지역에서도 못 찾으면 예외 발생
+                );
     }
 
     /**
@@ -380,9 +426,6 @@ public class PolicyServiceImpl implements PolicyService {
                 })
                 .collect(Collectors.toList());
     }
-
-
-
 
 }
 
