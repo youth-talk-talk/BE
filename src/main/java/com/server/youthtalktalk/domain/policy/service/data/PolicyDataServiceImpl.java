@@ -36,7 +36,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
     @Value("${youthpolicy.api.secret-key}")
     private String secretKey;
-    private static final int PAGE_SIZE = 50;
+    private static final int PAGE_SIZE = 100;
     private static final int LIMIT = 1000;
 
     @Override
