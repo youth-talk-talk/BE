@@ -126,7 +126,6 @@ public record PolicyData(
                 .major(Major.findMajorList(plcyNo, plcyMajorCd))
                 .submitDoc(sbmsnDcmntCn)
                 .supportDetail(plcySprtCn)
-                .subCategory(SubCategory.fromKey(plcyNo, bscPlanFcsAsmtNo))
                 .earn(earn)
                 .maxEarn(earn.equals(Earn.ANNUL_INCOME) && !earnMaxAmt.isEmpty() ? Integer.parseInt(earnMaxAmt) : 0)
                 .minEarn(earn.equals(Earn.ANNUL_INCOME) && !earnMinAmt.isEmpty() ? Integer.parseInt(earnMinAmt) : 0)
