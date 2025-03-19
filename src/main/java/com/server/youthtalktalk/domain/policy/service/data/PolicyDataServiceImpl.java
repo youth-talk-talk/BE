@@ -36,7 +36,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
     @Value("${youthpolicy.api.secret-key}")
     private String secretKey;
-    private static final int PAGE_SIZE = 100;
+    private static final int PAGE_SIZE = 27;
     private static final int LIMIT = 1000;
 
     @Override
@@ -47,17 +47,28 @@ public class PolicyDataServiceImpl implements PolicyDataService {
         List<PolicyData> policyDataList = fetchData();
         List<Policy> policyList = getPolicyEntityList(policyDataList);
 
-        log.info("[온통청년 Data Fetch] Fetched policies save to DB");
-        List<Policy> savedPolicyList = policyRepository.saveAll(policyList);
-        log.info("[온통청년 Data Fetch] Mapping with sub regions");
-        policySubRegionRepository.deleteAllByPolicyIn(savedPolicyList);
+        List<String> stringList = new ArrayList<>();
+        for(int i = 0; i < policyList.size(); i++) {
+            if(policyRepository.existsById(policyList.get(i).getPolicyId())) {
+                stringList.add(i + " " + policyList.get(i).getPolicyId());
+            }
+            policyRepository.save(policyList.get(i));
+        }
 
-        // 하위 지역 코드 매핑
-        List<PolicySubRegion> policySubRegionList = new ArrayList<>();
-        savedPolicyList.stream()
-                .filter(policy -> !policy.getRegion().equals(Region.ALL))
-                .forEach(policy -> policySubRegionList.addAll(setPolicySubRegions(policy)));
-        policySubRegionRepository.saveAll(policySubRegionList);
+        for(int i = 0; i < stringList.size(); i++) {
+            System.out.println(stringList.get(i));
+        }
+//        log.info("[온통청년 Data Fetch] Fetched policies save to DB");
+//        List<Policy> savedPolicyList = policyRepository.saveAll(policyList);
+//        log.info("[온통청년 Data Fetch] Mapping with sub regions");
+//        policySubRegionRepository.deleteAllByPolicyIn(savedPolicyList);
+//
+//        // 하위 지역 코드 매핑
+//        List<PolicySubRegion> policySubRegionList = new ArrayList<>();
+//        savedPolicyList.stream()
+//                .filter(policy -> !policy.getRegion().equals(Region.ALL))
+//                .forEach(policy -> policySubRegionList.addAll(setPolicySubRegions(policy)));
+//        policySubRegionRepository.saveAll(policySubRegionList);
     }
 
     @Override

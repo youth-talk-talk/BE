@@ -21,7 +21,6 @@ import java.util.List;
 @AllArgsConstructor
 public class Policy extends BaseTimeEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String policyId; // 정책 아이디
 
     @Enumerated(EnumType.STRING)
