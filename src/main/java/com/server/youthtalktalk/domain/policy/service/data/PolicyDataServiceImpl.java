@@ -1,11 +1,15 @@
 package com.server.youthtalktalk.domain.policy.service.data;
 
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.server.youthtalktalk.domain.policy.dto.data.DepartmentResponseDto;
 import com.server.youthtalktalk.domain.policy.dto.data.PolicyData;
 import com.server.youthtalktalk.domain.policy.dto.data.PolicyDataList;
+import com.server.youthtalktalk.domain.policy.entity.Department;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.entity.region.PolicySubRegion;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.entity.region.SubRegion;
+import com.server.youthtalktalk.domain.policy.repository.DepartmentRepository;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.policy.repository.region.PolicySubRegionRepository;
 import com.server.youthtalktalk.domain.policy.repository.region.SubRegionRepository;
@@ -21,10 +25,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.util.retry.Retry;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service
@@ -33,9 +39,14 @@ public class PolicyDataServiceImpl implements PolicyDataService {
     private final PolicyRepository policyRepository;
     private final PolicySubRegionRepository policySubRegionRepository;
     private final SubRegionRepository subRegionRepository;
+    private final DepartmentRepository departmentRepository;
+    private final WebClient webClient;
 
     @Value("${youthpolicy.api.secret-key}")
-    private String secretKey;
+    private String policySecretKey;
+    @Value("${department.api.secret-key}")
+    private String departmentSecretKey;
+    private static final String DEFAULT_DEPARTMENT = "0";
     private static final int PAGE_SIZE = 100;
     private static final int LIMIT = 1000;
 
@@ -43,13 +54,14 @@ public class PolicyDataServiceImpl implements PolicyDataService {
     @Transactional
     @Scheduled(cron = "${youthpolicy.cron}")
     public void saveData() {
-        log.info("[온통청년 Data Fetch] Data fetch start");
-        List<PolicyData> policyDataList = fetchData();
-        List<Policy> policyList = getPolicyEntityList(policyDataList);
+        log.info("[온통청년 Data Fetch] 정책 데이터 패치 시작");
+        List<PolicyData> policyDataList = fetchPolicyData();
+        List<Policy> policyList = getPolicyEntityList(policyDataList).block();
 
-        log.info("[온통청년 Data Fetch] Fetched policies save to DB");
+        log.info("[온통청년 Data Fetch] 패치된 정책 데이터 DB 저장");
+        assert policyList != null;
         List<Policy> savedPolicyList = policyRepository.saveAll(policyList);
-        log.info("[온통청년 Data Fetch] Mapping with sub regions");
+        log.info("[온통청년 Data Fetch] SubRegion과 매핑");
         policySubRegionRepository.deleteAllByPolicyIn(savedPolicyList);
 
         // 하위 지역 코드 매핑
@@ -61,26 +73,41 @@ public class PolicyDataServiceImpl implements PolicyDataService {
     }
 
     @Override
-    public List<Policy> getPolicyEntityList(List<PolicyData> policyDataList) {
-        return policyDataList.stream()
-                .map(policyData -> {
-                    try {
-                        Policy policy = policyData.toPolicy(); // policy 생성
-                        if (policy.getRegion() == null) { // 지역이 설정되지 않은 경우
-                            policy = setRegionForPolicy(policy); // 지역 설정 로직을 메서드로 분리
+    public Mono<List<Policy>> getPolicyEntityList(List<PolicyData> policyDataList) {
+        Department defaultDepartment = departmentRepository.findByCode(DEFAULT_DEPARTMENT).get();
+
+        // 정책 데이터를 비동기적으로 처리
+        return Flux.fromIterable(policyDataList)
+                .delayElements(Duration.ofMillis(50))
+                .parallel(50)  // 최대 동시 실행 개수 10개 제한
+                .runOn(Schedulers.boundedElastic()) // I/O 작업 최적화
+                .flatMap(policyData -> Mono.fromCallable(() -> {
+                try {
+                        String departmentCode = policyData.sprvsnInstCd();
+                        // 중앙 부처 코드 매핑
+                        Department department = departmentRepository.findByCode(departmentCode)
+                                .orElse(defaultDepartment);
+                        // 임시로 주석 처리(처리 속도 지연 문제)
+//                                .orElseGet(() -> searchDepartmentCode(departmentCode, defaultDepartment));
+                        Policy policy = policyData.toPolicy(department);
+
+                        // 지역이 설정되지 않은 경우
+                        if (policy.getRegion() == null) {
+                            policy = setRegionForPolicy(policy);
                         }
-                        return policy; // 정상적으로 생성된 policy 반환
+                        return policy;
                     } catch (Exception e) {
-                        // 예외 발생 시 로깅하거나 예외를 처리하고, null을 반환하여 리스트에 추가되지 않도록 함
+                        // 예외 발생 시 null 반환하여 필터링
                         return null;
                     }
-                })
+                }))
+                .sequential()
                 .filter(Objects::nonNull) // null인 항목은 필터링하여 제거
-                .toList();
+                .collectList(); // 결과를 List로 모아서 반환
     }
 
     @Override
-    public List<PolicyData> fetchData() {
+    public List<PolicyData> fetchPolicyData() {
         List<PolicyData> dataList = new ArrayList<>();
         WebClient webClient = WebClient.builder()
                 .baseUrl("https://www.youthcenter.go.kr/")
@@ -96,7 +123,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                 Mono<PolicyDataList> response = webClient.get()
                         .uri(uriBuilder -> uriBuilder
                                 .path("/go/ythip/getPlcy")
-                                .queryParam("apiKeyNm", secretKey)
+                                .queryParam("apiKeyNm", policySecretKey)
                                 .queryParam("pageSize", PAGE_SIZE)
                                 .queryParam("pageNum", pageNum)
                                 .queryParam("rtnType", "json")
@@ -105,7 +132,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                         .retrieve()
                         .bodyToMono(PolicyDataList.class)
                         .retryWhen(Retry.backoff(5, Duration.ofSeconds(2))
-                                .doBeforeRetry(before -> log.info("[온통청년 Data Fetch] Retry : {}", before.toString()))
+                                .doBeforeRetry(before -> log.info("[온통청년 Data Fetch] Retry 시도 : {}", before.toString()))
                                 .filter(throwable -> throwable instanceof WebClientResponseException))
                         .onErrorResume(e -> {
                             log.error("[온통청년 Data Fetch] API 호출 실패: {}", e.getMessage());
@@ -117,14 +144,14 @@ public class PolicyDataServiceImpl implements PolicyDataService {
             }
 
             if(policyDataList == null || policyDataList.result() == null){
-                throw new RuntimeException("[온통청년 Data Fetch] data fetch null error");
+                throw new RuntimeException("[온통청년 Data Fetch] policyDataList가 존재하지 않습니다.");
             }
 
             List<PolicyData> youthPolicies = Optional.ofNullable(policyDataList.result().youthPolicyList())
                     .orElse(Collections.emptyList());
 
             if (youthPolicies.isEmpty()) {
-                log.info("[온통청년 Data Fetch] No more data found, loop break");
+                log.info("[온통청년 Data Fetch] 더 이상 데이터가 없습니다. 패치 종료");
                 break;
             }
             dataList.addAll(youthPolicies);
@@ -132,6 +159,33 @@ public class PolicyDataServiceImpl implements PolicyDataService {
         }
 
         return dataList;
+    }
+
+    @Override
+    public Department searchDepartmentCode(String departmentCode, Department defaultDepartment) {
+        // 해당 코드의 상위 기관 코드 탐색
+        try {
+            String response = webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/1741000/StanOrgCd2/getStanOrgCdList2")
+                            .queryParam("ServiceKey", departmentSecretKey)
+                            .queryParam("type", "xml")
+                            .queryParam("pageNo", 1)
+                            .queryParam("numOfRows", 1)
+                            .queryParam("org_cd", departmentCode)
+                            .build())
+                    .retrieve().bodyToMono(String.class)
+                    .block();
+
+            XmlMapper xmlMapper = new XmlMapper();
+            DepartmentResponseDto data = xmlMapper.readValue(response, DepartmentResponseDto.class);
+            //"row" 항목만 추출
+            String representativeCode = data.row().get(0).repCd();
+            return departmentRepository.findByCode(representativeCode).orElse(defaultDepartment);
+
+        }catch (Exception e){
+            return defaultDepartment;
+        }
     }
 
     @Override

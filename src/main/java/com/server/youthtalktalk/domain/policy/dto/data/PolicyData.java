@@ -74,7 +74,7 @@ public record PolicyData(
 ) {
     private static final String regionCode = "0054002";
 
-    public Policy toPolicy() {
+    public Policy toPolicy(Department department) {
         RepeatCode repeatCode = RepeatCode.fromKey(plcyNo, aplyPrdSeCd);
 
         // 신청 기간 파싱(상시인 경우 x)
@@ -134,6 +134,7 @@ public record PolicyData(
                 .zipCd(zipCd)
                 .bizStart(bizTerm[0])
                 .bizDue(bizTerm[1])
+                .department(department)
                 .build();
     }
 

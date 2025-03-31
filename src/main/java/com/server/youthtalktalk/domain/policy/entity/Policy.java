@@ -130,6 +130,10 @@ public class Policy extends BaseTimeEntity {
 
     private LocalDate bizDue; // 운영 종료일
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id")
+    private Department department;
+
     @Builder.Default
     @OneToMany(mappedBy = "policy")
     private List<Review> reviews = new ArrayList<>();
@@ -141,4 +145,12 @@ public class Policy extends BaseTimeEntity {
     @Builder.Default
     @OneToMany(mappedBy = "policy", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PolicySubRegion> policySubRegions = new ArrayList<>();
+
+    /** 연관관계 메서드 */
+    void setDepartment(Department department) {
+        this.department = department;
+        if(department != null) {
+            department.getPolicies().add(this);
+        }
+    }
 }
