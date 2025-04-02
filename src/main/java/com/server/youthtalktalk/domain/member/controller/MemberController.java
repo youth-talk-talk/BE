@@ -20,7 +20,7 @@ import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 @RequiredArgsConstructor
 public class MemberController {
 
-    private static final int MAX_PROFILE_SIZE = 1024 * 1024;
+    private static final int MAX_PROFILE_SIZE = 5 * 1024 * 1024; // 5MB
     private final MemberService memberService;
     private final ImageService imageService;
 
@@ -88,8 +88,8 @@ public class MemberController {
      * 프로필 이미지 등록 api
      */
     @PostMapping("/members/profile")
-    public BaseResponse<String> updateProfile(@RequestParam("image") MultipartFile image) throws IOException {
-        if (image.getSize() > MAX_PROFILE_SIZE) { // 1MB 용량 제한
+    public BaseResponse<String> uploadProfileImage(@RequestParam("image") MultipartFile image) throws IOException {
+        if (image.getSize() > MAX_PROFILE_SIZE) {
             return new BaseResponse<>(EXCEED_PROFILE_SIZE);
         }
         String imgUrl = imageService.uploadMultiFile(image);
@@ -101,7 +101,7 @@ public class MemberController {
      * 프로필 이미지 삭제 api
      */
     @DeleteMapping("/members/profile")
-    public BaseResponse<String> deleteProfile() {
+    public BaseResponse<String> deleteProfileImage() {
         imageService.deleteProfileImage(memberService.getCurrentMember());
         return new BaseResponse<>(SUCCESS);
     }
