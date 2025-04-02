@@ -26,6 +26,8 @@ public enum BaseResponseCode {
     SUCCESS_MEMBER_DELETE("S13", "회원 탈퇴를 완료하였습니다.", HttpStatus.OK.value()),
     SUCCESS_MEMBER_BLOCK("S14", "회원 차단에 성공했습니다.", HttpStatus.OK.value()),
     SUCCESS_MEMBER_UNBLOCK("S15", "차단 해제를 성공했습니다.", HttpStatus.OK.value()),
+    SUCCESS_EMPTY_PROFILE("S16", "등록된 프로필 이미지가 없습니다.", HttpStatus.OK.value()),
+
     // Announcement
     SUCCESS_ANNOUNCEMENT_CREATE("S16", "공지사항을 성공적으로 등록했습니다.", HttpStatus.OK.value()),
     SUCCESS_ANNOUNCEMENT_UPDATE("S17", "공지사항을 성공적으로 수정했습니다.", HttpStatus.OK.value()),

@@ -102,7 +102,11 @@ public class MemberController {
      */
     @DeleteMapping("/members/profile")
     public BaseResponse<String> deleteProfileImage() {
-        imageService.deleteProfileImage(memberService.getCurrentMember());
+        Member member = memberService.getCurrentMember();
+        if (member.getProfileImage() == null) {
+            return new BaseResponse<>(SUCCESS_EMPTY_PROFILE);
+        }
+        imageService.deleteProfileImage(member);
         return new BaseResponse<>(SUCCESS);
     }
 
