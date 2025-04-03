@@ -10,6 +10,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.server.youthtalktalk.domain.policy.dto.SearchConditionDto;
+import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.entity.QPolicy;
@@ -46,7 +47,7 @@ public class PolicyQueryRepositoryImpl implements PolicyQueryRepository {
 
         filterByKeyword(condition, policy, predicate); // 키워드
         predicate.and(eqInstitutionType(condition.institutionType())); // 운영기관
-        predicate.and(eqSubCategories(condition.subCategories())); // 카테고리
+        predicate.and(eqCategories(condition.categories())); // 카테고리
         predicate.and(eqMarriage(condition.marriage())); // 결혼 요건
         predicate.and(isAgeInRange(condition.age())); // 나이
         predicate.and(isEarnInRange(condition.minEarn(), condition.maxEarn())); // 소득 요건
@@ -93,13 +94,13 @@ public class PolicyQueryRepositoryImpl implements PolicyQueryRepository {
         return type != null ? policy.institutionType.eq(type) : null;
     }
 
-    private BooleanBuilder eqSubCategories(List<SubCategory> subCategories) {
-        if (subCategories == null || subCategories.isEmpty()) return null;
-        BooleanBuilder subCategoryPredicate = new BooleanBuilder();
-        for (SubCategory subCategory : subCategories) {
-            subCategoryPredicate.or(policy.subCategory.eq(subCategory));
+    private BooleanBuilder eqCategories(List<Category> categories) {
+        if (categories == null || categories.isEmpty()) return null;
+        BooleanBuilder categoryPredicate = new BooleanBuilder();
+        for (Category category : categories) {
+            categoryPredicate.or(policy.category.eq(category));
         }
-        return subCategoryPredicate;
+        return categoryPredicate;
     }
 
     private BooleanExpression eqMarriage(Marriage marriage) {

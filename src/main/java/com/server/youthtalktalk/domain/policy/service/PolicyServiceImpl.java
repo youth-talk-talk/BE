@@ -29,7 +29,6 @@ import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.dto.*;
-import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
@@ -39,7 +38,6 @@ import com.server.youthtalktalk.domain.member.service.MemberService;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -178,7 +176,7 @@ public class PolicyServiceImpl implements PolicyService {
     private SearchConditionDto setSearchCondition(SearchConditionRequestDto conditionDto) {
         String keyword = parseKeyword(conditionDto.getKeyword());
         InstitutionType institutionType = parseInstitutionType(conditionDto.getInstitutionType());
-        List<SubCategory> subCategories = parseSubCategories(conditionDto.getCategory());
+        List<Category> categories = parseCategories(conditionDto.getCategory());
         Marriage marriage = parseMarriage(conditionDto.getMarriage());
         Integer age = parseAge(conditionDto.getAge());
         Integer minEarn = parseEarn(conditionDto.getMinEarn());
@@ -192,7 +190,7 @@ public class PolicyServiceImpl implements PolicyService {
         return SearchConditionDto.builder()
                 .keyword(keyword)
                 .institutionType(institutionType)
-                .subCategories(subCategories)
+                .categories(categories)
                 .marriage(marriage)
                 .age(age)
                 .minEarn(minEarn)
@@ -252,33 +250,24 @@ public class PolicyServiceImpl implements PolicyService {
         return institutionType;
     }
 
-    private List<SubCategory> parseSubCategories(List<String> categoryNames) {
+    private List<Category> parseCategories(List<String> categoryNames) {
         if (categoryNames == null || categoryNames.isEmpty()) {
             return Collections.emptyList();
         }
-
-        Set<SubCategory> subCategorySet = new LinkedHashSet<>();
+        List<Category> categories = new ArrayList<>();
         for (String categoryName : categoryNames) {
             String trimmedName = trimmedValue(categoryName).toUpperCase();
-            resolveToSubCategory(subCategorySet, trimmedName);
+            resolveToCategory(categories, trimmedName);
         }
-        return new ArrayList<>(subCategorySet); // 중복 제거 및 순서 유지
+        return categories;
     }
 
-    private void resolveToSubCategory(Set<SubCategory> subCategories, String name) {
+    private void resolveToCategory(List<Category> categories, String name) {
         try {
-            // 이름으로 상위 카테고리 매핑 시도
             Category category = Category.valueOf(name);
-            subCategories.addAll(SubCategory.fromCategory(category));
-        } catch (IllegalArgumentException e1) {
-            // 상위 카테고리랑 매핑이 안된 경우, 하위 카테고리로 매핑 시도
-            try {
-                SubCategory subCategory = SubCategory.valueOf(name);
-                subCategories.add(subCategory);
-            } catch (IllegalArgumentException e2) {
-                // 하위 카테고리도 못 찾은 경우
-                throw new InvalidValueException(INVALID_CATEGORY);
-            }
+            categories.add(category);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidValueException(INVALID_CATEGORY);
         }
     }
 
