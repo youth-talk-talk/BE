@@ -9,7 +9,7 @@ import lombok.Getter;
 public class SearchConditionRequestDto {
     private String keyword; // 검색 키워드
     private String institutionType; // 담당기관 (중앙부처 또는 지자체)
-    private List<String> category; // 카테고리 (소분류 포함)
+    private List<String> category; // 카테고리
     private String marriage; // 결혼요건
     private String age; // 연령
     private String minEarn; // 최소 소득
