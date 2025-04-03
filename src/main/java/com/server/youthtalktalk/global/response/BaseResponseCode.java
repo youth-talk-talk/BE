@@ -26,6 +26,8 @@ public enum BaseResponseCode {
     SUCCESS_MEMBER_DELETE("S13", "회원 탈퇴를 완료하였습니다.", HttpStatus.OK.value()),
     SUCCESS_MEMBER_BLOCK("S14", "회원 차단에 성공했습니다.", HttpStatus.OK.value()),
     SUCCESS_MEMBER_UNBLOCK("S15", "차단 해제를 성공했습니다.", HttpStatus.OK.value()),
+    SUCCESS_EMPTY_PROFILE("S16", "등록된 프로필 이미지가 없습니다.", HttpStatus.OK.value()),
+
     // Announcement
     SUCCESS_ANNOUNCEMENT_CREATE("S16", "공지사항을 성공적으로 등록했습니다.", HttpStatus.OK.value()),
     SUCCESS_ANNOUNCEMENT_UPDATE("S17", "공지사항을 성공적으로 수정했습니다.", HttpStatus.OK.value()),
@@ -50,7 +52,7 @@ public enum BaseResponseCode {
     BLOCK_DUPLICATED("M09", "이미 차단한 회원입니다.", HttpStatus.BAD_REQUEST.value()),
     NOT_BLOCKED_MEMBER("M10", "차단한 회원이 아닙니다.", HttpStatus.BAD_REQUEST.value()),
     INVALID_MEMBER_FOR_BLOCK("M11", "차단(해제)할 수 없는 회원입니다.", HttpStatus.BAD_REQUEST.value()),
-    EXCEED_PROFILE_SIZE("M12", "프로필 이미지는 최대 1MB까지 업로드할 수 있습니다.", HttpStatus.BAD_REQUEST.value()),
+    EXCEED_PROFILE_SIZE("M12", "프로필 이미지는 최대 5MB까지 업로드할 수 있습니다.", HttpStatus.BAD_REQUEST.value()),
 
     // Policy
     POLICY_NOT_FOUND("PC01","해당 정책을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),
