@@ -70,7 +70,7 @@ class PostServiceTest {
                 .build());
 
         this.policy = policyRepository.save(Policy.builder()
-                        .policyId("policyId")
+                        .policyNum("policyNum")
                         .title("policy1")
                         .category(Category.JOB)
                         .build());
@@ -119,7 +119,7 @@ class PostServiceTest {
     @DisplayName("존재하지 않는 정책일 경우 리뷰 생성 실패")
     void failCreateReviewIfNotExistPolicy(){
         // Given
-        PostCreateReqDto postCreateReqDto = new PostCreateReqDto("review", getContents(CONTENT, IMAGE_URL), "review", "notExistId");
+        PostCreateReqDto postCreateReqDto = new PostCreateReqDto("review", getContents(CONTENT, IMAGE_URL), "review", 9999L);
         // When
         // Then
         assertThatThrownBy(() -> postService.createPost(postCreateReqDto,this.member))
@@ -237,10 +237,11 @@ class PostServiceTest {
                 .title("review1")
                 .writer(member)
                 .contents(getContents(CONTENT, IMAGE_URL))
-                .build());
+                .build()); // policy 연결하지 않음
+        Long notExistPolicyId = 9999L;
         PostUpdateReqDto postUpdateReqDto = PostUpdateReqDto.builder()
                 .title("updatedTitle")
-                .policyId("notExistId")
+                .policyId(notExistPolicyId) // 존재하지 않는 정책 ID
                 .build();
         // When, Then
         assertThatThrownBy(()-> postService.updatePost(review.getId(), postUpdateReqDto, this.member))
@@ -281,10 +282,10 @@ class PostServiceTest {
     @DisplayName("게시글 스크랩 등록 / 취소 성공")
     void successScrapPostAndCancel(){
         postService.scrapPost(post.getId(), member); // 스크랩
-        assertThat(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(), post.getId().toString(), ItemType.POST)).isTrue();
+        assertThat(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(), post.getId(), ItemType.POST)).isTrue();
 
         postService.scrapPost(post.getId(), member); // 스크랩 취소
-        assertThat(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(), post.getId().toString(), ItemType.POST)).isFalse();
+        assertThat(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(), post.getId(), ItemType.POST)).isFalse();
     }
 
     @Test

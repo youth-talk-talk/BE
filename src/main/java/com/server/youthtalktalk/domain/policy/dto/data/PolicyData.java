@@ -97,7 +97,7 @@ public record PolicyData(
         LocalDate[] bizTerm = parsingBizTerm();
 
         return Policy.builder()
-                .policyId(plcyNo)
+                .policyNum(plcyNo)
                 .region(region)
                 .title(plcyNm)
                 .institutionType(InstitutionType.fromKey(plcyNo, pvsnInstGroupCd))

@@ -21,5 +21,5 @@ public class PostCreateTestReqDto {
     private List<Content> contentList;
 
     private String postType; // 자유글 : null, 리뷰 : review
-    private String policyId; // 자유글 : null, 리뷰 : 해당 정책 아이디
+    private Long policyId; // 자유글 : null, 리뷰 : 해당 정책 아이디
 }

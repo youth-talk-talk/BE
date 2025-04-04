@@ -51,7 +51,7 @@ public class CommentController {
      * 정책 댓글 조회 api
      */
     @GetMapping("/policies/{policyId}/comments")
-    public BaseResponse<List<CommentDto>> getPolicyComments(@PathVariable String policyId) {
+    public BaseResponse<List<CommentDto>> getPolicyComments(@PathVariable Long policyId) {
         List<PolicyComment> policyComments = commentService.getPolicyComments(policyId);
         List<CommentDto> commentDtoList = commentService.toCommentDtoList(policyComments, memberService.getCurrentMember());
         return new BaseResponse<>(commentDtoList, SUCCESS);

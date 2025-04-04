@@ -78,7 +78,7 @@ public class PostReadServiceTest {
         when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
         when(reportRepository.existsByPostAndReporter(post,member1)).thenReturn(false);
         when(blockRepository.existsByMemberAndBlockedMember(member1, post.getWriter())).thenReturn(false);
-        when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member1.getId(),post.getId().toString(), ItemType.POST))
+        when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member1.getId(),post.getId(), ItemType.POST))
                 .thenReturn(true);
         // When
         PostRepDto postRepDto = postReadService.getPostById(post.getId(),member1);
@@ -93,7 +93,7 @@ public class PostReadServiceTest {
         verify(postRepository).findById(post.getId());
         verify(reportRepository).existsByPostAndReporter(post,member1);
         verify(blockRepository).existsByMemberAndBlockedMember(member1,post.getWriter());
-        verify(scrapRepository).existsByMemberIdAndItemIdAndItemType(member1.getId(),post.getId().toString(), ItemType.POST);
+        verify(scrapRepository).existsByMemberIdAndItemIdAndItemType(member1.getId(),post.getId(), ItemType.POST);
     }
 
     @Test
@@ -142,9 +142,9 @@ public class PostReadServiceTest {
         // Given
         Member member = createMember("member",1L);
         Post post = createPost("post",1L, member, 10L);
-        when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId().toString(),ItemType.POST))
+        when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId(),ItemType.POST))
                 .thenReturn(true);
-        when(scrapRepository.findAllByItemIdAndItemType(post.getId().toString(), ItemType.POST))
+        when(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST))
                 .thenReturn(new ArrayList<>());
         // When
         PostListDto postListDto = postReadService.toPostDto(post, member);
@@ -157,8 +157,8 @@ public class PostReadServiceTest {
         assertThat(postListDto.getPolicyTitle()).isNull();
         assertThat(postListDto.getComments()).isEqualTo(0);
 
-        verify(scrapRepository).existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId().toString(),ItemType.POST);
-        verify(scrapRepository).findAllByItemIdAndItemType(post.getId().toString(), ItemType.POST);
+        verify(scrapRepository).existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId(),ItemType.POST);
+        verify(scrapRepository).findAllByItemIdAndItemType(post.getId(), ItemType.POST);
     }
 
     @Test
@@ -167,7 +167,7 @@ public class PostReadServiceTest {
         // Given
         Member member = createMember("member",1L);
         Policy policy = Policy.builder()
-                .policyId("policyId")
+                .policyNum("policyNum")
                 .title("policy")
                 .build();
         Review review = Review.builder()
@@ -177,9 +177,9 @@ public class PostReadServiceTest {
                 .title("review")
                 .writer(member)
                 .build();
-        when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),review.getId().toString(),ItemType.POST))
+        when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),review.getId(),ItemType.POST))
                 .thenReturn(true);
-        when(scrapRepository.findAllByItemIdAndItemType(review.getId().toString(), ItemType.POST))
+        when(scrapRepository.findAllByItemIdAndItemType(review.getId(), ItemType.POST))
                 .thenReturn(new ArrayList<>());
         // When
         PostListDto postListDto = postReadService.toPostDto(review, member);
@@ -188,12 +188,11 @@ public class PostReadServiceTest {
         assertThat(postListDto.getTitle()).isEqualTo("review");
         assertThat(postListDto.getWriterId()).isEqualTo(member.getId());
         assertThat(postListDto.isScrap()).isTrue();
-        assertThat(postListDto.getPolicyId()).isEqualTo("policyId");
         assertThat(postListDto.getPolicyTitle()).isEqualTo("policy");
         assertThat(postListDto.getComments()).isEqualTo(0);
 
-        verify(scrapRepository).existsByMemberIdAndItemIdAndItemType(member.getId(),review.getId().toString(),ItemType.POST);
-        verify(scrapRepository).findAllByItemIdAndItemType(review.getId().toString(), ItemType.POST);
+        verify(scrapRepository).existsByMemberIdAndItemIdAndItemType(member.getId(),review.getId(),ItemType.POST);
+        verify(scrapRepository).findAllByItemIdAndItemType(review.getId(), ItemType.POST);
     }
 
     @Test
@@ -240,7 +239,7 @@ public class PostReadServiceTest {
         // Given
         Member member = createMember("member",1L);
         Policy policy = Policy.builder()
-                .policyId("policyId")
+                .policyNum("policyNum")
                 .title("policy")
                 .category(Category.JOB)
                 .build();
@@ -301,7 +300,6 @@ public class PostReadServiceTest {
         // Given
         Member member = createMember("member",1L);
         Policy policy = Policy.builder()
-                .policyId("policyId")
                 .title("policy")
                 .category(Category.JOB)
                 .build();
@@ -366,11 +364,11 @@ public class PostReadServiceTest {
             Scrap scrap = Scrap.builder()
                     .member(member)
                     .itemType(ItemType.POST)
-                    .itemId(post.getId().toString())
+                    .itemId(post.getId())
                     .build();
-            when(scrapRepository.findByMemberAndItemIdAndItemType(member,post.getId().toString(),ItemType.POST))
+            when(scrapRepository.findByMemberAndItemIdAndItemType(member,post.getId(),ItemType.POST))
                     .thenReturn(Optional.of(scrap));
-            when(scrapRepository.findAllByItemIdAndItemType(post.getId().toString(), ItemType.POST))
+            when(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST))
                     .thenReturn(new ArrayList<>(List.of(scrap)));
         }
 
@@ -395,7 +393,7 @@ public class PostReadServiceTest {
         // Given
         Member member = createMember("member",1L);
         Policy policy = Policy.builder()
-                .policyId("policyId")
+                .policyNum("policyNum")
                 .title("policy")
                 .category(Category.JOB)
                 .build();
@@ -412,11 +410,11 @@ public class PostReadServiceTest {
             Scrap scrap = Scrap.builder()
                     .member(member)
                     .itemType(ItemType.POST)
-                    .itemId(post.getId().toString())
+                    .itemId(post.getId())
                     .build();
-            when(scrapRepository.findByMemberAndItemIdAndItemType(member,post.getId().toString(),ItemType.POST))
+            when(scrapRepository.findByMemberAndItemIdAndItemType(member,post.getId(),ItemType.POST))
                     .thenReturn(Optional.of(scrap));
-            when(scrapRepository.findAllByItemIdAndItemType(post.getId().toString(), ItemType.POST))
+            when(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST))
                     .thenReturn(new ArrayList<>(List.of(scrap)));
         }
 

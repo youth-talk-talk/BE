@@ -20,7 +20,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     // 정책 댓글 조회 + 오래된 순 정렬
     @Query("SELECT pc FROM PolicyComment pc WHERE pc.policy.policyId = :policyId ORDER BY pc.createdAt ASC")
-    List<PolicyComment> findPolicyCommentsByPolicyIdOrderByCreatedAtAsc(@Param("policyId") String policyId);
+    List<PolicyComment> findPolicyCommentsByPolicyIdOrderByCreatedAtAsc(@Param("policyId") Long policyId);
 
     // 회원이 작성한 댓글 조회 + 최신 순 정렬
     List<Comment> findCommentsByWriterOrderByCreatedAtDesc(Member writer);

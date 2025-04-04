@@ -1,16 +1,8 @@
 package com.server.youthtalktalk.domain.policy.dto;
 
-import com.server.youthtalktalk.domain.policy.entity.*;
-import com.server.youthtalktalk.domain.policy.entity.condition.Education;
-import com.server.youthtalktalk.domain.policy.entity.condition.Employment;
-import com.server.youthtalktalk.domain.policy.entity.condition.Major;
-import com.server.youthtalktalk.domain.policy.entity.condition.Specialization;
-import com.server.youthtalktalk.domain.policy.entity.region.Region;
+import com.server.youthtalktalk.domain.policy.entity.Policy;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.time.LocalDate;
-import java.util.List;
 
 @Getter
 @Builder
@@ -40,7 +32,6 @@ public class PolicyDetailResponseDto {
     private String formattedApplUrl; // 신청 사이트 (전처리)
     private Boolean isScrap;// 스크랩 여부
     private String departmentImgUrl; // 중앙 부처 이미지
-//    private String policyId; // 정책 아이디
 //    private Region region; // 지역
 //    private Category category; // 카테고리
 //    private LocalDate applyDue; // 신청 마감일

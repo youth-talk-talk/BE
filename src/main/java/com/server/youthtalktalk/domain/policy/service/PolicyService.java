@@ -11,12 +11,12 @@ import java.util.List;
 public interface PolicyService {
 
 
-    List<PolicyListResponseDto> getTop5Policies();
-    List<PolicyListResponseDto> getPoliciesByCategories(List<Category> categories, Pageable pageable);
-    SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto condition, Pageable pageable);
-    List<SearchNameResponseDto> getPoliciesByName(String title, Pageable pageable);
-    PolicyDetailResponseDto getPolicyDetail(String policyId);
-    Scrap scrapPolicy(String policyId, Member member);
+    public List<PolicyListResponseDto> getTop5Policies();
+    public List<PolicyListResponseDto> getPoliciesByCategories(List<Category> categories, Pageable pageable);
+    public SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto condition, Pageable pageable);
+    public List<SearchNameResponseDto> getPoliciesByName(String title, Pageable pageable);
+    public PolicyDetailResponseDto getPolicyDetail(Long policyId);
+    Scrap scrapPolicy(Long policyId, Member member);
     List<PolicyListResponseDto> getScrapPolicies(Pageable pageable,Member member);
 
     List<PolicyListResponseDto> getScrappedPoliciesWithUpcomingDeadline(Member member);

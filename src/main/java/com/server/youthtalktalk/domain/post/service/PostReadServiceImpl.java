@@ -1,23 +1,22 @@
 package com.server.youthtalktalk.domain.post.service;
 
 import com.server.youthtalktalk.domain.ItemType;
+import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.repository.BlockRepository;
+import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.post.dto.PostListRepDto;
+import com.server.youthtalktalk.domain.post.dto.PostRepDto;
+import com.server.youthtalktalk.domain.post.entity.Post;
+import com.server.youthtalktalk.domain.post.entity.Review;
+import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepositoryCustom;
 import com.server.youthtalktalk.domain.report.repository.ReportRepository;
 import com.server.youthtalktalk.domain.scrap.entity.Scrap;
-import com.server.youthtalktalk.domain.member.entity.Member;
-import com.server.youthtalktalk.domain.policy.entity.Category;
-import com.server.youthtalktalk.domain.post.entity.Post;
-import com.server.youthtalktalk.domain.post.entity.Review;
-import com.server.youthtalktalk.domain.post.dto.PostRepDto;
+import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
-import com.server.youthtalktalk.global.response.exception.member.MemberAccessDeniedException;
 import com.server.youthtalktalk.global.response.exception.post.BlockedMemberPostAccessDeniedException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
-import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
-import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
 import com.server.youthtalktalk.global.response.exception.post.ReportedPostAccessDeniedException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -26,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -59,7 +57,7 @@ public class PostReadServiceImpl implements PostReadService {
 
         postRepository.save(post.toBuilder().view(post.getView()+1).build());
         log.info("게시글 조회 성공, postId = {}", postId);
-        return post.toPostRepDto(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId().toString(),ItemType.POST));
+        return post.toPostRepDto(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId(),ItemType.POST));
     }
 
     /** 게시글 전체 조회 */
@@ -144,13 +142,13 @@ public class PostReadServiceImpl implements PostReadService {
                 .policyId(post instanceof Review ? ((Review) post).getPolicy().getPolicyId() : null)
                 .policyTitle(post instanceof Review ? ((Review)post).getPolicy().getTitle() : null )
                 .comments(post.getPostComments().size())
-                .scrap(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId().toString(),ItemType.POST))
-                .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId().toString(), ItemType.POST).size())
+                .scrap(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId(),ItemType.POST))
+                .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST).size())
                 .build();
     }
 
     public ScrapPostListDto toScrapPostDto(Post post, Member member) {
-        Scrap scrap = scrapRepository.findByMemberAndItemIdAndItemType(member,post.getId().toString(),ItemType.POST)
+        Scrap scrap = scrapRepository.findByMemberAndItemIdAndItemType(member,post.getId(),ItemType.POST)
                 .orElseThrow(EntityNotFoundException::new);
         return ScrapPostListDto.builder()
                 .postId(post.getId())
@@ -160,7 +158,7 @@ public class PostReadServiceImpl implements PostReadService {
                 .policyTitle(post instanceof Review ? ((Review)post).getPolicy().getTitle() : null )
                 .comments(post.getPostComments().size())
                 .scrap(true)
-                .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId().toString(), ItemType.POST).size())
+                .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST).size())
                 .scrapId(scrap.getId())
                 .build();
     }

@@ -1,14 +1,15 @@
 package com.server.youthtalktalk.domain.policy.entity;
 
-import static com.server.youthtalktalk.domain.policy.entity.Category.*;
-
-import java.util.ArrayList;
-import java.util.List;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.policy.FailPolicyDataException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.server.youthtalktalk.domain.policy.entity.Category.*;
 
 @Getter
 @RequiredArgsConstructor
@@ -39,13 +40,13 @@ public enum SubCategory {
     private final String name;
     private final Category category;
 
-    public static SubCategory fromKey(String policyId, String key) {
+    public static SubCategory fromKey(String policyNum, String key) {
         for (SubCategory subCategory : SubCategory.values()) {
             if (subCategory.getKey().equals(key)) {
                 return subCategory;
             }
         }
-        log.error("[Policy Data] Not Existed SubCategory = {} policyId = {}", key, policyId);
+        log.error("[Policy Data] Not Existed SubCategory = {} policyNum = {}", key, policyNum);
         throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_SUB_CATEGORY);
     }
 

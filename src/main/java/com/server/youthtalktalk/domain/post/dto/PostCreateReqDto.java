@@ -16,6 +16,6 @@ public record PostCreateReqDto (
     @Size(min = 1, message = "Content list must contain at least one item")
     List<Content> contentList,
     String postType, // 자유글 : null, 리뷰 : review
-    String policyId  // 자유글 : null, 리뷰 : 해당 정책 아이디
+    Long policyId  // 자유글 : null, 리뷰 : 해당 정책 아이디
 ){
 }

@@ -36,7 +36,7 @@ public enum Education {
         throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_EDUCATION);
     }
 
-    public static List<Education> findEducationList(String policyId, String data){
+    public static List<Education> findEducationList(String policyNum, String data){
         String[] educations = data.split(",");
         Set<String> set = new HashSet<>();
         Collections.addAll(set, educations);
@@ -49,7 +49,7 @@ public enum Education {
         }
 
         if(set.size() != educationList.size()) {
-            log.error("[Policy Data] Not Existed Education = {} policyId = {}", data, policyId);
+            log.error("[Policy Data] Not Existed Education = {} policyNum = {}", data, policyNum);
             throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_EDUCATION);
         }
         return educationList;

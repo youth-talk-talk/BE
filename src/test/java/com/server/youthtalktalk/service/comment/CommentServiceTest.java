@@ -61,7 +61,7 @@ class CommentServiceTest {
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
         memberRepository.save(member);
 
-        Policy policy = Policy.builder().policyId("newPolicy").build();
+        Policy policy = Policy.builder().policyNum("policyNum").build();
         policyRepository.save(policy);
 
         String content = "policyComment_content";
@@ -78,7 +78,7 @@ class CommentServiceTest {
         assertThat(policyComment.getContent()).isEqualTo(content);
         assertThat(policyComment.getPolicy().getPolicyId()).isEqualTo(policy.getPolicyId());
 
-        Policy reloadedPolicy = policyRepository.findById(policy.getPolicyId()).orElseThrow();
+        Policy reloadedPolicy = policyRepository.findByPolicyId(policy.getPolicyId()).orElseThrow();
         assertThat(reloadedPolicy.getPolicyComments().size()).isEqualTo(1);
         assertThat(member.getComments().size()).isEqualTo(1);
     }
@@ -119,7 +119,7 @@ class CommentServiceTest {
 
         // when, then
         assertThrows(PolicyNotFoundException.class,
-                () -> commentService.createPolicyComment("notPolicyId", "content", member));
+                () -> commentService.createPolicyComment(123456L, "content", member));
     }
 
     @Test
@@ -139,7 +139,7 @@ class CommentServiceTest {
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
         memberRepository.save(member);
 
-        Policy policy = Policy.builder().policyId("newPolicy").build();
+        Policy policy = Policy.builder().policyNum("policyNum").build();
         policyRepository.save(policy);
 
         PolicyComment policyComment1 = PolicyComment.builder().policy(policy).content("content1").writer(member).build();
@@ -185,7 +185,7 @@ class CommentServiceTest {
     void 정책_댓글_수정_성공() {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
-        Policy policy = Policy.builder().policyId("policy1").build();
+        Policy policy = Policy.builder().policyNum("policyNum").build();
         PolicyComment comment = PolicyComment.builder().content("content").build();
         comment.setWriter(member);
         comment.setPolicy(policy);
