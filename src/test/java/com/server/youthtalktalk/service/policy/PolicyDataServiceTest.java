@@ -103,7 +103,7 @@ public class PolicyDataServiceTest {
         PolicyData policyData2 = PolicyData.builder().build(); // 잘못된 데이터
         List<PolicyData> policyDataList = Arrays.asList(policyData, policyData2);
         // When
-        List<Policy> policyList = policyDataService.getPolicyEntityList(policyDataList);
+        List<Policy> policyList = policyDataService.getPolicyEntityList(policyDataList).block();
         // Then
         assertThat(policyList).hasSize(1);
         assertThat(policyList.get(0).getPolicyNum()).isEqualTo(policyData.plcyNo());

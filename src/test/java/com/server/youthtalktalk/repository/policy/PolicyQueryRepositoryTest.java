@@ -1,9 +1,9 @@
 package com.server.youthtalktalk.repository.policy;
 
 import com.server.youthtalktalk.domain.policy.dto.SearchConditionDto;
+import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
-import com.server.youthtalktalk.domain.policy.entity.SubCategory;
 import com.server.youthtalktalk.domain.policy.entity.condition.*;
 import com.server.youthtalktalk.domain.policy.entity.region.PolicySubRegion;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
@@ -19,14 +19,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
+import static com.server.youthtalktalk.domain.policy.entity.Category.JOB;
+import static com.server.youthtalktalk.domain.policy.entity.Category.LIFE;
 import static com.server.youthtalktalk.domain.policy.entity.InstitutionType.CENTER;
-import static com.server.youthtalktalk.domain.policy.entity.SubCategory.*;
 import static com.server.youthtalktalk.domain.policy.entity.condition.Earn.*;
 import static com.server.youthtalktalk.domain.policy.entity.condition.Education.UNIVERSITY_GRADUATED;
 import static com.server.youthtalktalk.domain.policy.entity.condition.Education.UNIVERSITY_GRADUATED_EXPECTED;
@@ -105,21 +102,17 @@ public class PolicyQueryRepositoryTest {
     @Test
     @DisplayName("카테고리로 검색")
     void testSearchByCategory() {
-        List<SubCategory> subCategories = List.of(JOB_CULTURE, JOB_SAFETY, JOB_EXPANSION, JOB_STARTUP, DWELLING_SUPPLY);
-        Set<SubCategory> subCategorySet = new HashSet<>(subCategories);
-        SearchConditionDto condition = SearchConditionDto.builder().subCategories(subCategories).build();
+        List<Category> categories = List.of(JOB, LIFE);
+        SearchConditionDto condition = SearchConditionDto.builder().categories(categories).build();
         List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE)).getContent();
 
         long expectedCount = policyRepository.findAll().stream()
-                .filter(policy -> policy.getSubCategory().equals(JOB_CULTURE) ||
-                        policy.getSubCategory().equals(JOB_SAFETY) ||
-                        policy.getSubCategory().equals(JOB_EXPANSION) ||
-                        policy.getSubCategory().equals(JOB_STARTUP) ||
-                        policy.getSubCategory().equals(DWELLING_SUPPLY))
+                .filter(policy -> policy.getCategory().equals(JOB) ||
+                        policy.getCategory().equals(LIFE))
                 .count();
 
         assertThat(result.size()).isEqualTo(expectedCount);
-        assertThat(result).allMatch(data -> subCategorySet.contains(data.getSubCategory()));
+        assertThat(result).allMatch(data -> categories.contains(data.getCategory()));
     }
 
     @Test
@@ -271,7 +264,7 @@ public class PolicyQueryRepositoryTest {
         List<Policy> policies = new ArrayList<>();
 
         InstitutionType[] institutionTypes = InstitutionType.values();
-        SubCategory[] subCategories = SubCategory.values();
+        Category[] categories = Category.values();
         Region[] regions = Region.values();
         Marriage[] marriages = Marriage.values();
         Education[] educations = Education.values();
@@ -288,7 +281,7 @@ public class PolicyQueryRepositoryTest {
                     .title("청년 정책 " + i)
                     .introduction("소개 내용 " + i)
                     .region(regions[i % regions.length])
-                    .subCategory(subCategories[i % subCategories.length])
+                    .category(categories[i % categories.length])
                     .region(regions[i % regions.length])
                     .marriage(marriages[i % marriages.length])
                     .minAge(18 + (i % 6)) // 18~23
