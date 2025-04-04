@@ -49,7 +49,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
     private static final String DEFAULT_DEPARTMENT = "0";
     private static final int PAGE_SIZE = 100;
     private static final int LIMIT = 1000;
-
+    static int i = 0;
     @Override
     @Transactional
     @Scheduled(cron = "${youthpolicy.cron}")
@@ -75,7 +75,6 @@ public class PolicyDataServiceImpl implements PolicyDataService {
     @Override
     public Mono<List<Policy>> getPolicyEntityList(List<PolicyData> policyDataList) {
         Department defaultDepartment = departmentRepository.findByCode(DEFAULT_DEPARTMENT).get();
-
         // 정책 데이터를 비동기적으로 처리
         return Flux.fromIterable(policyDataList)
                 .delayElements(Duration.ofMillis(50))
@@ -83,12 +82,15 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                 .runOn(Schedulers.boundedElastic()) // I/O 작업 최적화
                 .flatMap(policyData -> Mono.fromCallable(() -> {
                 try {
+                        log.info("index : {}", i);
+                        i++;
                         String departmentCode = policyData.sprvsnInstCd();
+                        String departmentName = policyData.sprvsnInstCdNm();
                         // 중앙 부처 코드 매핑
                         Department department = departmentRepository.findByCode(departmentCode)
                                 .orElse(defaultDepartment);
                         // 임시로 주석 처리(처리 속도 지연 문제)
-//                                .orElseGet(() -> searchDepartmentCode(departmentCode, defaultDepartment));
+//                                .orElseGet(() -> searchDepartmentCode(departmentCode, departmentName, defaultDepartment));
                         Policy policy = policyData.toPolicy(department);
 
                         // 지역이 설정되지 않은 경우
@@ -162,29 +164,36 @@ public class PolicyDataServiceImpl implements PolicyDataService {
     }
 
     @Override
-    public Department searchDepartmentCode(String departmentCode, Department defaultDepartment) {
-        // 해당 코드의 상위 기관 코드 탐색
-        try {
-            String response = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/1741000/StanOrgCd2/getStanOrgCdList2")
-                            .queryParam("ServiceKey", departmentSecretKey)
-                            .queryParam("type", "xml")
-                            .queryParam("pageNo", 1)
-                            .queryParam("numOfRows", 1)
-                            .queryParam("org_cd", departmentCode)
-                            .build())
-                    .retrieve().bodyToMono(String.class)
-                    .block();
+    public Department searchDepartmentCode(String departmentCode, String departmentName, Department defaultDepartment) {
+        String name[] = departmentName.split(",");
+        Optional<Department> department = departmentRepository.findByName(name[0]);
+        if(department.isPresent()){
+            return department.get();
+        }
+        else {
+            // 해당 코드의 상위 기관 코드 탐색
+            try {
+                String response = webClient.get()
+                        .uri(uriBuilder -> uriBuilder
+                                .path("/1741000/StanOrgCd2/getStanOrgCdList2")
+                                .queryParam("ServiceKey", departmentSecretKey)
+                                .queryParam("type", "xml")
+                                .queryParam("pageNo", 1)
+                                .queryParam("numOfRows", 1)
+                                .queryParam("org_cd", departmentCode)
+                                .build())
+                        .retrieve().bodyToMono(String.class)
+                        .block();
 
-            XmlMapper xmlMapper = new XmlMapper();
-            DepartmentResponseDto data = xmlMapper.readValue(response, DepartmentResponseDto.class);
-            //"row" 항목만 추출
-            String representativeCode = data.row().get(0).repCd();
-            return departmentRepository.findByCode(representativeCode).orElse(defaultDepartment);
+                XmlMapper xmlMapper = new XmlMapper();
+                DepartmentResponseDto data = xmlMapper.readValue(response, DepartmentResponseDto.class);
+                //"row" 항목만 추출
+                String representativeCode = data.row().get(0).repCd();
+                return departmentRepository.findByCode(representativeCode).orElse(defaultDepartment);
 
-        }catch (Exception e){
-            return defaultDepartment;
+            } catch (Exception e) {
+                return defaultDepartment;
+            }
         }
     }
 

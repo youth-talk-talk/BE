@@ -12,7 +12,7 @@ import java.util.List;
 public interface PolicyDataService {
     void saveData();
     List<PolicyData> fetchPolicyData();
-    Department searchDepartmentCode(String departmentCode, Department defaultDepartment);
+    Department searchDepartmentCode(String departmentCode, String departmentName, Department defaultDepartment);
     List<PolicySubRegion> setPolicySubRegions(Policy policy);
     Region searchRegionByZipCd(Policy policy);
     Mono<List<Policy>> getPolicyEntityList(List<PolicyData> policyDataList);
