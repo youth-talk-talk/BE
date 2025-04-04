@@ -194,7 +194,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .selectFrom(post)
                 .leftJoin(block).on(blockJoinWithPost(member))
                 .leftJoin(report).on(reportJoinWithPost(member))
-                .join(scrap).on(post.id.stringValue().eq(scrap.itemId))
+                .join(scrap).on(post.id.eq(scrap.itemId))
                 .where(report.id.isNull().and(block.id.isNull()).and(scrap.member.eq(member)))
                 .orderBy(scrap.id.desc())
                 .offset(pageable.getOffset())
@@ -206,7 +206,7 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .from(post)
                 .leftJoin(block).on(blockJoinWithPost(member))
                 .leftJoin(report).on(reportJoinWithPost(member))
-                .join(scrap).on(post.id.stringValue().eq(scrap.itemId))
+                .join(scrap).on(post.id.eq(scrap.itemId))
                 .where(report.id.isNull().and(block.id.isNull()).and(scrap.member.eq(member)))
                 .fetchOne();
 

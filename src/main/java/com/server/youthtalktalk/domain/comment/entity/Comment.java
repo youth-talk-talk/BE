@@ -52,5 +52,5 @@ public abstract class Comment extends BaseTimeEntity {
     }
 
     // 연관엔티티(post/policy) id 조회
-    public abstract Object getRelatedEntityId();
+    public abstract Long getRelatedEntityId();
 }

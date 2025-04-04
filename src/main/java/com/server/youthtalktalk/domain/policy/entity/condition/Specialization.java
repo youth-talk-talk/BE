@@ -26,17 +26,17 @@ public enum Specialization {
     private final String key;
     private final String name;
 
-    public static Specialization fromKey(String policyId, String key) {
+    public static Specialization fromKey(String policyNum, String key) {
         for (Specialization specialization : Specialization.values()) {
             if (specialization.getKey().equals(key)) {
                 return specialization;
             }
         }
-        log.error("[Policy Data] Not Existed Specialization = {}, policyId = {}", key, policyId);
+        log.error("[Policy Data] Not Existed Specialization = {}, policyNum = {}", key, policyNum);
         throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_SPECIALIZATION);
     }
 
-    public static List<Specialization> findSpecializationList(String policyId, String data){
+    public static List<Specialization> findSpecializationList(String policyNum, String data){
         String[] specializations = data.split(",");
         Set<String> set = new HashSet<>();
         Collections.addAll(set, specializations);
@@ -49,7 +49,7 @@ public enum Specialization {
         }
 
         if(set.size() != specializationList.size()) {
-            log.error("[Policy Data] Not Existed Specialization = {}, policyId = {}", data, policyId);
+            log.error("[Policy Data] Not Existed Specialization = {}, policyNum = {}", data, policyNum);
             throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_SPECIALIZATION);
         }
         return specializationList;

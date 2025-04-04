@@ -15,13 +15,13 @@ public enum RepeatCode {
     private final String key;
     private final String name;
 
-    public static RepeatCode fromKey(String policyId, String key){
+    public static RepeatCode fromKey(String policyNum, String key){
         return switch (key) {
             case "0057001" -> RepeatCode.PERIOD;
             case "0057002" -> RepeatCode.ALWAYS;
             case "0057003" -> RepeatCode.UNDEFINED;
             default -> {
-                log.error("[Policy Data] Not Existed RepeatCode = {}, policyId = {}", key, policyId);
+                log.error("[Policy Data] Not Existed RepeatCode = {}, policyId = {}", key, policyNum);
                 yield RepeatCode.ALWAYS; // 값이 없는 경우 상시 처리
             }
         };

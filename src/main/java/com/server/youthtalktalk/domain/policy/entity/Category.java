@@ -19,7 +19,7 @@ public enum Category {
     private final String key;
     private final String name;
 
-    public static Category fromKey(String policyId, String key){
+    public static Category fromKey(String policyNum, String key){
         return switch(key){
             case "001" -> Category.JOB;
             case "002" -> Category.DWELLING;
@@ -27,7 +27,7 @@ public enum Category {
             case "004" -> Category.LIFE;
             case "005" -> Category.PARTICIPATION;
             default -> {
-                log.error("[Policy Data] Not Existed Category = {}, policyId = {}", key, policyId);
+                log.error("[Policy Data] Not Existed Category = {}, policyNum = {}", key, policyNum);
                 throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_CATEGORY);
             }
         };

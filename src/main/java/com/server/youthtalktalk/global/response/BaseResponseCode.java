@@ -83,6 +83,7 @@ public enum BaseResponseCode {
     COMMENT_NOT_FOUND("C01", "해당 댓글을 찾을 수 없습니다.", HttpStatus.BAD_REQUEST.value()),
     COMMENT_ALREADY_LIKED("C02", "이미 좋아요한 댓글입니다.", HttpStatus.BAD_REQUEST.value()),
     COMMENT_LIKE_NOT_FOUND("C03", "좋아요 정보가 없습니다.", HttpStatus.BAD_REQUEST.value()),
+    COMMENT_TYPE_UNKNOWN("C04", "알 수 없는 댓글 타입입니다.", HttpStatus.INTERNAL_SERVER_ERROR.value()),
 
     // Token
     INVALID_ACCESS_TOKEN("T01", "유효하지 않은 엑세스 토큰입니다.", HttpStatus.UNAUTHORIZED.value()),

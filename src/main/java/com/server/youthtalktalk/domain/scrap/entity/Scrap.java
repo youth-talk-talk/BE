@@ -21,14 +21,14 @@ public class Scrap {
     @Enumerated(EnumType.STRING)
     private ItemType itemType;
 
-    private String itemId;
+    private Long itemId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
     @Builder(toBuilder = true)
-    public Scrap(ItemType itemType, String itemId, Member member) {
+    public Scrap(ItemType itemType, Long itemId, Member member) {
         this.itemType = itemType;
         this.itemId = itemId;
         this.member = member;

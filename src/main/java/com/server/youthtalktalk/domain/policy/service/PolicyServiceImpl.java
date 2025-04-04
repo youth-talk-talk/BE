@@ -1,45 +1,23 @@
 package com.server.youthtalktalk.domain.policy.service;
 
-import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_AGE;
-import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_CATEGORY;
-import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_EARN;
-import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_EDUCATION;
-import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_EMPLOYMENT;
-import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_INSTITUTION_TYPE;
-import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_KEYWORD;
-import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_MAJOR;
-import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_MARRIAGE;
-import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_REGION;
-import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_SPECIALIZATION;
-
 import com.server.youthtalktalk.domain.ItemType;
-import com.server.youthtalktalk.domain.policy.dto.SearchConditionDto;
+import com.server.youthtalktalk.domain.member.entity.Member;
+import com.server.youthtalktalk.domain.member.service.MemberService;
+import com.server.youthtalktalk.domain.policy.dto.*;
+import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
+import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.entity.SubCategory;
-import com.server.youthtalktalk.domain.policy.entity.condition.Education;
-import com.server.youthtalktalk.domain.policy.entity.condition.Employment;
-import com.server.youthtalktalk.domain.policy.entity.condition.Major;
-import com.server.youthtalktalk.domain.policy.entity.condition.Marriage;
-import com.server.youthtalktalk.domain.policy.entity.condition.Specialization;
+import com.server.youthtalktalk.domain.policy.entity.condition.*;
+import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.entity.region.SubRegion;
+import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.policy.repository.region.SubRegionRepository;
 import com.server.youthtalktalk.domain.scrap.entity.Scrap;
-import com.server.youthtalktalk.domain.member.entity.Member;
-import com.server.youthtalktalk.domain.policy.entity.Category;
-import com.server.youthtalktalk.domain.policy.entity.Policy;
-import com.server.youthtalktalk.domain.policy.entity.region.Region;
-import com.server.youthtalktalk.domain.policy.dto.*;
-import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
-import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
-import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
-import com.server.youthtalktalk.domain.member.service.MemberService;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -48,9 +26,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
 @Service
 @Slf4j
@@ -132,7 +111,7 @@ public class PolicyServiceImpl implements PolicyService {
      * 특정 정책 세부 조회
      */
     @Override
-    public PolicyDetailResponseDto getPolicyDetail(String policyId){
+    public PolicyDetailResponseDto getPolicyDetail(Long policyId){
         Long memberId;
         try {
             memberId = memberService.getCurrentMember().getId();
@@ -140,7 +119,7 @@ public class PolicyServiceImpl implements PolicyService {
             throw new MemberNotFoundException();
         }
 
-        Policy policy = policyRepository.findById(policyId)
+        Policy policy = policyRepository.findByPolicyId(policyId)
                 .orElseThrow(PolicyNotFoundException::new);
 
         policyRepository.save(policy.toBuilder().view(policy.getView()+1).build());
@@ -379,7 +358,7 @@ public class PolicyServiceImpl implements PolicyService {
         List<SearchNameResponseDto> result = policies.stream()
                 .map(policy -> {
                     String policyTitle = policy.getTitle();
-                    String policyId = policy.getPolicyId();
+                    Long policyId = policy.getPolicyId();
                     return SearchNameResponseDto.builder()
                             .policyId(policyId)
                             .title(policyTitle)
@@ -393,8 +372,8 @@ public class PolicyServiceImpl implements PolicyService {
 
 
     @Override
-    public Scrap scrapPolicy(String policyId, Member member) {
-        policyRepository.findById(policyId).orElseThrow(PolicyNotFoundException::new); // 정책 존재 유무
+    public Scrap scrapPolicy(Long policyId, Member member) {
+        policyRepository.findByPolicyId(policyId).orElseThrow(PolicyNotFoundException::new); // 정책 존재 유무
         Scrap scrap = scrapRepository.findByMemberAndItemIdAndItemType(member,policyId, ItemType.POLICY).orElse(null);
         if(scrap == null){
             return scrapRepository.save(Scrap.builder() // 스크랩할 경우

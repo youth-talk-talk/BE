@@ -10,7 +10,7 @@ import lombok.Getter;
 @Builder
 public class PolicyListResponseDto {
 
-    private String policyId; // 정책 아이디
+    private Long policyId; // 정책 아이디
     private Category category; // 카테고리
     private String title; // 정책명
     private String deadlineStatus; // 마감 상태

@@ -10,9 +10,9 @@ import com.server.youthtalktalk.domain.comment.dto.MyCommentDto;
 import java.util.List;
 
 public interface CommentService {
-    PolicyComment createPolicyComment(String policyId, String content, Member member);
+    PolicyComment createPolicyComment(Long policyId, String content, Member member);
     PostComment createPostComment(Long postId, String content, Member member);
-    List<PolicyComment> getPolicyComments(String policyId);
+    List<PolicyComment> getPolicyComments(Long policyId);
     List<PostComment> getPostComments(Long postId);
     List<Comment> getMyComments(Member member);
     List<Comment> getLikedComments(Member member);

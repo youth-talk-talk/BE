@@ -36,7 +36,7 @@ public enum Employment {
         throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_EMPLOYMENT);
     }
 
-    public static List<Employment> findEmploymentList(String policyId, String data){
+    public static List<Employment> findEmploymentList(String policyNum, String data){
         String[] employments = data.split(",");
         Set<String> set = new HashSet<>();
         Collections.addAll(set, employments);
@@ -49,7 +49,7 @@ public enum Employment {
         }
 
         if(set.size() != employmentList.size()) {
-            log.error("[Policy Data] Not Existed Employment = {} policyId = {}", data, policyId);
+            log.error("[Policy Data] Not Existed Employment = {} policyNum = {}", data, policyNum);
             throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_EMPLOYMENT);
         }
         return employmentList;

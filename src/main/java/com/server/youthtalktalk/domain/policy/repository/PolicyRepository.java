@@ -27,20 +27,20 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
     /**
      * 카테고리별 정책 조회 (최신순) - 카테고리 중복 선택 가능
      */
-    @Query("SELECT p FROM Policy p WHERE (p.region = :region OR p.region = 'ALL') AND (p.category IN :categories) ORDER BY p.policyId DESC")
+    @Query("SELECT p FROM Policy p WHERE (p.region = :region OR p.region = 'ALL') AND (p.category IN :categories) ORDER BY p.policyNum DESC")
     Page<Policy> findByRegionAndCategory(@Param("region") Region region, @Param("categories") List<Category> categories, Pageable pageable);
 
     /**
      * 이름으로 정책 조회 (최신순)
      */
-    @Query("SELECT p FROM Policy p WHERE (p.region = :region OR p.region = 'ALL') AND  (REPLACE(p.title, ' ', '') LIKE CONCAT('%', :title, '%')) ORDER BY p.policyId DESC")
+    @Query("SELECT p FROM Policy p WHERE (p.region = :region OR p.region = 'ALL') AND  (REPLACE(p.title, ' ', '') LIKE CONCAT('%', :title, '%')) ORDER BY p.policyNum DESC")
     Page<Policy> findByRegionAndTitle(@Param("region") Region region, @Param("title") String title, Pageable pageable);
 
 
     /**
      * 특정 정책 조회
      */
-    Optional<Policy> findById(String policyId);
+    Optional<Policy> findByPolicyId(Long policyId);
 
     /**
      * 스크랩한 정책 조회(최신순)

@@ -15,8 +15,8 @@ public interface PolicyService {
     public List<PolicyListResponseDto> getPoliciesByCategories(List<Category> categories, Pageable pageable);
     public SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto condition, Pageable pageable);
     public List<SearchNameResponseDto> getPoliciesByName(String title, Pageable pageable);
-    public PolicyDetailResponseDto getPolicyDetail(String policyId);
-    Scrap scrapPolicy(String policyId, Member member);
+    public PolicyDetailResponseDto getPolicyDetail(Long policyId);
+    Scrap scrapPolicy(Long policyId, Member member);
     List<PolicyListResponseDto> getScrapPolicies(Pageable pageable,Member member);
 
     List<PolicyListResponseDto> getScrappedPoliciesWithUpcomingDeadline(Member member);

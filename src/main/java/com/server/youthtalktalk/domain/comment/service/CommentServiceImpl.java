@@ -1,10 +1,14 @@
 package com.server.youthtalktalk.domain.comment.service;
 
-import com.server.youthtalktalk.domain.likes.entity.Likes;
+import com.server.youthtalktalk.domain.comment.dto.CommentDto;
+import com.server.youthtalktalk.domain.comment.dto.MyCommentDto;
+import com.server.youthtalktalk.domain.comment.dto.PolicyCommentDto;
+import com.server.youthtalktalk.domain.comment.dto.PostCommentDto;
 import com.server.youthtalktalk.domain.comment.entity.Comment;
 import com.server.youthtalktalk.domain.comment.entity.PolicyComment;
 import com.server.youthtalktalk.domain.comment.entity.PostComment;
 import com.server.youthtalktalk.domain.comment.repository.CommentRepository;
+import com.server.youthtalktalk.domain.likes.entity.Likes;
 import com.server.youthtalktalk.domain.likes.repository.LikeRepository;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
@@ -12,10 +16,8 @@ import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
-import com.server.youthtalktalk.domain.comment.dto.CommentDto;
-import com.server.youthtalktalk.domain.comment.dto.MyCommentDto;
-import com.server.youthtalktalk.domain.comment.dto.PolicyCommentDto;
-import com.server.youthtalktalk.domain.comment.dto.PostCommentDto;
+import com.server.youthtalktalk.global.response.BaseResponseCode;
+import com.server.youthtalktalk.global.response.exception.BusinessException;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.comment.AlreadyLikedException;
 import com.server.youthtalktalk.global.response.exception.comment.CommentLikeNotFoundException;
@@ -48,8 +50,8 @@ public class CommentServiceImpl implements CommentService {
      * 정책 댓글 생성
      */
     @Override
-    public PolicyComment createPolicyComment(String policyId, String content, Member member) {
-        Policy policy = policyRepository.findById(policyId).orElseThrow(PolicyNotFoundException::new);
+    public PolicyComment createPolicyComment(Long policyId, String content, Member member) {
+        Policy policy = policyRepository.findByPolicyId(policyId).orElseThrow(PolicyNotFoundException::new);
         PolicyComment policyComment = PolicyComment.builder().content(content).build();
         policyComment.setPolicy(policy);
         policyComment.setWriter(member);
@@ -74,11 +76,11 @@ public class CommentServiceImpl implements CommentService {
      * 정책 댓글 조회
      */
     @Override
-    public List<PolicyComment> getPolicyComments(String policyId) {
-        if (policyId == null || policyId.trim().isEmpty()) {
+    public List<PolicyComment> getPolicyComments(Long policyId) {
+        if (policyId == null) {
             throw new InvalidValueException(INVALID_INPUT_VALUE);
         }
-        policyRepository.findById(policyId).orElseThrow(PolicyNotFoundException::new);
+        policyRepository.findByPolicyId(policyId).orElseThrow(PolicyNotFoundException::new);
         return commentRepository.findPolicyCommentsByPolicyIdOrderByCreatedAtAsc(policyId);
     }
 
@@ -133,11 +135,14 @@ public class CommentServiceImpl implements CommentService {
         return comments.stream()
                 .map(comment -> {
                     String writerNickname = (nickname != null) ? nickname : comment.getWriter().getNickname();
-                    Object relatedEntityId = comment.getRelatedEntityId();
-                    if (relatedEntityId instanceof String) {
-                        return new PolicyCommentDto(comment.getId(), writerNickname, comment.getContent(), (String) relatedEntityId);
+                    Long relatedEntityId = comment.getRelatedEntityId();
+
+                    if (comment instanceof PolicyComment) {
+                        return new PolicyCommentDto(comment.getId(), writerNickname, comment.getContent(), relatedEntityId);
+                    } else if (comment instanceof PostComment) {
+                        return new PostCommentDto(comment.getId(), writerNickname, comment.getContent(), relatedEntityId);
                     } else {
-                        return new PostCommentDto(comment.getId(), writerNickname, comment.getContent(), (Long) relatedEntityId);
+                        throw new BusinessException(BaseResponseCode.COMMENT_TYPE_UNKNOWN);
                     }
                 })
                 .collect(Collectors.toList());
