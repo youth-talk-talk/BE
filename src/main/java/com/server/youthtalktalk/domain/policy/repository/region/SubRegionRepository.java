@@ -12,4 +12,6 @@ import java.util.Optional;
 public interface SubRegionRepository extends JpaRepository<SubRegion, Long> {
     List<SubRegion> findAllByRegionAndCodeIn(Region region, List<String> codes);
     Optional<SubRegion> findByCode(String code);
+    List<SubRegion> findAllByRegion(Region region);
+    Optional<SubRegion> findByName(String name);
 }

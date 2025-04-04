@@ -10,13 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public enum Category {
-    JOB("일자리"),
-    DWELLING("주거"),
-    EDUCATION("교육"),
-    LIFE("생활지원"),
-    PARTICIPATION("참여");
+    JOB("001", "일자리"),
+    DWELLING("002", "주거"),
+    EDUCATION("003", "교육"),
+    LIFE("004", "생활지원"),
+    PARTICIPATION("005", "참여");
 
     private final String key;
+    private final String name;
 
     public static Category fromKey(String policyId, String key){
         return switch(key){

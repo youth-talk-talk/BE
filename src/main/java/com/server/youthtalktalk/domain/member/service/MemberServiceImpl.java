@@ -1,5 +1,7 @@
 package com.server.youthtalktalk.domain.member.service;
 
+import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_REGION;
+
 import com.server.youthtalktalk.domain.comment.entity.Comment;
 import com.server.youthtalktalk.domain.member.entity.Block;
 import com.server.youthtalktalk.domain.member.entity.Member;
@@ -13,6 +15,7 @@ import com.server.youthtalktalk.domain.member.dto.SignUpRequestDto;
 import com.server.youthtalktalk.domain.member.dto.apple.AppleDto;
 import com.server.youthtalktalk.domain.member.dto.apple.AppleTokenResponseDto;
 import com.server.youthtalktalk.global.jwt.JwtService;
+import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.member.*;
 import com.server.youthtalktalk.global.util.AppleAuthUtil;
 import com.server.youthtalktalk.global.util.HashUtil;
@@ -55,7 +58,8 @@ public class MemberServiceImpl implements MemberService {
         String socialId = signUpRequestDto.getSocialId(); // 평문의 소셜 id
         String nickname = signUpRequestDto.getNickname();
         SocialType socialType = SocialType.fromString(signUpRequestDto.getSocialType());
-        Region region = Region.fromRegionStr(signUpRequestDto.getRegion());
+        Region region = Region.fromName(signUpRequestDto.getRegion());
+        if (region == null) throw new InvalidValueException(INVALID_REGION);
 
         String username = hashUtil.hash(socialId);
         checkIfDuplicatedMember(username); // 중복 회원 검증
@@ -106,8 +110,14 @@ public class MemberServiceImpl implements MemberService {
         String updateRegion = memberUpdateDto.region();
         if (updateNickname != null)
             member.updateNickname(updateNickname);
-        if (updateRegion != null)
-            member.updateRegion(Region.fromRegionStr(updateRegion));
+        if (updateRegion != null){
+            Region region = Region.fromName(memberUpdateDto.region());
+            if (region != null) {
+                member.updateRegion(region);
+            } else {
+                throw new InvalidValueException(INVALID_REGION);
+            }
+        }
     }
 
     /**
