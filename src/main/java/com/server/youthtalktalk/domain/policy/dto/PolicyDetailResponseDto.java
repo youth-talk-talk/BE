@@ -39,6 +39,7 @@ public class PolicyDetailResponseDto {
     private String refUrl2; // 참고 사이트 2
     private String formattedApplUrl; // 신청 사이트 (전처리)
     private Boolean isScrap;// 스크랩 여부
+    private String departmentImgUrl; // 중앙 부처 이미지
 //    private String policyId; // 정책 아이디
 //    private Region region; // 지역
 //    private Category category; // 카테고리
@@ -71,6 +72,7 @@ public class PolicyDetailResponseDto {
                 .refUrl2(policy.getRefUrl2()) // 참고 사이트 2
                 .formattedApplUrl(null) // 신청 사이트 (전처리)
                 .isScrap(isScrap)// 스크랩 여부
+                .departmentImgUrl(policy.getDepartment().getImage_url()) // 중앙부처 이미지 url
                 .build();
     }
 }

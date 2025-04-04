@@ -134,6 +134,9 @@ public class Policy extends BaseTimeEntity {
     @JoinColumn(name = "department_id")
     private Department department;
 
+    @Column(length = 10)
+    private String hostDepCode;
+
     @Builder.Default
     @OneToMany(mappedBy = "policy")
     private List<Review> reviews = new ArrayList<>();

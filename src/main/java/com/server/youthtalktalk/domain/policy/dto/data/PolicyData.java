@@ -135,6 +135,7 @@ public record PolicyData(
                 .bizStart(bizTerm[0])
                 .bizDue(bizTerm[1])
                 .department(department)
+                .hostDepCode(sprvsnInstCd)
                 .build();
     }
 
