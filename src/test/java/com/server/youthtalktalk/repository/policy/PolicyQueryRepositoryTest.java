@@ -1,8 +1,8 @@
 package com.server.youthtalktalk.repository.policy;
 
+import static com.server.youthtalktalk.domain.policy.entity.InstitutionType.*;
 import static com.server.youthtalktalk.domain.policy.entity.Category.JOB;
 import static com.server.youthtalktalk.domain.policy.entity.Category.LIFE;
-import static com.server.youthtalktalk.domain.policy.entity.InstitutionType.*;
 import static com.server.youthtalktalk.domain.policy.entity.condition.Earn.ANNUL_INCOME;
 import static com.server.youthtalktalk.domain.policy.entity.condition.Earn.OTHER;
 import static com.server.youthtalktalk.domain.policy.entity.condition.Earn.UNRESTRICTED;
@@ -18,9 +18,10 @@ import static com.server.youthtalktalk.domain.policy.entity.condition.Specializa
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.server.youthtalktalk.domain.policy.dto.SearchConditionDto;
-import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
+import com.server.youthtalktalk.domain.policy.entity.SubCategory;
+import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.condition.Education;
 import com.server.youthtalktalk.domain.policy.entity.condition.Employment;
 import com.server.youthtalktalk.domain.policy.entity.condition.Major;

@@ -16,6 +16,7 @@ public class PolicyListResponseDto {
     private String deadlineStatus; // 마감 상태
     private String hostDep; // 주관 기관명
     private boolean isScrap; // 스크랩 여부
+    private String departmentImgUrl; // 중앙부처 이미지 url
 
     public static PolicyListResponseDto toListDto(Policy policy, Boolean isScrap) {
         return PolicyListResponseDto.builder()
@@ -25,6 +26,7 @@ public class PolicyListResponseDto {
                 .deadlineStatus(DeadlineStatusCalculator.calculateDeadline(policy.getApplyDue()))
                 .hostDep(policy.getHostDep())
                 .isScrap(isScrap)
+                .departmentImgUrl(policy.getDepartment().getImage_url())
                 .build();
     }
 }
