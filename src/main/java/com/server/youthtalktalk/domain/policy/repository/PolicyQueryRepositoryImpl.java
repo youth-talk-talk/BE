@@ -14,7 +14,7 @@ import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.entity.QPolicy;
-import com.server.youthtalktalk.domain.policy.entity.SubCategory;
+import com.server.youthtalktalk.domain.policy.entity.SortOption;
 import com.server.youthtalktalk.domain.policy.entity.condition.Education;
 import com.server.youthtalktalk.domain.policy.entity.condition.Employment;
 import com.server.youthtalktalk.domain.policy.entity.condition.Major;
@@ -41,7 +41,7 @@ public class PolicyQueryRepositoryImpl implements PolicyQueryRepository {
      * 조건 적용 정책 조회
      */
     @Override
-    public Page<Policy> findByCondition(SearchConditionDto condition, Pageable pageable) {
+    public Page<Policy> findByCondition(SearchConditionDto condition, Pageable pageable, SortOption sortOption) {
         QPolicy policy = QPolicy.policy;
         BooleanBuilder predicate = new BooleanBuilder();
 
@@ -62,17 +62,18 @@ public class PolicyQueryRepositoryImpl implements PolicyQueryRepository {
         List<Policy> policies = queryFactory
                 .selectFrom(policy)
                 .where(predicate)
-                .orderBy(policy.policyId.desc())
+                .orderBy(sortOption.getOrderSpecifier())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
+        // 카운트 조회 쿼리
         long total = Optional.ofNullable(
                 queryFactory
-                    .select(policy.count())
-                    .from(policy)
-                    .where(predicate)
-                    .fetchOne()
+                        .select(policy.count())
+                        .from(policy)
+                        .where(predicate)
+                        .fetchOne()
         ).orElse(0L);
 
         return new PageImpl<>(policies, pageable, total);

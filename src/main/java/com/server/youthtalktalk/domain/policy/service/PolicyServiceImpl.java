@@ -15,6 +15,7 @@ import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_
 import com.server.youthtalktalk.domain.ItemType;
 import com.server.youthtalktalk.domain.policy.dto.SearchConditionDto;
 import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
+import com.server.youthtalktalk.domain.policy.entity.SortOption;
 import com.server.youthtalktalk.domain.policy.entity.SubCategory;
 import com.server.youthtalktalk.domain.policy.entity.condition.Education;
 import com.server.youthtalktalk.domain.policy.entity.condition.Employment;
@@ -152,10 +153,10 @@ public class PolicyServiceImpl implements PolicyService {
     /**
      * 조건 적용 정책 조회
      */
-    public SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto conditionDto, Pageable pageable) {
+    public SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto conditionDto, Pageable pageable, SortOption sortOption) {
         SearchConditionDto searchCondition = setSearchCondition(conditionDto);
 
-        Page<Policy> policies = policyRepository.findByCondition(searchCondition, pageable);
+        Page<Policy> policies = policyRepository.findByCondition(searchCondition, pageable, sortOption);
         if (policies.isEmpty()) {
             log.info("조건에 맞는 정책이 존재하지 않습니다");
             return SearchConditionResponseDto.toListDto(Collections.emptyList(), 0L); // 빈 리스트 반환

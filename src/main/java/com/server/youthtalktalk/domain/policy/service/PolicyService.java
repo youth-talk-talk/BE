@@ -1,5 +1,6 @@
 package com.server.youthtalktalk.domain.policy.service;
 
+import com.server.youthtalktalk.domain.policy.entity.SortOption;
 import com.server.youthtalktalk.domain.scrap.entity.Scrap;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.policy.entity.Category;
@@ -13,7 +14,7 @@ public interface PolicyService {
 
     List<PolicyListResponseDto> getTop5Policies();
     List<PolicyListResponseDto> getPoliciesByCategories(List<Category> categories, Pageable pageable);
-    SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto condition, Pageable pageable);
+    SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto condition, Pageable pageable, SortOption sortOption);
     List<SearchNameResponseDto> getPoliciesByName(String title, Pageable pageable);
     PolicyDetailResponseDto getPolicyDetail(String policyId);
     Scrap scrapPolicy(String policyId, Member member);
