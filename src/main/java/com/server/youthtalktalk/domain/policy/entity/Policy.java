@@ -97,7 +97,7 @@ public class Policy extends BaseTimeEntity {
     private String etc; // 기타 사항
 
     @Column(name = "view")
-    private Long view; // 조회수
+    private long view; // 조회수
 
     @Enumerated(EnumType.STRING)
     @Column(name = "category", length = 20)
