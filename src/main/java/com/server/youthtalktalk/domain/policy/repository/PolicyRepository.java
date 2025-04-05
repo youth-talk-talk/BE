@@ -54,4 +54,6 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
     @Query("select p from Policy p join Scrap s on s.itemId = p.policyId where s.member = :member and (p.applyDue > CURRENT_DATE or p.applyDue is null) order by case when p.applyDue is null then 1 else 0 end, p.applyDue asc")
 
     Page<Policy> findTop5OrderByDeadlineAsc(Member member, Pageable pageable);
+
+    Optional<Policy> findByPolicyNum(String policyNum);
 }

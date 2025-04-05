@@ -30,7 +30,6 @@ import reactor.util.retry.Retry;
 
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service
@@ -102,7 +101,56 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                         if (policy.getRegion() == null) {
                             policy = setRegionForPolicy(policy);
                         }
-                        return policy;
+
+                        // 기존 정책이 있는지 확인 (policyNum 기준)
+                        Optional<Policy> existingPolicy = policyRepository.findByPolicyNum(policy.getPolicyNum());
+                        if (existingPolicy.isPresent()) {
+                            // 기존 정책이 있으면 업데이트
+                            Policy existing = existingPolicy.get();
+                            // 필드 업데이트 (toBuilder()를 통해 기존 객체를 기반으로 업데이트)
+                            return existing.toBuilder()
+                                    .title(policy.getTitle())
+                                    .department(policy.getDepartment())
+                                    .region(policy.getRegion())
+                                    .zipCd(policy.getZipCd())
+                                    .supportDetail(policy.getSupportDetail())
+                                    .introduction(policy.getIntroduction())
+                                    .applyTerm(policy.getApplyTerm())
+                                    .applyStart(policy.getApplyStart())
+                                    .applyDue(policy.getApplyDue())
+                                    .minAge(policy.getMinAge())
+                                    .maxAge(policy.getMaxAge())
+                                    .addition(policy.getAddition())
+                                    .applLimit(policy.getApplLimit())
+                                    .applStep(policy.getApplStep())
+                                    .submitDoc(policy.getSubmitDoc())
+                                    .evaluation(policy.getEvaluation())
+                                    .applUrl(policy.getApplUrl())
+                                    .refUrl1(policy.getRefUrl1())
+                                    .refUrl2(policy.getRefUrl2())
+                                    .hostDep(policy.getHostDep())
+                                    .operatingOrg(policy.getOperatingOrg())
+                                    .etc(policy.getEtc())
+                                    .category(policy.getCategory())
+                                    .isLimitedAge(policy.getIsLimitedAge())
+                                    .earn(policy.getEarn())
+                                    .minEarn(policy.getMinEarn())
+                                    .maxEarn(policy.getMaxEarn())
+                                    .earnEtc(policy.getEarnEtc())
+                                    .zipCd(policy.getZipCd())
+                                    .specialization(policy.getSpecialization())
+                                    .major(policy.getMajor())
+                                    .education(policy.getEducation())
+                                    .marriage(policy.getMarriage())
+                                    .employment(policy.getEmployment())
+                                    .bizStart(policy.getBizStart())
+                                    .bizDue(policy.getBizDue())
+                                    .build();
+                        } else {
+                            // 기존 정책이 없으면 새로 추가
+                            return policy;
+                        }
+
                     } catch (Exception e) {
                         // 예외 발생 시 null 반환하여 필터링
                         return null;

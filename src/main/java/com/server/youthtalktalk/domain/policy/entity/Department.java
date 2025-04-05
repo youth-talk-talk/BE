@@ -19,7 +19,7 @@ public class Department {
     @Column(nullable = false, length = 20)
     private String name;
 
-    @Column(length = 300)
+    @Column(length = 500)
     private String image_url;
 
     @OneToMany(mappedBy = "department")

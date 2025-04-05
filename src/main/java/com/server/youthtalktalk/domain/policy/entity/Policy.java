@@ -32,7 +32,7 @@ public class Policy extends BaseTimeEntity {
     private Region region; // 지역
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "institutionType", length = 20)
+    @Column(name = "institution_type", length = 20)
     private InstitutionType institutionType; // 담당기관 구분(중앙부처, 지자체)
 
     @Column(name = "title", length = 150)
@@ -41,90 +41,86 @@ public class Policy extends BaseTimeEntity {
     @Column(name = "introduction", columnDefinition = "TEXT")
     private String introduction; // 정책 소개
 
-    @Column(name = "supportDetail", columnDefinition = "TEXT")
+    @Column(name = "support_detail", columnDefinition = "TEXT")
     private String supportDetail; // 지원 내용
 
-    @Column(name = "applyTerm", columnDefinition = "TEXT")
+    @Column(name = "apply_term", columnDefinition = "TEXT")
     private String applyTerm; // 신청기간
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "repeatCode", length = 20)
+    @Column(name = "repeat_code", length = 20)
     private RepeatCode repeatCode; // 신청 기간 반복 코드
 
-    @Column(name = "applyStart")
+    @Column(name = "apply_start")
     private LocalDate applyStart; // 신청 시작일
 
-    @Column(name = "applyDue")
+    @Column(name = "apply_due")
     private LocalDate applyDue; // 신청 마감일
 
-    @Column(name = "minAge")
+    @Column(name = "min_age")
     private Integer minAge; // 최소 연령
 
-    @Column(name = "maxAge")
+    @Column(name = "max_age")
     private Integer maxAge; // 최대 연령
 
     @Column(name = "addition", columnDefinition = "TEXT")
     private String addition; // 추가 사항
 
-    @Column(name = "applLimit", columnDefinition = "TEXT")
+    @Column(name = "appl_limit", columnDefinition = "TEXT")
     private String applLimit; // 참여 제한 대상
 
-    @Column(name = "applStep", columnDefinition = "TEXT")
+    @Column(name = "appl_step", columnDefinition = "TEXT")
     private String applStep; // 신청 절차
 
-    @Column(name = "submitDoc", columnDefinition = "TEXT")
+    @Column(name = "submit_doc", columnDefinition = "TEXT")
     private String submitDoc; // 제출 서류
 
     @Column(name = "evaluation", columnDefinition = "TEXT")
     private String evaluation; // 평가 방법
 
-    @Column(name = "applUrl", length = 255)
+    @Column(name = "applUrl", length = 500)
     private String applUrl; // 신청 사이트
 
-    @Column(name = "refUrl1", length = 255)
+    @Column(name = "ref_url1", length = 500)
     private String refUrl1; // 참고 사이트 1
 
-    @Column(name = "refUrl2", length = 255)
+    @Column(name = "ref_url2", length = 500)
     private String refUrl2; // 참고 사이트 2
 
-    @Column(name = "hostDep", length = 255)
+    @Column(name = "host_dep", length = 255)
     private String hostDep; // 주관 부처명
 
-    @Column(name = "operatingOrg", length = 255)
+    @Column(name = "operating_org", length = 255)
     private String operatingOrg; // 운영 기관명
 
     @Column(name = "etc", columnDefinition = "TEXT")
     private String etc; // 기타 사항
 
     @Column(name = "view")
-    private Long view; // 조회수
+    private long view; // 조회수
 
     @Enumerated(EnumType.STRING)
     @Column(name = "category", length = 20)
     private Category category; // 카테고리
 
     /** 신규 필드 */
-    @Column(name = "isLimitedAge")
+    @Column(name = "is_limited_age")
     private Boolean isLimitedAge;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "subCategory", length = 50)
-    private SubCategory subCategory;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "earn", length = 20)
     private Earn earn; // 소득 제한 요건
 
-    @Column(name = "minEarn")
+    @Column(name = "min_earn")
     private Integer minEarn; // 최소 소득
 
-    @Column(name = "maxEarn")
+    @Column(name = "max_earn")
     private Integer maxEarn; // 최대 소득
 
-    @Column(name = "earnEtc", columnDefinition = "TEXT")
+    @Column(name = "earn_etc", columnDefinition = "TEXT")
     private String earnEtc; // 소득 기타 내용
 
-    @Column(name = "zipCd", columnDefinition = "TEXT")
+    @Column(name = "zip_cd", columnDefinition = "TEXT")
     private String zipCd;
 
     @ElementCollection
@@ -147,17 +143,17 @@ public class Policy extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private List<Employment> employment; // 취업 요건
 
-    @Column(name = "bizStart")
+    @Column(name = "biz_start")
     private LocalDate bizStart; // 운영 시작일
 
-    @Column(name = "bizDue")
+    @Column(name = "biz_due")
     private LocalDate bizDue; // 운영 종료일
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")
     private Department department;
 
-    @Column(length = 10)
+    @Column(name = "host_dep_code", length = 10)
     private String hostDepCode;
 
     @Builder.Default
