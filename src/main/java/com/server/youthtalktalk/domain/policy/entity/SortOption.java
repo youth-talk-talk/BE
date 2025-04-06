@@ -3,21 +3,24 @@ package com.server.youthtalktalk.domain.policy.entity;
 import static com.querydsl.core.types.Order.*;
 import static com.server.youthtalktalk.domain.policy.entity.QPolicy.policy;
 
-import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.ComparableExpressionBase;
 
 public enum SortOption {
-    RECENT(policy.policyId, DESC),
-    POPULAR(policy.view, DESC);
+    RECENT(new OrderSpecifier[]{
+            new OrderSpecifier<>(DESC, policy.policyNum)
+    }),
+    POPULAR(new OrderSpecifier[]{
+            new OrderSpecifier<>(DESC, policy.view), // 1순위 - 조회수 높은 순
+            new OrderSpecifier<>(DESC, policy.policyNum) // 2순위 - 최신순
+    });
 
-    private final OrderSpecifier<?> orderSpecifier;
+    private final OrderSpecifier<?>[] orderSpecifiers;
 
-    <T extends Comparable<?>> SortOption(ComparableExpressionBase<T> sortKey, Order order) {
-        this.orderSpecifier = new OrderSpecifier<>(order, sortKey);
+    SortOption(OrderSpecifier<?>[] orderSpecifiers) {
+        this.orderSpecifiers = orderSpecifiers;
     }
 
-    public OrderSpecifier<?> getOrderSpecifier() {
-        return orderSpecifier;
+    public OrderSpecifier<?>[] getOrderSpecifiers() {
+        return orderSpecifiers;
     }
 }

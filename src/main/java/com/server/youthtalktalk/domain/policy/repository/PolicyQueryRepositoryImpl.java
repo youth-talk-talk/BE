@@ -62,7 +62,7 @@ public class PolicyQueryRepositoryImpl implements PolicyQueryRepository {
         List<Policy> policies = queryFactory
                 .selectFrom(policy)
                 .where(predicate)
-                .orderBy(sortOption.getOrderSpecifier())
+                .orderBy(sortOption.getOrderSpecifiers())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
