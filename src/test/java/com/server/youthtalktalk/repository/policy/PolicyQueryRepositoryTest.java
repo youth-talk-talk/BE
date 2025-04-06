@@ -266,6 +266,40 @@ public class PolicyQueryRepositoryTest {
         );
     }
 
+    @Test
+    @DisplayName("조회수가 다른 정책 인기순 정렬")
+    void testOrderByPopularity_whenViewsAreDifferent() {
+        SearchConditionDto condition = SearchConditionDto.builder().institutionType(CENTER).build();
+        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE), POPULAR).getContent();
+
+        long expectedCount = policyRepository.findAll().stream()
+                .filter(policy -> policy.getInstitutionType().equals(CENTER)).count();
+        assertThat(result.size()).isEqualTo(expectedCount);
+        assertThat(result).allMatch(policy -> policy.getInstitutionType() == CENTER);
+        assertThat(result.get(0).getView()).isEqualTo(18L);
+        assertThat(result.get(1).getView()).isEqualTo(16L);
+        assertThat(result.get(2).getView()).isEqualTo(14L);
+    }
+
+    @Test
+    @DisplayName("조회수가 같은 정책 인기순 정렬")
+    void testOrderByPopularity_whenViewsAreSame() {
+        Policy policy1 = savePolicy("popularTest1", "policyNum100", 10L);
+        Policy policy2 = savePolicy("popularTest2", "policyNum200", 10L);
+        Policy policy3 = savePolicy("popularTest3", "policyNum300", 20L);
+        Policy policy4 = savePolicy("popularTest4", "policyNum400", 30L);
+        SearchConditionDto condition = SearchConditionDto.builder().keyword("popular").build();
+        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE), POPULAR).getContent();
+        assertThat(result.size()).isEqualTo(4);
+        assertThat(result).allMatch(policy -> policy.getTitle().contains("popular"));
+
+        // policy4, policy3, policy2, policy1 순으로 나와야 함
+        assertThat(result.get(0)).isEqualTo(policy4);
+        assertThat(result.get(1)).isEqualTo(policy3);
+        assertThat(result.get(2)).isEqualTo(policy2); // policyNum을 내림차순 할 경우 policy2가 우선 저장됨
+        assertThat(result.get(3)).isEqualTo(policy1);
+    }
+
     static List<Policy> createDummyPolicies() {
         List<Policy> policies = new ArrayList<>();
 
@@ -300,6 +334,7 @@ public class PolicyQueryRepositoryTest {
                     ))
                     .major(List.of(majors[i % majors.length], majors[(i + 2) % majors.length]))
                     .employment(List.of(employments[i % employments.length]))
+                    .view(i)
                     .build();
 
             policies.add(policy);
@@ -332,5 +367,10 @@ public class PolicyQueryRepositoryTest {
             policySubRegions.add(policySubRegion);
         }
         return policySubRegions;
+    }
+
+    private Policy savePolicy(String title, String policyNum, Long view) {
+        Policy policy = Policy.builder().title(title).policyNum(policyNum).view(view).build();
+        return policyRepository.save(policy);
     }
 }
