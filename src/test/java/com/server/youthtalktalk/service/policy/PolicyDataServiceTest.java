@@ -2,7 +2,6 @@ package com.server.youthtalktalk.service.policy;
 
 import com.server.youthtalktalk.domain.policy.dto.data.PolicyData;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
-import com.server.youthtalktalk.domain.policy.service.data.PolicyDataService;
 import com.server.youthtalktalk.domain.policy.service.data.PolicyDataServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,8 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
-import static reactor.core.publisher.Mono.when;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
@@ -105,9 +103,9 @@ public class PolicyDataServiceTest {
         PolicyData policyData2 = PolicyData.builder().build(); // 잘못된 데이터
         List<PolicyData> policyDataList = Arrays.asList(policyData, policyData2);
         // When
-        List<Policy> policyList = policyDataService.getPolicyEntityList(policyDataList);
+        List<Policy> policyList = policyDataService.getPolicyEntityList(policyDataList).block();
         // Then
         assertThat(policyList).hasSize(1);
-        assertThat(policyList.get(0).getPolicyId()).isEqualTo(policyData.plcyNo());
+        assertThat(policyList.get(0).getPolicyNum()).isEqualTo(policyData.plcyNo());
     }
 }

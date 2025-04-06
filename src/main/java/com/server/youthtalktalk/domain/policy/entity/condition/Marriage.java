@@ -13,7 +13,7 @@ public enum Marriage {
     private final String key;
     private final String name;
 
-    public static Marriage fromKey(String policyId, String key) {
+    public static Marriage fromKey(String policyNum, String key) {
         return switch(key){
                 case "0055001" -> Marriage.MARRIED;
                 case "0055002" -> Marriage.SINGLE;

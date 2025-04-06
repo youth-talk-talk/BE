@@ -28,7 +28,7 @@ public class PostListRepDto {
         private int scraps;
         private boolean scrap;
         private int comments;
-        private String policyId; // 자유글 null
+        private Long policyId; // 자유글 null
         private String policyTitle; // 자유글 null
     }
 
@@ -41,7 +41,7 @@ public class PostListRepDto {
         private int scraps;
         private boolean scrap;
         private int comments;
-        private String policyId; // 자유글 null
+        private Long policyId; // 자유글 null
         private String policyTitle; // 자유글 null
         private Long scrapId;
     }

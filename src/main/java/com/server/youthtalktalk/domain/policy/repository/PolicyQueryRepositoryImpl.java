@@ -1,9 +1,5 @@
 package com.server.youthtalktalk.domain.policy.repository;
 
-import static com.server.youthtalktalk.domain.policy.entity.QPolicy.policy;
-import static com.server.youthtalktalk.domain.policy.entity.condition.Earn.OTHER;
-import static com.server.youthtalktalk.domain.policy.entity.condition.Earn.UNRESTRICTED;
-
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -22,14 +18,18 @@ import com.server.youthtalktalk.domain.policy.entity.condition.Marriage;
 import com.server.youthtalktalk.domain.policy.entity.condition.Specialization;
 import com.server.youthtalktalk.domain.policy.entity.region.QPolicySubRegion;
 import com.server.youthtalktalk.domain.policy.entity.region.QSubRegion;
-import java.time.LocalDate;
-import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+
+import static com.server.youthtalktalk.domain.policy.entity.QPolicy.policy;
+import static com.server.youthtalktalk.domain.policy.entity.condition.Earn.OTHER;
+import static com.server.youthtalktalk.domain.policy.entity.condition.Earn.UNRESTRICTED;
 
 @Repository
 public class PolicyQueryRepositoryImpl implements PolicyQueryRepository {

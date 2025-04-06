@@ -46,7 +46,7 @@ public class PolicyController {
      * 특정 정책 세부 조회
      */
     @GetMapping("/policies/{id}")
-    public BaseResponse<PolicyDetailResponseDto> getPolicyDetail(@PathVariable String id) {
+    public BaseResponse<PolicyDetailResponseDto> getPolicyDetail(@PathVariable Long id) {
         PolicyDetailResponseDto policyDetail = policyService.getPolicyDetail(id);
         return new BaseResponse<>(policyDetail, BaseResponseCode.SUCCESS_POLICY_FOUND);
     }
@@ -55,7 +55,7 @@ public class PolicyController {
      * 정책 스크랩 API
      */
     @PostMapping("/policies/{id}/scrap")
-    public BaseResponse<String> scrap(@PathVariable String id){
+    public BaseResponse<String> scrap(@PathVariable Long id){
         if(policyService.scrapPolicy(id,memberService.getCurrentMember())!=null)
             return new BaseResponse<>(BaseResponseCode.SUCCESS_SCRAP);
         else

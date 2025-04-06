@@ -2,7 +2,6 @@ package com.server.youthtalktalk.repository.policy;
 
 import static com.server.youthtalktalk.domain.policy.entity.Category.JOB;
 import static com.server.youthtalktalk.domain.policy.entity.Category.LIFE;
-import static com.server.youthtalktalk.domain.policy.entity.InstitutionType.*;
 import static com.server.youthtalktalk.domain.policy.entity.SortOption.*;
 import static com.server.youthtalktalk.domain.policy.entity.condition.Earn.ANNUL_INCOME;
 import static com.server.youthtalktalk.domain.policy.entity.condition.Earn.OTHER;
@@ -17,6 +16,7 @@ import static com.server.youthtalktalk.domain.policy.entity.condition.Marriage.S
 import static com.server.youthtalktalk.domain.policy.entity.condition.Specialization.DISABLED;
 import static com.server.youthtalktalk.domain.policy.entity.condition.Specialization.SOLDIER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.server.youthtalktalk.domain.policy.entity.InstitutionType.CENTER;
 
 import com.server.youthtalktalk.domain.policy.dto.SearchConditionDto;
 import com.server.youthtalktalk.domain.policy.entity.Category;
@@ -34,9 +34,6 @@ import com.server.youthtalktalk.domain.policy.entity.region.SubRegion;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.policy.repository.region.PolicySubRegionRepository;
 import com.server.youthtalktalk.domain.policy.repository.region.SubRegionRepository;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,6 +42,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.ArrayList;
+import java.util.List;
 
 @SpringBootTest
 @Transactional
@@ -64,11 +63,15 @@ public class PolicyQueryRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        List<Policy> dummyPolicies = createDummyPolicies();
         List<SubRegion> dummySubRegions = createDummySubRegions();
-        List<PolicySubRegion> dummyPolicySubRegions = createDummyPolicySubRegions(dummyPolicies, dummySubRegions);
         subRegionRepository.saveAll(dummySubRegions);
-        policyRepository.saveAll(dummyPolicies);
+
+        // 정책 먼저 저장 (실제 DB에 ID 생성됨)
+        List<Policy> dummyPolicies = createDummyPolicies();
+        List<Policy> savedPolicies = policyRepository.saveAll(dummyPolicies);
+
+        // 저장된 정책 사용해서 PolicySubRegion 생성
+        List<PolicySubRegion> dummyPolicySubRegions = createDummyPolicySubRegions(savedPolicies, dummySubRegions);
         policySubRegionRepository.saveAll(dummyPolicySubRegions);
     }
 
@@ -156,12 +159,13 @@ public class PolicyQueryRepositoryTest {
         SearchConditionDto condition = SearchConditionDto.builder().age(age).build();
         List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE), sortOption).getContent();
         long expectedCount = policyRepository.findAll().stream()
-                .filter(policy -> !policy.isLimitedAge() ||
+                .filter(policy -> !policy.getIsLimitedAge() ||
                         (policy.getMinAge() <= age && policy.getMaxAge() >= age))
                 .count();
 
         assertThat(result.size()).isEqualTo(expectedCount);
-        assertThat(result).allMatch(policy -> policy.getMinAge() <= age && policy.getMaxAge() >= age);
+        assertThat(result).allMatch(policy -> !policy.getIsLimitedAge() ||
+                (policy.getMinAge() <= age && policy.getMaxAge() >= age));
     }
 
     @Test
@@ -174,14 +178,15 @@ public class PolicyQueryRepositoryTest {
 
         long expectedCount = policyRepository.findAll().stream()
                 .filter(policy ->
-                        (policy.getEarn() == UNRESTRICTED || policy.getEarn() == OTHER) ||  // 제한이 없으면 무조건 포함
-                        (policy.getMinEarn() <= minEarn && policy.getMaxEarn() >= maxEarn) // 제한 있으면 조건 만족해야 포함
+                        (policy.getEarn() == UNRESTRICTED || policy.getEarn() == OTHER) ||
+                        (policy.getMinEarn() <= minEarn && policy.getMaxEarn() >= maxEarn)
                 )
                 .count();
 
         assertThat(result.size()).isEqualTo(expectedCount);
         assertThat(result).allMatch(policy ->
-                !policy.isLimitedAge() || (policy.getMinAge() <= minEarn && policy.getMaxAge() >= maxEarn)
+                (policy.getEarn() == UNRESTRICTED || policy.getEarn() == OTHER) ||
+                        (policy.getMinEarn() <= minEarn && policy.getMaxEarn() >= maxEarn)
         );
     }
 
@@ -275,7 +280,7 @@ public class PolicyQueryRepositoryTest {
 
         for (int i = 0; i < 20; i++) {
             Policy policy = Policy.builder()
-                    .policyId(UUID.randomUUID().toString())
+                    .policyNum("policyNum" + i)
                     .isLimitedAge(true)
                     .earn(ANNUL_INCOME)
                     .institutionType(institutionTypes[i % institutionTypes.length])

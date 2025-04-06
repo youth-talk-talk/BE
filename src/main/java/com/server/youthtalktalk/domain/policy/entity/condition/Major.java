@@ -35,7 +35,7 @@ public enum Major {
         throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_MAJOR);
     }
 
-    public static List<Major> findMajorList(String policyId, String data){
+    public static List<Major> findMajorList(String policyNum, String data){
         String[] majors = data.split(",");
         Set<String> set = new HashSet<>();
         Collections.addAll(set, majors);
@@ -48,7 +48,7 @@ public enum Major {
         }
 
         if(set.size() != majorList.size()) {
-            log.error("[Policy Data] Not Existed Major = {} policyId = {}", data, policyId);
+            log.error("[Policy Data] Not Existed Major = {} policyNum = {}", data, policyNum);
             throw new FailPolicyDataException(BaseResponseCode.FAIL_POLICY_DATA_MAJOR);
         }
         return majorList;

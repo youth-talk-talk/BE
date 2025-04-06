@@ -10,18 +10,12 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface PolicyService {
-
-
     List<PolicyListResponseDto> getTop5Policies();
     List<PolicyListResponseDto> getPoliciesByCategories(List<Category> categories, Pageable pageable);
     SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto condition, Pageable pageable, SortOption sortOption);
     List<SearchNameResponseDto> getPoliciesByName(String title, Pageable pageable);
-    PolicyDetailResponseDto getPolicyDetail(String policyId);
-    Scrap scrapPolicy(String policyId, Member member);
+    PolicyDetailResponseDto getPolicyDetail(Long policyId);
+    Scrap scrapPolicy(Long policyId, Member member);
     List<PolicyListResponseDto> getScrapPolicies(Pageable pageable,Member member);
-
     List<PolicyListResponseDto> getScrappedPoliciesWithUpcomingDeadline(Member member);
-
-
-
 }

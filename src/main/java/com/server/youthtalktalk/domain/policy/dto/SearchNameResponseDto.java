@@ -7,5 +7,5 @@ import lombok.Getter;
 @Builder
 public class SearchNameResponseDto {
     private String title;
-    private String policyId;
+    private Long policyId;
 }

@@ -13,7 +13,7 @@ public class PostRepDto {
     private String postType;
     private String title;
     private List<Content> contentList;
-    private String policyId; // 자유글 null
+    private Long policyId; // 자유글 null
     private String policyTitle; // 자유글 null
     private Long writerId;
     private String nickname;

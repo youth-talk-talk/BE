@@ -13,12 +13,12 @@ public enum InstitutionType {
 
     private final String key;
     // 담당 기관 타입 매핑
-    public static InstitutionType fromKey(String policyId, String key){
+    public static InstitutionType fromKey(String policyNum, String key){
         return switch (key) {
             case "0054001" -> InstitutionType.CENTER;
             case "0054002" -> InstitutionType.LOCAL;
             default -> {
-                log.error("[Policy Data] Not Existed InstitutionType = {}, policyId = {}", key, policyId);
+                log.error("[Policy Data] Not Existed InstitutionType = {}, policyNum = {}", key, policyNum);
                 yield InstitutionType.CENTER;
             }
         };

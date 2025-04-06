@@ -14,10 +14,8 @@ import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.post.entity.Review;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepositoryCustom;
-import com.server.youthtalktalk.domain.post.repostiory.PostRepositoryCustomImpl;
 import com.server.youthtalktalk.domain.report.repository.ReportRepository;
 import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
-import com.server.youthtalktalk.global.config.QueryDSLConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +30,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -73,7 +71,7 @@ public class PostRepositoryCustomTest {
                 .build());
 
         this.policy = policyRepository.save(Policy.builder()
-                .policyId("policyId")
+                .policyNum("policyNum")
                 .title("policy1")
                 .category(Category.JOB)
                 .build());

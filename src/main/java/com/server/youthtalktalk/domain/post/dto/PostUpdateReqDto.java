@@ -20,7 +20,7 @@ public class PostUpdateReqDto {
     @Size(min = 1, message = "게시글 본문은 필수값입니다.")
     private List<Content> contentList;
 
-    private String policyId; // 정책을 변경했을 때만
+    private Long policyId; // 정책을 변경했을 때만
     private List<String> addImgUrlList;
     private List<String> deletedImgUrlList;
 }
