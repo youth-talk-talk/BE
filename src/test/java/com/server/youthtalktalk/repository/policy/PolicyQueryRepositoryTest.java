@@ -1,10 +1,33 @@
 package com.server.youthtalktalk.repository.policy;
 
+import static com.server.youthtalktalk.domain.policy.entity.Category.JOB;
+import static com.server.youthtalktalk.domain.policy.entity.Category.LIFE;
+import static com.server.youthtalktalk.domain.policy.entity.SortOption.*;
+import static com.server.youthtalktalk.domain.policy.entity.condition.Earn.ANNUL_INCOME;
+import static com.server.youthtalktalk.domain.policy.entity.condition.Earn.OTHER;
+import static com.server.youthtalktalk.domain.policy.entity.condition.Earn.UNRESTRICTED;
+import static com.server.youthtalktalk.domain.policy.entity.condition.Education.UNIVERSITY_GRADUATED;
+import static com.server.youthtalktalk.domain.policy.entity.condition.Education.UNIVERSITY_GRADUATED_EXPECTED;
+import static com.server.youthtalktalk.domain.policy.entity.condition.Employment.EMPLOYED;
+import static com.server.youthtalktalk.domain.policy.entity.condition.Employment.FREELANCER;
+import static com.server.youthtalktalk.domain.policy.entity.condition.Major.BUSINESS;
+import static com.server.youthtalktalk.domain.policy.entity.condition.Major.SCIENCE;
+import static com.server.youthtalktalk.domain.policy.entity.condition.Marriage.SINGLE;
+import static com.server.youthtalktalk.domain.policy.entity.condition.Specialization.DISABLED;
+import static com.server.youthtalktalk.domain.policy.entity.condition.Specialization.SOLDIER;
+import static org.assertj.core.api.Assertions.assertThat;
+import static com.server.youthtalktalk.domain.policy.entity.InstitutionType.CENTER;
+
 import com.server.youthtalktalk.domain.policy.dto.SearchConditionDto;
 import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
-import com.server.youthtalktalk.domain.policy.entity.condition.*;
+import com.server.youthtalktalk.domain.policy.entity.SortOption;
+import com.server.youthtalktalk.domain.policy.entity.condition.Education;
+import com.server.youthtalktalk.domain.policy.entity.condition.Employment;
+import com.server.youthtalktalk.domain.policy.entity.condition.Major;
+import com.server.youthtalktalk.domain.policy.entity.condition.Marriage;
+import com.server.youthtalktalk.domain.policy.entity.condition.Specialization;
 import com.server.youthtalktalk.domain.policy.entity.region.PolicySubRegion;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.entity.region.SubRegion;
@@ -21,25 +44,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import static com.server.youthtalktalk.domain.policy.entity.Category.JOB;
-import static com.server.youthtalktalk.domain.policy.entity.Category.LIFE;
-import static com.server.youthtalktalk.domain.policy.entity.InstitutionType.CENTER;
-import static com.server.youthtalktalk.domain.policy.entity.condition.Earn.*;
-import static com.server.youthtalktalk.domain.policy.entity.condition.Education.UNIVERSITY_GRADUATED;
-import static com.server.youthtalktalk.domain.policy.entity.condition.Education.UNIVERSITY_GRADUATED_EXPECTED;
-import static com.server.youthtalktalk.domain.policy.entity.condition.Employment.EMPLOYED;
-import static com.server.youthtalktalk.domain.policy.entity.condition.Employment.FREELANCER;
-import static com.server.youthtalktalk.domain.policy.entity.condition.Major.BUSINESS;
-import static com.server.youthtalktalk.domain.policy.entity.condition.Major.SCIENCE;
-import static com.server.youthtalktalk.domain.policy.entity.condition.Marriage.SINGLE;
-import static com.server.youthtalktalk.domain.policy.entity.condition.Specialization.DISABLED;
-import static com.server.youthtalktalk.domain.policy.entity.condition.Specialization.SOLDIER;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
 @ActiveProfiles("test")
 public class PolicyQueryRepositoryTest {
+
+    private static final SortOption sortOption = RECENT;
 
     @Autowired
     private PolicyRepository policyRepository;
@@ -52,13 +63,6 @@ public class PolicyQueryRepositoryTest {
 
     @BeforeEach
     void setUp() {
-//        List<Policy> dummyPolicies = createDummyPolicies();
-//        List<SubRegion> dummySubRegions = createDummySubRegions();
-//        List<PolicySubRegion> dummyPolicySubRegions = createDummyPolicySubRegions(dummyPolicies, dummySubRegions);
-//        subRegionRepository.saveAll(dummySubRegions);
-//        policyRepository.saveAll(dummyPolicies);
-//        policySubRegionRepository.saveAll(dummyPolicySubRegions);
-
         List<SubRegion> dummySubRegions = createDummySubRegions();
         subRegionRepository.saveAll(dummySubRegions);
 
@@ -79,7 +83,7 @@ public class PolicyQueryRepositoryTest {
     void testKeywordSearch() {
         String keyword = "1";
         SearchConditionDto condition = SearchConditionDto.builder().keyword(keyword).build();
-        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE)).getContent();
+        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE), sortOption).getContent();
 
         long expectedCount = policyRepository.findAll().stream()
                 .filter(policy -> policy.getTitle().contains(keyword) || policy.getIntroduction().contains(keyword)).count();
@@ -91,7 +95,7 @@ public class PolicyQueryRepositoryTest {
     @DisplayName("운영기관 타입으로 검색")
     void testSearchByInstitutionType() {
         SearchConditionDto condition = SearchConditionDto.builder().institutionType(CENTER).build();
-        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE)).getContent();
+        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE), sortOption).getContent();
 
         long expectedCount = policyRepository.findAll().stream()
                 .filter(policy -> policy.getInstitutionType().equals(CENTER)).count();
@@ -104,7 +108,7 @@ public class PolicyQueryRepositoryTest {
     void testSearchByCategory() {
         List<Category> categories = List.of(JOB, LIFE);
         SearchConditionDto condition = SearchConditionDto.builder().categories(categories).build();
-        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE)).getContent();
+        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE), sortOption).getContent();
 
         long expectedCount = policyRepository.findAll().stream()
                 .filter(policy -> policy.getCategory().equals(JOB) ||
@@ -122,7 +126,7 @@ public class PolicyQueryRepositoryTest {
         List<Long> subRegionIds = List.of(allSubRegions.get(1), allSubRegions.get(3), allSubRegions.get(5)).stream()
                 .map(SubRegion::getId).toList();
         SearchConditionDto condition = SearchConditionDto.builder().subRegionIds(subRegionIds).build();
-        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE)).getContent();
+        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE), sortOption).getContent();
 
         long expectedCount = policyRepository.findAll().stream()
                 .filter(policy -> policy.getPolicySubRegions().stream()
@@ -140,7 +144,7 @@ public class PolicyQueryRepositoryTest {
     @DisplayName("결혼요건으로 검색")
     void testSearchByMarriage() {
         SearchConditionDto condition = SearchConditionDto.builder().marriage(SINGLE).build();
-        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE)).getContent();
+        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE), sortOption).getContent();
 
         long expectedCount = policyRepository.findAll().stream()
                 .filter(policy -> policy.getMarriage().equals(SINGLE)).count();
@@ -153,14 +157,15 @@ public class PolicyQueryRepositoryTest {
     void testSearchByAge() {
         int age = 20;
         SearchConditionDto condition = SearchConditionDto.builder().age(age).build();
-        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE)).getContent();
+        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE), sortOption).getContent();
         long expectedCount = policyRepository.findAll().stream()
                 .filter(policy -> !policy.getIsLimitedAge() ||
                         (policy.getMinAge() <= age && policy.getMaxAge() >= age))
                 .count();
 
         assertThat(result.size()).isEqualTo(expectedCount);
-        assertThat(result).allMatch(policy -> policy.getMinAge() <= age && policy.getMaxAge() >= age);
+        assertThat(result).allMatch(policy -> !policy.getIsLimitedAge() ||
+                (policy.getMinAge() <= age && policy.getMaxAge() >= age));
     }
 
     @Test
@@ -169,18 +174,19 @@ public class PolicyQueryRepositoryTest {
         int minEarn = 1000;
         int maxEarn = 2000;
         SearchConditionDto condition = SearchConditionDto.builder().minEarn(minEarn).maxEarn(maxEarn).build();
-        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE)).getContent();
+        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE), sortOption).getContent();
 
         long expectedCount = policyRepository.findAll().stream()
                 .filter(policy ->
-                        (policy.getEarn() == UNRESTRICTED || policy.getEarn() == OTHER) ||  // 제한이 없으면 무조건 포함
-                        (policy.getMinEarn() <= minEarn && policy.getMaxEarn() >= maxEarn) // 제한 있으면 조건 만족해야 포함
+                        (policy.getEarn() == UNRESTRICTED || policy.getEarn() == OTHER) ||
+                        (policy.getMinEarn() <= minEarn && policy.getMaxEarn() >= maxEarn)
                 )
                 .count();
 
         assertThat(result.size()).isEqualTo(expectedCount);
         assertThat(result).allMatch(policy ->
-                !policy.getIsLimitedAge() || (policy.getMinAge() <= minEarn && policy.getMaxAge() >= maxEarn)
+                (policy.getEarn() == UNRESTRICTED || policy.getEarn() == OTHER) ||
+                        (policy.getMinEarn() <= minEarn && policy.getMaxEarn() >= maxEarn)
         );
     }
 
@@ -189,7 +195,7 @@ public class PolicyQueryRepositoryTest {
     void testSearchByEducation() {
         List<Education> educations = List.of(UNIVERSITY_GRADUATED, UNIVERSITY_GRADUATED_EXPECTED);
         SearchConditionDto condition = SearchConditionDto.builder().educations(educations).build();
-        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE)).getContent();
+        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE), sortOption).getContent();
 
         long expectedCount = policyRepository.findAll().stream()
                 .filter(policy -> policy.getEducation() != null &&
@@ -208,7 +214,7 @@ public class PolicyQueryRepositoryTest {
     void testSearchByMajor() {
         List<Major> majors = List.of(SCIENCE, BUSINESS);
         SearchConditionDto condition = SearchConditionDto.builder().majors(majors).build();
-        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE)).getContent();
+        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE), sortOption).getContent();
 
         long expectedCount = policyRepository.findAll().stream()
                 .filter(policy -> policy.getMajor() != null &&
@@ -227,7 +233,7 @@ public class PolicyQueryRepositoryTest {
     void testSearchByEmployment() {
         List<Employment> employments = List.of(FREELANCER, EMPLOYED);
         SearchConditionDto condition = SearchConditionDto.builder().employments(employments).build();
-        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE)).getContent();
+        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE), sortOption).getContent();
 
         long expectedCount = policyRepository.findAll().stream()
                 .filter(policy -> policy.getEmployment() != null &&
@@ -246,7 +252,7 @@ public class PolicyQueryRepositoryTest {
     void testSearchBySpecialization() {
         List<Specialization> specializations = List.of(SOLDIER, DISABLED);
         SearchConditionDto condition = SearchConditionDto.builder().specializations(specializations).build();
-        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE)).getContent();
+        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE), sortOption).getContent();
 
         long expectedCount = policyRepository.findAll().stream()
                 .filter(policy -> policy.getSpecialization() != null &&
@@ -258,6 +264,40 @@ public class PolicyQueryRepositoryTest {
                 policy -> policy.getSpecialization() != null &&
                         policy.getSpecialization().stream().anyMatch(specializations::contains)
         );
+    }
+
+    @Test
+    @DisplayName("조회수가 다른 정책 인기순 정렬")
+    void testOrderByPopularity_whenViewsAreDifferent() {
+        SearchConditionDto condition = SearchConditionDto.builder().institutionType(CENTER).build();
+        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE), POPULAR).getContent();
+
+        long expectedCount = policyRepository.findAll().stream()
+                .filter(policy -> policy.getInstitutionType().equals(CENTER)).count();
+        assertThat(result.size()).isEqualTo(expectedCount);
+        assertThat(result).allMatch(policy -> policy.getInstitutionType() == CENTER);
+        assertThat(result.get(0).getView()).isEqualTo(18L);
+        assertThat(result.get(1).getView()).isEqualTo(16L);
+        assertThat(result.get(2).getView()).isEqualTo(14L);
+    }
+
+    @Test
+    @DisplayName("조회수가 같은 정책 인기순 정렬")
+    void testOrderByPopularity_whenViewsAreSame() {
+        Policy policy1 = savePolicy("popularTest1", "policyNum100", 10L);
+        Policy policy2 = savePolicy("popularTest2", "policyNum200", 10L);
+        Policy policy3 = savePolicy("popularTest3", "policyNum300", 20L);
+        Policy policy4 = savePolicy("popularTest4", "policyNum400", 30L);
+        SearchConditionDto condition = SearchConditionDto.builder().keyword("popular").build();
+        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE), POPULAR).getContent();
+        assertThat(result.size()).isEqualTo(4);
+        assertThat(result).allMatch(policy -> policy.getTitle().contains("popular"));
+
+        // policy4, policy3, policy2, policy1 순으로 나와야 함
+        assertThat(result.get(0)).isEqualTo(policy4);
+        assertThat(result.get(1)).isEqualTo(policy3);
+        assertThat(result.get(2)).isEqualTo(policy2); // policyNum을 내림차순 할 경우 policy2가 우선 저장됨
+        assertThat(result.get(3)).isEqualTo(policy1);
     }
 
     static List<Policy> createDummyPolicies() {
@@ -282,7 +322,6 @@ public class PolicyQueryRepositoryTest {
                     .introduction("소개 내용 " + i)
                     .region(regions[i % regions.length])
                     .category(categories[i % categories.length])
-                    .region(regions[i % regions.length])
                     .marriage(marriages[i % marriages.length])
                     .minAge(18 + (i % 6)) // 18~23
                     .maxAge(29 + (i % 6)) // 29~34
@@ -295,6 +334,7 @@ public class PolicyQueryRepositoryTest {
                     ))
                     .major(List.of(majors[i % majors.length], majors[(i + 2) % majors.length]))
                     .employment(List.of(employments[i % employments.length]))
+                    .view(i)
                     .build();
 
             policies.add(policy);
@@ -327,5 +367,10 @@ public class PolicyQueryRepositoryTest {
             policySubRegions.add(policySubRegion);
         }
         return policySubRegions;
+    }
+
+    private Policy savePolicy(String title, String policyNum, Long view) {
+        Policy policy = Policy.builder().title(title).policyNum(policyNum).view(view).build();
+        return policyRepository.save(policy);
     }
 }

@@ -1,18 +1,24 @@
 package com.server.youthtalktalk.domain.policy.service;
 
 import com.server.youthtalktalk.domain.ItemType;
+import com.server.youthtalktalk.domain.policy.dto.SearchConditionDto;
+import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
+import com.server.youthtalktalk.domain.policy.entity.SortOption;
+import com.server.youthtalktalk.domain.policy.entity.condition.Education;
+import com.server.youthtalktalk.domain.policy.entity.condition.Employment;
+import com.server.youthtalktalk.domain.policy.entity.condition.Major;
+import com.server.youthtalktalk.domain.policy.entity.condition.Marriage;
+import com.server.youthtalktalk.domain.policy.entity.condition.Specialization;
+import com.server.youthtalktalk.domain.policy.entity.region.SubRegion;
+import com.server.youthtalktalk.domain.policy.repository.region.SubRegionRepository;
+import com.server.youthtalktalk.domain.scrap.entity.Scrap;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.policy.dto.*;
 import com.server.youthtalktalk.domain.policy.entity.Category;
-import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
-import com.server.youthtalktalk.domain.policy.entity.condition.*;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
-import com.server.youthtalktalk.domain.policy.entity.region.SubRegion;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
-import com.server.youthtalktalk.domain.policy.repository.region.SubRegionRepository;
-import com.server.youthtalktalk.domain.scrap.entity.Scrap;
 import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
@@ -132,10 +138,10 @@ public class PolicyServiceImpl implements PolicyService {
     /**
      * 조건 적용 정책 조회
      */
-    public SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto conditionDto, Pageable pageable) {
+    public SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto conditionDto, Pageable pageable, SortOption sortOption) {
         SearchConditionDto searchCondition = setSearchCondition(conditionDto);
 
-        Page<Policy> policies = policyRepository.findByCondition(searchCondition, pageable);
+        Page<Policy> policies = policyRepository.findByCondition(searchCondition, pageable, sortOption);
         if (policies.isEmpty()) {
             log.info("조건에 맞는 정책이 존재하지 않습니다");
             return SearchConditionResponseDto.toListDto(Collections.emptyList(), 0L); // 빈 리스트 반환

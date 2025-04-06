@@ -2,6 +2,7 @@ package com.server.youthtalktalk.domain.policy.controller;
 
 import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.dto.*;
+import com.server.youthtalktalk.domain.policy.entity.SortOption;
 import com.server.youthtalktalk.global.response.BaseResponse;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.domain.member.service.MemberService;
@@ -74,13 +75,17 @@ public class PolicyController {
      * 조건 적용 정책 조회
      */
     @PostMapping("/policies/search")
-    public BaseResponse<SearchConditionResponseDto> getPoliciesByCondition(@RequestBody SearchConditionRequestDto request,
-                                                                            @RequestParam(defaultValue = "10") int size,
-                                                                            @RequestParam(defaultValue = "0") int page) {
+    public BaseResponse<SearchConditionResponseDto> getPoliciesByCondition(
+            @RequestBody SearchConditionRequestDto request,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "RECENT") SortOption sort) {
+
         Pageable pageable = PageRequest.of(page, size);
-        SearchConditionResponseDto listResponseDto = policyService.getPoliciesByCondition(request, pageable);
-        if(listResponseDto.getPolicyList().isEmpty())
+        SearchConditionResponseDto listResponseDto = policyService.getPoliciesByCondition(request, pageable, sort);
+        if (listResponseDto.getPolicyList().isEmpty()) {
             return new BaseResponse<>(listResponseDto, BaseResponseCode.SUCCESS_POLICY_SEARCH_NO_RESULT);
+        }
         return new BaseResponse<>(listResponseDto, BaseResponseCode.SUCCESS_POLICY_FOUND);
     }
 
