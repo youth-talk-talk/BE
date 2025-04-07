@@ -80,19 +80,24 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                 .parallel(50)  // 최대 동시 실행 개수 10개 제한
                 .runOn(Schedulers.boundedElastic()) // I/O 작업 최적화
                 .flatMap(policyData -> Mono.fromCallable(() -> {
-                try {
+                    try {
+                        // 기존 정책이 있는지 확인 (policyNum 기준)
+                        Optional<Policy> existingPolicy = policyRepository.findByPolicyNum(policyData.plcyNo());
                         // 중앙 부처 코드 매핑
                         String departmentCode = policyData.sprvsnInstCd();
                         String departmentName = policyData.sprvsnInstCdNm();
 
                         Department department;
-                        if(departmentCode.isBlank()){
+                        // 이미 존재하는 정책이고, 기존 주관 기관이 변경되지 않으면 외부 API 호출 X
+                        if(existingPolicy.isPresent() && isExistedDepartment(existingPolicy.get(), departmentCode)) {
+                            department = existingPolicy.get().getDepartment();
+                        }
+                        else if(departmentCode.isBlank()) {
                             department = defaultDepartment;
                         }
                         else{
                             department = departmentRepository.findByCode(departmentCode)
-//                                .orElse(defaultDepartment);
-                                .orElseGet(() -> searchDepartmentCode(departmentCode, departmentName, defaultDepartment));
+                                    .orElseGet(() -> searchDepartmentCode(departmentCode, departmentName, defaultDepartment));
                         }
 
                         Policy policy = policyData.toPolicy(department);
@@ -102,8 +107,6 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                             policy = setRegionForPolicy(policy);
                         }
 
-                        // 기존 정책이 있는지 확인 (policyNum 기준)
-                        Optional<Policy> existingPolicy = policyRepository.findByPolicyNum(policy.getPolicyNum());
                         if (existingPolicy.isPresent()) {
                             // 기존 정책이 있으면 업데이트
                             Policy existing = existingPolicy.get();
@@ -290,5 +293,9 @@ public class PolicyDataServiceImpl implements PolicyDataService {
             log.info("Request URL: {}", clientRequest.url()); // 요청 URL + 파라미터 출력
             return Mono.just(clientRequest);
         });
+    }
+
+    private boolean isExistedDepartment(Policy policy, String departmentCode) {
+        return policy.getHostDepCode().equals(departmentCode);
     }
 }
