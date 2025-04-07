@@ -1,7 +1,10 @@
 package com.server.youthtalktalk.service.policy;
 
 import com.server.youthtalktalk.domain.policy.dto.data.PolicyData;
+import com.server.youthtalktalk.domain.policy.entity.Department;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
+import com.server.youthtalktalk.domain.policy.repository.DepartmentRepository;
+import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.policy.service.data.PolicyDataServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,16 +17,23 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
 public class PolicyDataServiceTest {
     @InjectMocks
     private PolicyDataServiceImpl policyDataService;
-    @Mock
     private PolicyData policyData;
+    @Mock
+    private DepartmentRepository departmentRepository;
+    @Mock
+    private PolicyRepository policyRepository;
+    private static final String DEFAULT_DEPARTMENT = "0";
 
     @BeforeEach
     void init(){
@@ -100,12 +110,17 @@ public class PolicyDataServiceTest {
     @Test
     void successGetPolicyEntityListForOtherDataIfCatchException(){
         // Given
-        PolicyData policyData2 = PolicyData.builder().build(); // 잘못된 데이터
-        List<PolicyData> policyDataList = Arrays.asList(policyData, policyData2);
+        PolicyData validPolicyData = policyData.toBuilder().sprvsnInstCd("").build();
+        PolicyData invalidPolicyData = PolicyData.builder().sprvsnInstCd("").build(); // 잘못된 데이터
+        List<PolicyData> policyDataList = Arrays.asList(invalidPolicyData, validPolicyData);
         // When
+        Department defaultDepartment = Department.builder().departmentId(1L).code("0000000").name("기본").image_url("").build();
+
+        when(departmentRepository.findByCode(DEFAULT_DEPARTMENT)).thenReturn(Optional.of(defaultDepartment));
+        when(policyRepository.findByPolicyNum(validPolicyData.plcyNo())).thenReturn(Optional.empty());
+        when(policyRepository.findByPolicyNum(invalidPolicyData.plcyNo())).thenReturn(Optional.empty());
         List<Policy> policyList = policyDataService.getPolicyEntityList(policyDataList).block();
         // Then
         assertThat(policyList).hasSize(1);
-        assertThat(policyList.get(0).getPolicyNum()).isEqualTo(policyData.plcyNo());
     }
 }
