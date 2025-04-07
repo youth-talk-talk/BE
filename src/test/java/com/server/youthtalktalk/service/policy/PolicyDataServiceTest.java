@@ -28,7 +28,6 @@ import static org.mockito.Mockito.when;
 public class PolicyDataServiceTest {
     @InjectMocks
     private PolicyDataServiceImpl policyDataService;
-    @Mock
     private PolicyData policyData;
     @Mock
     private DepartmentRepository departmentRepository;
@@ -111,15 +110,17 @@ public class PolicyDataServiceTest {
     @Test
     void successGetPolicyEntityListForOtherDataIfCatchException(){
         // Given
-        PolicyData policyData2 = PolicyData.builder().sprvsnInstCd("").build(); // 잘못된 데이터
-        List<PolicyData> policyDataList = Arrays.asList(policyData2);
+        PolicyData validPolicyData = policyData.toBuilder().sprvsnInstCd("").build();
+        PolicyData invalidPolicyData = PolicyData.builder().sprvsnInstCd("").build(); // 잘못된 데이터
+        List<PolicyData> policyDataList = Arrays.asList(invalidPolicyData, validPolicyData);
         // When
         Department defaultDepartment = Department.builder().departmentId(1L).code("0000000").name("기본").image_url("").build();
 
         when(departmentRepository.findByCode(DEFAULT_DEPARTMENT)).thenReturn(Optional.of(defaultDepartment));
-        when(policyRepository.findByPolicyNum(policyData.plcyNo())).thenReturn(null);
+        when(policyRepository.findByPolicyNum(validPolicyData.plcyNo())).thenReturn(Optional.empty());
+        when(policyRepository.findByPolicyNum(invalidPolicyData.plcyNo())).thenReturn(Optional.empty());
         List<Policy> policyList = policyDataService.getPolicyEntityList(policyDataList).block();
         // Then
-        assertThat(policyList).hasSize(0);
+        assertThat(policyList).hasSize(1);
     }
 }
