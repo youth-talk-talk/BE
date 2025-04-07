@@ -34,11 +34,15 @@ import com.server.youthtalktalk.domain.policy.entity.region.SubRegion;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.policy.repository.region.PolicySubRegionRepository;
 import com.server.youthtalktalk.domain.policy.repository.region.SubRegionRepository;
+import com.server.youthtalktalk.domain.policy.service.PolicyService;
+import java.time.LocalDate;
+import java.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,6 +64,8 @@ public class PolicyQueryRepositoryTest {
 
     @Autowired
     private SubRegionRepository subRegionRepository;
+    @Autowired
+    private PolicyService policyService;
 
     @BeforeEach
     void setUp() {
@@ -298,6 +304,22 @@ public class PolicyQueryRepositoryTest {
         assertThat(result.get(1)).isEqualTo(policy3);
         assertThat(result.get(2)).isEqualTo(policy2); // policyNum을 내림차순 할 경우 policy2가 우선 저장됨
         assertThat(result.get(3)).isEqualTo(policy1);
+    }
+
+    @Test
+    @DisplayName("마감일로 검색 성공")
+    void testSearchByApplyDue() {
+        LocalDate now = LocalDate.now();
+        Policy policy1 = Policy.builder().applyDue(now).policyNum("1").build();
+        Policy policy2 = Policy.builder().applyDue(now).policyNum("2").build();
+        Policy policy3 = Policy.builder().applyDue(now.plusDays(1)).policyNum("3").build();
+        Policy policy4 = Policy.builder().applyDue(now.plusDays(2)).policyNum("4").build();
+        List<Policy> policies = Arrays.asList(policy1, policy2, policy3, policy4);
+        policyRepository.saveAll(policies);
+        SearchConditionDto condition = SearchConditionDto.builder().applyDue(now).build();
+        List<Policy> result = policyRepository.findByCondition(condition, PageRequest.of(0, Integer.MAX_VALUE), RECENT).getContent();
+        assertThat(result.size()).isEqualTo(2);
+        assertThat(result).allMatch(policy -> policy.getApplyDue().equals(LocalDate.now()));
     }
 
     static List<Policy> createDummyPolicies() {
