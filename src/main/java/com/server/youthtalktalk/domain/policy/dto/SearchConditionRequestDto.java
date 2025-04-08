@@ -20,4 +20,5 @@ public class SearchConditionRequestDto {
     private List<String> specialization; // 특화분야
     private List<String> region; // 지역 (소분류 포함)
     private Boolean isFinished; // 마감여부
+    private String applyDue; // 마감일
 }

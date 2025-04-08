@@ -20,9 +20,13 @@ import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
+import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -46,6 +50,7 @@ public class PolicyServiceImpl implements PolicyService {
     public static final int MAX_AGE_INPUT = 100;
     public static final int MIN_EARN_INPUT = 0;
     public static final int MAX_EARN_INPUT = 2_000_000_000;
+    public static final String APPLY_DUE_FORMAT = "yyyy-MM-dd";
 
     private final PolicyRepository policyRepository;
     private final ScrapRepository scrapRepository;
@@ -172,6 +177,7 @@ public class PolicyServiceImpl implements PolicyService {
         List<Employment> employments = getEnumListFromStrings(conditionDto.getEmployment(), Employment.class);
         List<Specialization> specializations = getEnumListFromStrings(conditionDto.getSpecialization(), Specialization.class);
         List<Long> subRegionIds = parseSubRegionIds(conditionDto.getRegion());
+        LocalDate applyDue = parseApplyDue(conditionDto.getApplyDue());
 
         return SearchConditionDto.builder()
                 .keyword(keyword)
@@ -187,6 +193,7 @@ public class PolicyServiceImpl implements PolicyService {
                 .specializations(specializations)
                 .subRegionIds(subRegionIds)
                 .isFinished(conditionDto.getIsFinished())
+                .applyDue(applyDue)
                 .build();
     }
 
@@ -330,6 +337,20 @@ public class PolicyServiceImpl implements PolicyService {
                         subRegionIds::add,
                         () -> {throw new InvalidValueException(INVALID_REGION);} // 하위 지역에서도 못 찾으면 예외 발생
                 );
+    }
+
+    private LocalDate parseApplyDue(String dateStr) {
+        LocalDate applyDue = null;
+        if (dateStr == null) return applyDue;
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(APPLY_DUE_FORMAT);
+            applyDue = LocalDate.parse(dateStr, formatter);
+        } catch (DateTimeParseException e) {
+            // yyyy-MM-dd 형식에 맞지 않거나 존재하지 않는 날짜이면 예외 발생
+            log.info("마감일 파싱 실패: {}", dateStr);
+            throw new InvalidValueException(INVALID_APPLY_DUE);
+        }
+        return applyDue;
     }
 
     /**

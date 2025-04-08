@@ -57,6 +57,7 @@ public class PolicyQueryRepositoryImpl implements PolicyQueryRepository {
         predicate.and(inSpecializations(condition.specializations())); // 특화분야
         predicate.and(eqSubRegion(condition.subRegionIds())); // 지역
         predicate.and(eqIsFinished(condition.isFinished())); // 마감여부
+        predicate.and(eqApplyDue(condition.applyDue())); // 마감일
 
         // 데이터 조회 쿼리
         List<Policy> policies = queryFactory
@@ -171,5 +172,9 @@ public class PolicyQueryRepositoryImpl implements PolicyQueryRepository {
         return isFinished
                 ? policy.applyDue.isNotNull().and(policy.applyDue.lt(today))
                 : policy.applyDue.isNull().or(policy.applyDue.goe(today));
+    }
+
+    private BooleanExpression eqApplyDue(LocalDate applyDue) {
+        return (applyDue != null) ? policy.applyDue.eq(applyDue) : null;
     }
 }

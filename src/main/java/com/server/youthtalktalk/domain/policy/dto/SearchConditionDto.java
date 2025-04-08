@@ -7,6 +7,7 @@ import com.server.youthtalktalk.domain.policy.entity.condition.Employment;
 import com.server.youthtalktalk.domain.policy.entity.condition.Major;
 import com.server.youthtalktalk.domain.policy.entity.condition.Specialization;
 import com.server.youthtalktalk.domain.policy.entity.condition.Marriage;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.Builder;
 
@@ -24,6 +25,7 @@ public record SearchConditionDto(
         List<Employment> employments,
         List<Specialization> specializations,
         List<Long> subRegionIds,
-        Boolean isFinished
+        Boolean isFinished,
+        LocalDate applyDue
         ) {
 }
