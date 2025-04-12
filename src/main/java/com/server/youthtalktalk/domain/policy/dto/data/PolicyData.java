@@ -92,9 +92,16 @@ public record PolicyData(
         LocalDate applyDue = applyDates[1];
 
         Earn earn = Earn.fromKey(plcyNo, earnCndSeCd);
-        boolean isLimitedAge = sprtTrgtAgeLmtYn.equals("N");
+        Boolean isLimitedAge = sprtTrgtAgeLmtYn == null ? null : "N".equals(sprtTrgtAgeLmtYn);
         Region region = findRegion();
         LocalDate[] bizTerm = parsingBizTerm();
+        
+        int minAge = isLimitedAge != null && isLimitedAge && !sprtTrgtMinAge.isEmpty()
+                ? Integer.parseInt(sprtTrgtMinAge) : 0;
+        int maxAge = isLimitedAge != null && isLimitedAge && !sprtTrgtMaxAge.isEmpty()
+                ? Integer.parseInt(sprtTrgtMaxAge) : 100;
+        int maxEarn = earn.equals(Earn.ANNUL_INCOME) && !earnMaxAmt.isEmpty() ? Integer.parseInt(earnMaxAmt) : 0;
+        int minEarn = earn.equals(Earn.ANNUL_INCOME) && !earnMinAmt.isEmpty() ? Integer.parseInt(earnMinAmt) : 0;
 
         return Policy.builder()
                 .policyNum(plcyNo)
@@ -102,40 +109,40 @@ public record PolicyData(
                 .title(plcyNm)
                 .institutionType(InstitutionType.fromKey(plcyNo, pvsnInstGroupCd))
                 .isLimitedAge(isLimitedAge)
-                .minAge(isLimitedAge && !sprtTrgtMinAge.isEmpty() ? Integer.parseInt(sprtTrgtMinAge) : 0)
-                .maxAge(isLimitedAge && !sprtTrgtMaxAge.isEmpty() ? Integer.parseInt(sprtTrgtMaxAge) : 0)
+                .minAge(minAge)
+                .maxAge(maxAge)
                 .repeatCode(repeatCode)
                 .applyTerm(aplyYmd)
                 .applyStart(applyStart)
                 .applyDue(applyDue)
-                .addition(addAplyQlfcCndCn)
-                .etc(etcMttrCn)
-                .applLimit(ptcpPrpTrgtCn)
-                .applStep(plcyAplyMthdCn)
-                .applUrl(aplyUrlAddr)
+                .addition(invalidToNull(addAplyQlfcCndCn))
+                .etc(invalidToNull(etcMttrCn))
+                .applLimit(invalidToNull(ptcpPrpTrgtCn))
+                .applStep(invalidToNull(plcyAplyMthdCn))
+                .applUrl(invalidToNull(aplyUrlAddr))
                 .category(Category.fromKey(plcyNo, bscPlanPlcyWayNo))
                 .education(Education.findEducationList(plcyNo, schoolCd))
                 .employment(Employment.findEmploymentList(plcyNo, jobCd))
-                .hostDep(sprvsnInstCdNm)
-                .refUrl1(refUrlAddr1)
-                .refUrl2(refUrlAddr2)
-                .evaluation(srngMthdCn)
-                .introduction(plcyExplnCn)
-                .operatingOrg(operInstCdNm)
+                .hostDep(invalidToNull(sprvsnInstCdNm))
+                .refUrl1(invalidToNull(refUrlAddr1))
+                .refUrl2(invalidToNull(refUrlAddr2))
+                .evaluation(invalidToNull(srngMthdCn))
+                .introduction(invalidToNull(plcyExplnCn))
+                .operatingOrg(invalidToNull(operInstCdNm))
                 .specialization(Specialization.findSpecializationList(plcyNo, sbizCd))
                 .major(Major.findMajorList(plcyNo, plcyMajorCd))
-                .submitDoc(sbmsnDcmntCn)
-                .supportDetail(plcySprtCn)
+                .submitDoc(invalidToNull(sbmsnDcmntCn))
+                .supportDetail(invalidToNull(plcySprtCn))
                 .earn(earn)
-                .maxEarn(earn.equals(Earn.ANNUL_INCOME) && !earnMaxAmt.isEmpty() ? Integer.parseInt(earnMaxAmt) : 0)
-                .minEarn(earn.equals(Earn.ANNUL_INCOME) && !earnMinAmt.isEmpty() ? Integer.parseInt(earnMinAmt) : 0)
-                .earnEtc(earnEtcCn)
+                .maxEarn(maxEarn)
+                .minEarn(minEarn)
+                .earnEtc(invalidToNull(earnEtcCn))
                 .marriage(Marriage.fromKey(plcyNo, mrgSttsCd))
-                .zipCd(zipCd)
+                .zipCd(invalidToNull(zipCd))
                 .bizStart(bizTerm[0])
                 .bizDue(bizTerm[1])
                 .department(department)
-                .hostDepCode(sprvsnInstCd)
+                .hostDepCode(invalidToNull(sprvsnInstCd))
                 .build();
     }
 
@@ -186,5 +193,15 @@ public record PolicyData(
             compare = date;
         }
         return true;
+    }
+
+    private String invalidToNull(String value){
+        if (value != null) {
+            String str = value.trim();
+            if((str.isBlank() || str.equals("null") || str.equals("NULL") || str.equals("-"))){
+                return null;
+            }
+        }
+        return value;
     }
 }
