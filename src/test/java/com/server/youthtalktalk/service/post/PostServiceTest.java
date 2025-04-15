@@ -6,7 +6,12 @@ import com.server.youthtalktalk.domain.image.repository.ImageRepository;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.entity.Role;
 import com.server.youthtalktalk.domain.policy.entity.Category;
+import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
+import com.server.youthtalktalk.domain.policy.entity.RepeatCode;
+import com.server.youthtalktalk.domain.policy.entity.condition.Earn;
+import com.server.youthtalktalk.domain.policy.entity.condition.Marriage;
+import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.post.dto.PostCreateReqDto;
 import com.server.youthtalktalk.domain.post.dto.PostUpdateReqDto;
 import com.server.youthtalktalk.domain.post.entity.Content;
@@ -73,6 +78,11 @@ class PostServiceTest {
                         .policyNum("policyNum")
                         .title("policy1")
                         .category(Category.JOB)
+                        .repeatCode(RepeatCode.PERIOD)
+                        .earn(Earn.UNRESTRICTED)
+                        .region(Region.ALL)
+                        .institutionType(InstitutionType.CENTER)
+                        .marriage(Marriage.UNRESTRICTED)
                         .build());
 
         this.post = postRepository.save(Post.builder()

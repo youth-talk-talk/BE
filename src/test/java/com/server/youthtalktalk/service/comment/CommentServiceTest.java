@@ -10,7 +10,11 @@ import com.server.youthtalktalk.domain.likes.repository.LikeRepository;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
 import com.server.youthtalktalk.domain.member.entity.Role;
+import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
+import com.server.youthtalktalk.domain.policy.entity.RepeatCode;
+import com.server.youthtalktalk.domain.policy.entity.condition.Earn;
+import com.server.youthtalktalk.domain.policy.entity.condition.Marriage;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.post.entity.Post;
@@ -61,7 +65,7 @@ class CommentServiceTest {
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
         memberRepository.save(member);
 
-        Policy policy = Policy.builder().policyNum("policyNum").build();
+        Policy policy = createPolicy("policyNum");
         policyRepository.save(policy);
 
         String content = "policyComment_content";
@@ -139,7 +143,7 @@ class CommentServiceTest {
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
         memberRepository.save(member);
 
-        Policy policy = Policy.builder().policyNum("policyNum").build();
+        Policy policy = createPolicy("policyNum");
         policyRepository.save(policy);
 
         PolicyComment policyComment1 = PolicyComment.builder().policy(policy).content("content1").writer(member).build();
@@ -185,7 +189,7 @@ class CommentServiceTest {
     void 정책_댓글_수정_성공() {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
-        Policy policy = Policy.builder().policyNum("policyNum").build();
+        Policy policy = createPolicy("policyNum");
         PolicyComment comment = PolicyComment.builder().content("content").build();
         comment.setWriter(member);
         comment.setPolicy(policy);
@@ -369,6 +373,18 @@ class CommentServiceTest {
         assertThat(likedComments.size()).isEqualTo(2);
         assertThat(likedComments.contains(comment1)).isTrue();
         assertThat(likedComments.contains(comment2)).isTrue();
+    }
+
+    private static Policy createPolicy(String policyNum) {
+        return Policy.builder()
+                .title("test")
+                .policyNum(policyNum)
+                .repeatCode(RepeatCode.ALWAYS)
+                .earn(Earn.UNRESTRICTED)
+                .marriage(Marriage.UNRESTRICTED)
+                .institutionType(InstitutionType.CENTER)
+                .region(Region.ALL)
+                .build();
     }
 
 }
