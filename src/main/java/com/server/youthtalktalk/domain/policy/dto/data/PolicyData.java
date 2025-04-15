@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Builder(toBuilder = true)
@@ -77,6 +78,7 @@ public record PolicyData(
     private static final int DEFAULT_MAX_AGE = 100;
     private static final int DEFAULT_MIN_EARN = 0;
     private static final int DEFAULT_MAX_EARN = 0;
+    private static final Set<String> INVALID_STRINGS = Set.of("null", "NULL", "-");
 
     public Policy toPolicy(Department department) {
         RepeatCode repeatCode = RepeatCode.fromKey(plcyNo, aplyPrdSeCd);
@@ -204,7 +206,7 @@ public record PolicyData(
     private String invalidToNull(String value){
         if (value != null) {
             String str = value.trim();
-            if((str.isBlank() || str.equals("null") || str.equals("NULL") || str.equals("-"))){
+            if((str.isBlank() || INVALID_STRINGS.contains(str))){
                 return null;
             }
         }
