@@ -14,6 +14,8 @@ public enum Earn {
     private final String name;
 
     public static Earn fromKey(String policyId, String key){
+        if(key == null) return Earn.UNRESTRICTED;
+
         return switch (key) {
             case "0043001" -> Earn.UNRESTRICTED;
             case "0043002" -> Earn.ANNUL_INCOME;

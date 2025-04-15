@@ -19,15 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static com.server.youthtalktalk.domain.policy.entity.InstitutionType.CENTER;
 
 import com.server.youthtalktalk.domain.policy.dto.SearchConditionDto;
-import com.server.youthtalktalk.domain.policy.entity.Category;
-import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
-import com.server.youthtalktalk.domain.policy.entity.Policy;
-import com.server.youthtalktalk.domain.policy.entity.SortOption;
-import com.server.youthtalktalk.domain.policy.entity.condition.Education;
-import com.server.youthtalktalk.domain.policy.entity.condition.Employment;
-import com.server.youthtalktalk.domain.policy.entity.condition.Major;
-import com.server.youthtalktalk.domain.policy.entity.condition.Marriage;
-import com.server.youthtalktalk.domain.policy.entity.condition.Specialization;
+import com.server.youthtalktalk.domain.policy.entity.*;
+import com.server.youthtalktalk.domain.policy.entity.condition.*;
 import com.server.youthtalktalk.domain.policy.entity.region.PolicySubRegion;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.entity.region.SubRegion;
@@ -356,6 +349,7 @@ public class PolicyQueryRepositoryTest {
                     ))
                     .major(List.of(majors[i % majors.length], majors[(i + 2) % majors.length]))
                     .employment(List.of(employments[i % employments.length]))
+                    .repeatCode(RepeatCode.PERIOD)
                     .view(i)
                     .build();
 
@@ -392,7 +386,17 @@ public class PolicyQueryRepositoryTest {
     }
 
     private Policy savePolicy(String title, String policyNum, Long view) {
-        Policy policy = Policy.builder().title(title).policyNum(policyNum).view(view).build();
+        Policy policy = Policy.builder()
+                .title(title)
+                .policyNum(policyNum)
+                .view(view)
+                .institutionType(CENTER)
+                .repeatCode(RepeatCode.ALWAYS)
+                .earn(ANNUL_INCOME)
+                .marriage(Marriage.UNRESTRICTED)
+                .category(JOB)
+                .region(Region.ALL)
+                .build();
         return policyRepository.save(policy);
     }
 }

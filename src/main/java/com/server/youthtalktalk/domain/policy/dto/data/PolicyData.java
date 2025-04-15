@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Builder(toBuilder = true)
@@ -73,70 +74,84 @@ public record PolicyData(
         String rgtrHghrkInstCdNm
 ) {
     private static final String regionCode = "0054002";
+    private static final int DEFAULT_MIN_AGE = 0;
+    private static final int DEFAULT_MAX_AGE = 100;
+    private static final int DEFAULT_MIN_EARN = 0;
+    private static final int DEFAULT_MAX_EARN = 0;
+    private static final Set<String> INVALID_STRINGS = Set.of("null", "NULL", "-");
 
     public Policy toPolicy(Department department) {
         RepeatCode repeatCode = RepeatCode.fromKey(plcyNo, aplyPrdSeCd);
 
-        // 신청 기간 파싱(상시인 경우 x)
-        if (aplyYmd.length() > 20) {
-            log.info("aplyYmd policyId = {}", plcyNo);
+        try {
+            // 신청 기간 파싱(상시인 경우 x)
+            if (aplyYmd.length() > 20) {
+                log.info("aplyYmd policyId = {}", plcyNo);
+            }
+
+            String[] dates = aplyYmd.split("\\\\N");
+            if (dates.length > 1 && !isEqualApplyDates(dates)) { // 서로 다른 신청 기간이 여러 개인 경우
+                repeatCode = RepeatCode.ALWAYS; // 상시 처리
+            }
+
+            LocalDate[] applyDates = parsingApplyYmd(dates[0]);
+            LocalDate applyStart = applyDates[0];
+            LocalDate applyDue = applyDates[1];
+
+            Earn earn = Earn.fromKey(plcyNo, earnCndSeCd);
+            Boolean isLimitedAge = sprtTrgtAgeLmtYn == null ? null : "N".equals(sprtTrgtAgeLmtYn);
+            Region region = findRegion();
+            LocalDate[] bizTerm = parsingBizTerm();
+
+            int minAge = parseAge(isLimitedAge, sprtTrgtMinAge, DEFAULT_MIN_AGE);
+            int maxAge = parseAge(isLimitedAge, sprtTrgtMaxAge, DEFAULT_MAX_AGE);
+            int maxEarn = parseEarn(earn, earnMaxAmt, DEFAULT_MAX_EARN);
+            int minEarn = parseEarn(earn, earnMinAmt, DEFAULT_MIN_EARN);
+
+            return Policy.builder()
+                    .policyNum(plcyNo)
+                    .region(region)
+                    .title(plcyNm)
+                    .institutionType(InstitutionType.fromKey(plcyNo, pvsnInstGroupCd))
+                    .isLimitedAge(isLimitedAge)
+                    .minAge(minAge)
+                    .maxAge(maxAge)
+                    .repeatCode(repeatCode)
+                    .applyTerm(aplyYmd)
+                    .applyStart(applyStart)
+                    .applyDue(applyDue)
+                    .addition(invalidToNull(addAplyQlfcCndCn))
+                    .etc(invalidToNull(etcMttrCn))
+                    .applLimit(invalidToNull(ptcpPrpTrgtCn))
+                    .applStep(invalidToNull(plcyAplyMthdCn))
+                    .applUrl(invalidToNull(aplyUrlAddr))
+                    .category(Category.fromKey(plcyNo, bscPlanPlcyWayNo))
+                    .education(Education.findEducationList(plcyNo, schoolCd))
+                    .employment(Employment.findEmploymentList(plcyNo, jobCd))
+                    .hostDep(invalidToNull(sprvsnInstCdNm))
+                    .refUrl1(invalidToNull(refUrlAddr1))
+                    .refUrl2(invalidToNull(refUrlAddr2))
+                    .evaluation(invalidToNull(srngMthdCn))
+                    .introduction(invalidToNull(plcyExplnCn))
+                    .operatingOrg(invalidToNull(operInstCdNm))
+                    .specialization(Specialization.findSpecializationList(plcyNo, sbizCd))
+                    .major(Major.findMajorList(plcyNo, plcyMajorCd))
+                    .submitDoc(invalidToNull(sbmsnDcmntCn))
+                    .supportDetail(invalidToNull(plcySprtCn))
+                    .earn(earn)
+                    .maxEarn(maxEarn)
+                    .minEarn(minEarn)
+                    .earnEtc(invalidToNull(earnEtcCn))
+                    .marriage(Marriage.fromKey(plcyNo, mrgSttsCd))
+                    .zipCd(invalidToNull(zipCd))
+                    .bizStart(bizTerm[0])
+                    .bizDue(bizTerm[1])
+                    .department(department)
+                    .hostDepCode(invalidToNull(sprvsnInstCd))
+                    .build();
+        }catch (NullPointerException e){
+            throw e;
         }
-
-        String[] dates = aplyYmd.split("\\\\N");
-        if (dates.length > 1 && !isEqualApplyDates(dates)) { // 서로 다른 신청 기간이 여러 개인 경우
-            repeatCode = RepeatCode.ALWAYS; // 상시 처리
-        }
-
-        LocalDate[] applyDates = parsingApplyYmd(dates[0]);
-        LocalDate applyStart = applyDates[0];
-        LocalDate applyDue = applyDates[1];
-
-        Earn earn = Earn.fromKey(plcyNo, earnCndSeCd);
-        boolean isLimitedAge = sprtTrgtAgeLmtYn.equals("N");
-        Region region = findRegion();
-        LocalDate[] bizTerm = parsingBizTerm();
-
-        return Policy.builder()
-                .policyNum(plcyNo)
-                .region(region)
-                .title(plcyNm)
-                .institutionType(InstitutionType.fromKey(plcyNo, pvsnInstGroupCd))
-                .isLimitedAge(isLimitedAge)
-                .minAge(isLimitedAge && !sprtTrgtMinAge.isEmpty() ? Integer.parseInt(sprtTrgtMinAge) : 0)
-                .maxAge(isLimitedAge && !sprtTrgtMaxAge.isEmpty() ? Integer.parseInt(sprtTrgtMaxAge) : 0)
-                .repeatCode(repeatCode)
-                .applyTerm(aplyYmd)
-                .applyStart(applyStart)
-                .applyDue(applyDue)
-                .addition(addAplyQlfcCndCn)
-                .etc(etcMttrCn)
-                .applLimit(ptcpPrpTrgtCn)
-                .applStep(plcyAplyMthdCn)
-                .applUrl(aplyUrlAddr)
-                .category(Category.fromKey(plcyNo, bscPlanPlcyWayNo))
-                .education(Education.findEducationList(plcyNo, schoolCd))
-                .employment(Employment.findEmploymentList(plcyNo, jobCd))
-                .hostDep(sprvsnInstCdNm)
-                .refUrl1(refUrlAddr1)
-                .refUrl2(refUrlAddr2)
-                .evaluation(srngMthdCn)
-                .introduction(plcyExplnCn)
-                .operatingOrg(operInstCdNm)
-                .specialization(Specialization.findSpecializationList(plcyNo, sbizCd))
-                .major(Major.findMajorList(plcyNo, plcyMajorCd))
-                .submitDoc(sbmsnDcmntCn)
-                .supportDetail(plcySprtCn)
-                .earn(earn)
-                .maxEarn(earn.equals(Earn.ANNUL_INCOME) && !earnMaxAmt.isEmpty() ? Integer.parseInt(earnMaxAmt) : 0)
-                .minEarn(earn.equals(Earn.ANNUL_INCOME) && !earnMinAmt.isEmpty() ? Integer.parseInt(earnMinAmt) : 0)
-                .earnEtc(earnEtcCn)
-                .marriage(Marriage.fromKey(plcyNo, mrgSttsCd))
-                .zipCd(zipCd)
-                .bizStart(bizTerm[0])
-                .bizDue(bizTerm[1])
-                .department(department)
-                .hostDepCode(sprvsnInstCd)
-                .build();
     }
 
     // 지역 코드 매핑
@@ -186,5 +201,26 @@ public record PolicyData(
             compare = date;
         }
         return true;
+    }
+
+    private String invalidToNull(String value){
+        if (value != null) {
+            String str = value.trim();
+            if((str.isBlank() || INVALID_STRINGS.contains(str))){
+                return null;
+            }
+        }
+        return value;
+    }
+
+    private int parseAge(Boolean isLimitedAge, String value, int defaultValue) {
+        return Boolean.TRUE.equals(isLimitedAge) && value != null && !value.isEmpty()
+                ? Integer.parseInt(value)
+                : defaultValue;
+    }
+
+    private int parseEarn(Earn earn, String value, int defaultValue) {
+        return earn.equals(Earn.ANNUL_INCOME) && value != null && !earnMaxAmt.isEmpty()
+                ? Integer.parseInt(value) : defaultValue;
     }
 }

@@ -14,6 +14,8 @@ public enum Marriage {
     private final String name;
 
     public static Marriage fromKey(String policyNum, String key) {
+        if (key == null) return Marriage.UNRESTRICTED;
+
         return switch(key){
                 case "0055001" -> Marriage.MARRIED;
                 case "0055002" -> Marriage.SINGLE;

@@ -28,14 +28,14 @@ public class Policy extends BaseTimeEntity {
     private String policyNum; // 정책 번호
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "region", length = 20)
+    @Column(name = "region", length = 20, nullable = false)
     private Region region; // 지역
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "institution_type", length = 20)
+    @Column(name = "institution_type", length = 20, nullable = false)
     private InstitutionType institutionType; // 담당기관 구분(중앙부처, 지자체)
 
-    @Column(name = "title", length = 150)
+    @Column(name = "title", length = 150, nullable = false)
     private String title; // 정책명
 
     @Column(name = "introduction", columnDefinition = "TEXT")
@@ -48,7 +48,7 @@ public class Policy extends BaseTimeEntity {
     private String applyTerm; // 신청기간
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "repeat_code", length = 20)
+    @Column(name = "repeat_code", length = 20, nullable = false)
     private RepeatCode repeatCode; // 신청 기간 반복 코드
 
     @Column(name = "apply_start")
@@ -58,10 +58,10 @@ public class Policy extends BaseTimeEntity {
     private LocalDate applyDue; // 신청 마감일
 
     @Column(name = "min_age")
-    private Integer minAge; // 최소 연령
+    private int minAge; // 최소 연령
 
     @Column(name = "max_age")
-    private Integer maxAge; // 최대 연령
+    private int maxAge; // 최대 연령
 
     @Column(name = "addition", columnDefinition = "TEXT")
     private String addition; // 추가 사항
@@ -136,7 +136,7 @@ public class Policy extends BaseTimeEntity {
     private List<Education> education; // 학력 요건
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "marriage", length = 255)
+    @Column(name = "marriage", length = 255, nullable = false)
     private Marriage marriage; // 결혼 요건
 
     @ElementCollection

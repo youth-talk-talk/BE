@@ -16,6 +16,8 @@ public enum RepeatCode {
     private final String name;
 
     public static RepeatCode fromKey(String policyNum, String key){
+        if(key == null) return RepeatCode.ALWAYS;
+
         return switch (key) {
             case "0057001" -> RepeatCode.PERIOD;
             case "0057002" -> RepeatCode.ALWAYS;

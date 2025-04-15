@@ -14,6 +14,8 @@ public enum InstitutionType {
     private final String key;
     // 담당 기관 타입 매핑
     public static InstitutionType fromKey(String policyNum, String key){
+        if(key == null) return InstitutionType.CENTER;
+
         return switch (key) {
             case "0054001" -> InstitutionType.CENTER;
             case "0054002" -> InstitutionType.LOCAL;
