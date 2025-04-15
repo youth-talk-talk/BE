@@ -303,10 +303,10 @@ public class PolicyQueryRepositoryTest {
     @DisplayName("마감일로 검색 성공")
     void testSearchByApplyDue() {
         LocalDate now = LocalDate.now();
-        Policy policy1 = Policy.builder().applyDue(now).policyNum("1").build();
-        Policy policy2 = Policy.builder().applyDue(now).policyNum("2").build();
-        Policy policy3 = Policy.builder().applyDue(now.plusDays(1)).policyNum("3").build();
-        Policy policy4 = Policy.builder().applyDue(now.plusDays(2)).policyNum("4").build();
+        Policy policy1 = savePolicy("test1", "1", 0L).toBuilder().applyDue(now).build();
+        Policy policy2 = savePolicy("test2", "2", 0L).toBuilder().applyDue(now).build();
+        Policy policy3 = savePolicy("test3", "3", 0L).toBuilder().applyDue(now.plusDays(2)).build();
+        Policy policy4 = savePolicy("test3", "4", 0L).toBuilder().applyDue(now.plusDays(2)).build();
         List<Policy> policies = Arrays.asList(policy1, policy2, policy3, policy4);
         policyRepository.saveAll(policies);
         SearchConditionDto condition = SearchConditionDto.builder().applyDue(now).build();
