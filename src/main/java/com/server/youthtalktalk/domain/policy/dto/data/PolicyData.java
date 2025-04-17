@@ -84,19 +84,20 @@ public record PolicyData(
         RepeatCode repeatCode = RepeatCode.fromKey(plcyNo, aplyPrdSeCd);
 
         try {
-            // 신청 기간 파싱(상시인 경우 x)
-            if (aplyYmd.length() > 20) {
-                log.info("aplyYmd policyId = {}", plcyNo);
-            }
-
             String[] dates = aplyYmd.split("\\\\N");
             if (dates.length > 1 && !isEqualApplyDates(dates)) { // 서로 다른 신청 기간이 여러 개인 경우
                 repeatCode = RepeatCode.ALWAYS; // 상시 처리
             }
 
-            LocalDate[] applyDates = parsingApplyYmd(dates[0]);
-            LocalDate applyStart = applyDates[0];
-            LocalDate applyDue = applyDates[1];
+            LocalDate applyStart = null;
+            LocalDate applyDue = null;
+
+            // 반복코드가 상시인 경우 신청기간 null 처리
+            if(!repeatCode.equals(RepeatCode.ALWAYS)){
+                LocalDate[] applyDates = parsingApplyYmd(dates[0]);
+                applyStart = applyDates[0];
+                applyDue = applyDates[1];
+            }
 
             Earn earn = Earn.fromKey(plcyNo, earnCndSeCd);
             Boolean isLimitedAge = sprtTrgtAgeLmtYn == null ? null : "N".equals(sprtTrgtAgeLmtYn);

@@ -3,6 +3,7 @@ package com.server.youthtalktalk.service.policy;
 import com.server.youthtalktalk.domain.policy.dto.data.PolicyData;
 import com.server.youthtalktalk.domain.policy.entity.Department;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
+import com.server.youthtalktalk.domain.policy.entity.RepeatCode;
 import com.server.youthtalktalk.domain.policy.repository.DepartmentRepository;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.policy.service.data.PolicyDataServiceImpl;
@@ -105,6 +106,26 @@ public class PolicyDataServiceTest {
         String[] dates = applyDate.split("\\\\N");
         assertThat(dates[0]).isEqualTo("20250401 ~ 20250430");
     }
+
+    @DisplayName("반복코드 상시일 경우 신청 기간 null 처리")
+    @Test
+    void successApplyDateNullIfRepeatCodeIsAlways(){
+        String aplyPrdSeCd = RepeatCode.ALWAYS.getKey();
+        policyData.toBuilder().aplyPrdSeCd(aplyPrdSeCd).build();
+
+        Department defaultDepartment = Department.builder()
+                .departmentId(1L)
+                .code("0000000")
+                .name("기본")
+                .image_url("")
+                .build();
+        Policy policy = policyData.toPolicy(defaultDepartment);
+
+        assertThat(policy.getApplyStart()).isNull();
+        assertThat(policy.getApplyDue()).isNull();
+        assertThat(policy.getApplyTerm()).isNotNull();
+    }
+
 
     @DisplayName("예외 감지로 인한 정책 데이터 엔티티 변환 실패, 다른 데이터 이어서 변환 성공")
     @Test
