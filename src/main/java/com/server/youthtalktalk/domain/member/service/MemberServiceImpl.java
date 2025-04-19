@@ -44,7 +44,6 @@ public class MemberServiceImpl implements MemberService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final BlockRepository blockRepository;
-
     private final JwtService jwtService;
     private final HttpServletResponse httpServletResponse;
     private final AppleAuthUtil appleAuthUtil;
