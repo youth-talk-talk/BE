@@ -10,6 +10,7 @@ import com.server.youthtalktalk.domain.comment.entity.PostComment;
 import com.server.youthtalktalk.domain.comment.repository.CommentRepository;
 import com.server.youthtalktalk.domain.likes.entity.Likes;
 import com.server.youthtalktalk.domain.likes.repository.LikeRepository;
+import com.server.youthtalktalk.domain.member.entity.Block;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
@@ -24,6 +25,7 @@ import com.server.youthtalktalk.global.response.exception.comment.CommentLikeNot
 import com.server.youthtalktalk.global.response.exception.comment.CommentNotFoundException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -77,10 +79,9 @@ public class CommentServiceImpl implements CommentService {
      */
     @Override
     public List<PolicyComment> getPolicyComments(Long policyId) {
-        if (policyId == null) {
-            throw new InvalidValueException(INVALID_INPUT_VALUE);
+        if (!policyRepository.existsByPolicyId(policyId)) {
+            throw new PolicyNotFoundException();
         }
-        policyRepository.findByPolicyId(policyId).orElseThrow(PolicyNotFoundException::new);
         return commentRepository.findPolicyCommentsByPolicyIdOrderByCreatedAtAsc(policyId);
     }
 
@@ -89,10 +90,9 @@ public class CommentServiceImpl implements CommentService {
      */
     @Override
     public List<PostComment> getPostComments(Long postId) {
-        if (postId == null || postId < 0) {
-            throw new InvalidValueException(INVALID_INPUT_VALUE);
+        if (!postRepository.existsById(postId)) {
+            throw new PostNotFoundException();
         }
-        postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
         return commentRepository.findPostCommentsByPostIdOrderByCreatedAtAsc(postId);
     }
 
@@ -118,9 +118,12 @@ public class CommentServiceImpl implements CommentService {
      */
     @Override
     public List<CommentDto> toCommentDtoList(List<? extends Comment> comments, Member member) {
+        Set<Member> blockedMembers = member.getBlocks().stream().map(Block::getBlockedMember).collect(Collectors.toSet());
+
         return comments.stream()
+                .filter(comment -> !blockedMembers.contains(comment.getWriter())) // 차단한 유저가 작성한 댓글은 제외
                 .map(comment -> {
-                    String nickname = (comment.getWriter() != null) ? comment.getWriter().getNickname() : "null"; // writer null인 경우 닉네임 치환
+                    String nickname = (comment.getWriter() != null) ? comment.getWriter().getNickname() : "null"; // 댓글 작성자가 탈퇴한 경우 닉네임 치환
                     Boolean isLikedByMember = isLikedByMember(comment, member); // 회원의 좋아요 여부 판단
                     return new CommentDto(comment.getId(), nickname, comment.getContent(), isLikedByMember);
                 })

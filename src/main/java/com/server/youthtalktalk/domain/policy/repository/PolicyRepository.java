@@ -17,7 +17,6 @@ import java.util.Optional;
 @Repository
 public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQueryRepository {
 
-
     /**
      * top5 정책 조회 (조회수순)
      */
@@ -35,7 +34,6 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
      */
     @Query("SELECT p FROM Policy p WHERE (p.region = :region OR p.region = 'ALL') AND  (REPLACE(p.title, ' ', '') LIKE CONCAT('%', :title, '%')) ORDER BY p.policyNum DESC")
     Page<Policy> findByRegionAndTitle(@Param("region") Region region, @Param("title") String title, Pageable pageable);
-
 
     /**
      * 특정 정책 조회
@@ -56,4 +54,9 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
     Page<Policy> findTop5OrderByDeadlineAsc(Member member, Pageable pageable);
 
     Optional<Policy> findByPolicyNum(String policyNum);
+
+    /**
+     * policyId로 정책 존재 여부 검사
+     */
+    boolean existsByPolicyId(Long policyId);
 }
