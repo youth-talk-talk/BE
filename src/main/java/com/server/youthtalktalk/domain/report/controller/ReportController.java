@@ -32,9 +32,9 @@ public class ReportController {
     }
 
     @PostMapping("/comments/{id}")
-    public BaseResponse<String> reportComment(@PathVariable Long commentId){
+    public BaseResponse<String> reportComment(@PathVariable Long id){
         Member reporter = memberService.getCurrentMember();
-        Comment comment = commentRepository.findById(commentId).orElseThrow(CommentNotFoundException::new);
+        Comment comment = commentRepository.findById(id).orElseThrow(CommentNotFoundException::new);
         reportService.reportComment(comment, reporter);
         return new BaseResponse<>(BaseResponseCode.SUCCESS);
     }
