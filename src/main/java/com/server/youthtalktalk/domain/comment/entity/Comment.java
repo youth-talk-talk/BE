@@ -3,6 +3,8 @@ package com.server.youthtalktalk.domain.comment.entity;
 import com.server.youthtalktalk.domain.BaseTimeEntity;
 import com.server.youthtalktalk.domain.likes.entity.Likes;
 import com.server.youthtalktalk.domain.member.entity.Member;
+import com.server.youthtalktalk.domain.report.entity.CommentReport;
+import com.server.youthtalktalk.domain.report.entity.PostReport;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -32,6 +34,10 @@ public abstract class Comment extends BaseTimeEntity {
     @Builder.Default
     @OneToMany(mappedBy = "comment")
     private List<Likes> commentLikes = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL)
+    private List<CommentReport> commentReports = new ArrayList<>();
 
     /* 연관관계 메서드 */
     public void setWriter(Member member) {

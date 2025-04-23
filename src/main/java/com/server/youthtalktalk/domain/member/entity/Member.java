@@ -61,6 +61,7 @@ public class Member extends BaseTimeEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Block> blocks = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "reporter", cascade = CascadeType.ALL)
     private List<Report> reports = new ArrayList<>();
 
