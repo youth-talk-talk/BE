@@ -50,7 +50,7 @@ public class PolicyServiceImpl implements PolicyService {
     public static final int MIN_AGE_INPUT = 8;
     public static final int MAX_AGE_INPUT = 100;
     public static final int MIN_EARN_INPUT = 0;
-    public static final int MAX_EARN_INPUT = 2_000_000_000;
+    public static final int MAX_EARN_INPUT = 50_000_000;
     public static final String APPLY_DUE_FORMAT = "yyyy-MM-dd";
 
     private final PolicyRepository policyRepository;

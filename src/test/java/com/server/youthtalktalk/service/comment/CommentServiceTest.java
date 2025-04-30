@@ -1,5 +1,6 @@
 package com.server.youthtalktalk.service.comment;
 
+import com.server.youthtalktalk.domain.comment.dto.CommentDto;
 import com.server.youthtalktalk.domain.likes.entity.Likes;
 import com.server.youthtalktalk.domain.comment.service.CommentService;
 import com.server.youthtalktalk.domain.comment.entity.Comment;
@@ -10,6 +11,7 @@ import com.server.youthtalktalk.domain.likes.repository.LikeRepository;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
 import com.server.youthtalktalk.domain.member.entity.Role;
+import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.entity.RepeatCode;
@@ -22,6 +24,7 @@ import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
 import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -55,6 +58,9 @@ class CommentServiceTest {
 
     @Autowired
     CommentService commentService;
+
+    @Autowired
+    MemberService memberService;
 
     @Autowired
     EntityManager em;
@@ -138,7 +144,8 @@ class CommentServiceTest {
     }
 
     @Test
-    void 정책_댓글_조회_성공() {
+    @DisplayName("policyId로 특정 정책의 모든 댓글 조회_성공")
+    void testGetPolicyComments() {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
         memberRepository.save(member);
@@ -158,11 +165,14 @@ class CommentServiceTest {
 
         // then
         assertThat(policyComments.size()).isEqualTo(3);
-        assertThat(policyComments.get(1).getId()).isEqualTo(policyComment3.getId()); // 시간순 정렬 검증
+        assertThat(policyComments.get(0).getId()).isEqualTo(policyComment1.getId());
+        assertThat(policyComments.get(1).getId()).isEqualTo(policyComment3.getId());
+        assertThat(policyComments.get(2).getId()).isEqualTo(policyComment2.getId());
     }
 
     @Test
-    void 게시글_댓글_조회_성공() {
+    @DisplayName("postId로 특정 게시글의 모든 댓글 조회_성공")
+    void testGetPostComments() {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
         memberRepository.save(member);
@@ -182,8 +192,66 @@ class CommentServiceTest {
 
         // then
         assertThat(postComments.size()).isEqualTo(3);
-        assertThat(postComments.get(1).getId()).isEqualTo(postComment3.getId()); // 시간순 정렬 검증
+        assertThat(postComments.get(0).getId()).isEqualTo(postComment1.getId());
+        assertThat(postComments.get(1).getId()).isEqualTo(postComment3.getId());
+        assertThat(postComments.get(2).getId()).isEqualTo(postComment2.getId());
     }
+
+
+    @Test
+    @DisplayName("정책 댓글 조회 시, 차단한 유저가 작성한 댓글 제외_성공")
+    void testToCommentDtoList1() {
+        // given
+        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
+        Member blocked = Member.builder().username("member2").nickname("member2").region(Region.SEOUL).role(Role.USER).build();
+        memberRepository.save(member);
+        memberRepository.save(blocked);
+        memberService.blockMember(member, blocked.getId());
+
+        Post post = Post.builder().build();
+        postRepository.save(post);
+
+        PostComment postComment1 = PostComment.builder().post(post).writer(blocked).content("content1").build();
+        PostComment postComment2 = PostComment.builder().post(post).writer(blocked).content("content2").build();
+        commentRepository.save(postComment1);
+        commentRepository.save(postComment2);
+
+        List<PostComment> postComments = commentService.getPostComments(post.getId());
+
+        // when
+        List<CommentDto> filteredComments = commentService.toCommentDtoList(postComments, member);
+
+        // then
+        assertThat(filteredComments.size()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("게시글 댓글 조회 시, 차단한 유저가 작성한 댓글 제외_성공")
+    void testToCommentDtoList2() {
+        // given
+        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
+        Member blocked = Member.builder().username("member2").nickname("member2").region(Region.SEOUL).role(Role.USER).build();
+        memberRepository.save(member);
+        memberRepository.save(blocked);
+        memberService.blockMember(member, blocked.getId());
+
+        Policy policy = createPolicy("policyNum");
+        policyRepository.save(policy);
+
+        PolicyComment policyComment1 = PolicyComment.builder().policy(policy).content("content1").writer(blocked).build();
+        PolicyComment policyComment2 = PolicyComment.builder().policy(policy).content("content2").writer(blocked).build();
+        commentRepository.save(policyComment1);
+        commentRepository.save(policyComment2);
+
+        List<PolicyComment> policyComments = commentService.getPolicyComments(policy.getPolicyId());
+
+        // when
+        List<CommentDto> filteredComments = commentService.toCommentDtoList(policyComments, member);
+
+        // then
+        assertThat(filteredComments.size()).isEqualTo(0);
+    }
+
 
     @Test
     void 정책_댓글_수정_성공() {

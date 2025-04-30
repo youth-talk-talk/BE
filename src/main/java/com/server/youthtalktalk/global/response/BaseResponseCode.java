@@ -101,8 +101,6 @@ public enum BaseResponseCode {
 
     // Notification
     NOTIFICATION_NOT_FOUND_EXCEPTION("N01", "존재하지 않는 알림입니다.", HttpStatus.NOT_FOUND.value());
-
-
     private final String code;
     private final String message;
     private final int status;

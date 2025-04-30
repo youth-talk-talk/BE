@@ -1,18 +1,20 @@
 package com.server.youthtalktalk.domain.report.service;
 
+import com.server.youthtalktalk.domain.comment.entity.Comment;
+import com.server.youthtalktalk.domain.comment.repository.CommentRepository;
 import com.server.youthtalktalk.domain.member.entity.Member;
+import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
+import com.server.youthtalktalk.domain.report.entity.CommentReport;
 import com.server.youthtalktalk.domain.report.entity.PostReport;
 import com.server.youthtalktalk.domain.report.entity.Report;
 import com.server.youthtalktalk.domain.report.repository.ReportRepository;
-import com.server.youthtalktalk.global.response.BaseResponseCode;
-import com.server.youthtalktalk.global.response.exception.BusinessException;
+import com.server.youthtalktalk.global.response.exception.comment.CommentNotFoundException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
 import com.server.youthtalktalk.global.response.exception.report.ReportAlreadyExistException;
 import com.server.youthtalktalk.global.response.exception.report.SelfReportNotAllowedException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional
 public class ReportServiceImpl implements ReportService {
+
     private final ReportRepository reportRepository;
     private final PostRepository postRepository;
 
@@ -37,5 +40,21 @@ public class ReportServiceImpl implements ReportService {
                         .reporter(reporter)
                         .post(post)
                         .build());
+    }
+
+    @Override
+    public Report reportComment(Comment comment, Member reporter) {
+        // 자신이 작성한 댓글을 신고할 경우
+        if (comment.getWriter().getId().equals(reporter.getId())) {
+            throw new SelfReportNotAllowedException();
+        }
+        // 이미 신고한 댓글인 경우
+        if (reportRepository.existsByComment_IdAndReporter_Id(comment.getId(), reporter.getId())) {
+            throw new ReportAlreadyExistException();
+        }
+        return reportRepository.save(CommentReport.builder()
+                .reporter(reporter)
+                .comment(comment)
+                .build());
     }
 }

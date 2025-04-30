@@ -21,6 +21,8 @@ import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 public class MemberController {
 
     private static final int MAX_PROFILE_SIZE = 5 * 1024 * 1024; // 5MB
+    public static final String NICKNAME_REGEX = "^[a-zA-Z가-힣0-9]+$"; // 닉네임 조건
+
     private final MemberService memberService;
     private final ImageService imageService;
 
