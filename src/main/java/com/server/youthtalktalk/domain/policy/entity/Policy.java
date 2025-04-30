@@ -105,7 +105,7 @@ public class Policy extends BaseTimeEntity {
 
     /** 신규 필드 */
     @Column(name = "is_limited_age")
-    private Boolean isLimitedAge;
+    private Boolean isLimitedAge; // 지원 대상 연령 제한 여부
 
     @Enumerated(EnumType.STRING)
     @Column(name = "earn", length = 20)
@@ -121,7 +121,7 @@ public class Policy extends BaseTimeEntity {
     private String earnEtc; // 소득 기타 내용
 
     @Column(name = "zip_cd", columnDefinition = "TEXT")
-    private String zipCd;
+    private String zipCd; // 정책 거주 지역 코드
 
     @ElementCollection
     @Enumerated(EnumType.STRING)
