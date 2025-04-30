@@ -43,7 +43,7 @@ public class ScrapRepositoryCustomImpl implements ScrapRepositoryCustom {
                         policy.applyDue.eq(LocalDate.now())
                         .or(policy.applyDue.eq(LocalDate.now().plusDays(7)))
                         // 또는 스크랩한 지 일주일이 지났을 때
-                        .or(scrap.createdAt.before(LocalDateTime.now().minusDays(7)))
+                        .or(scrap.createdAt.eq(LocalDateTime.now().minusDays(7)))
 
                 )
                 .fetch();
