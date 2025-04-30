@@ -25,6 +25,7 @@ import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import lombok.RequiredArgsConstructor;
@@ -397,6 +398,7 @@ public class PolicyServiceImpl implements PolicyService {
                     .itemId(policyId)
                     .itemType(ItemType.POLICY)
                     .member(member)
+                    .createdAt(LocalDateTime.now())
                     .build());
         }
         else{

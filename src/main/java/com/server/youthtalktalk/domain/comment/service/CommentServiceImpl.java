@@ -12,6 +12,9 @@ import com.server.youthtalktalk.domain.likes.entity.Likes;
 import com.server.youthtalktalk.domain.likes.repository.LikeRepository;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
+import com.server.youthtalktalk.domain.notification.entity.NotificationDetail;
+import com.server.youthtalktalk.domain.notification.entity.NotificationType;
+import com.server.youthtalktalk.domain.notification.entity.SSEEvent;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.post.entity.Post;
@@ -26,9 +29,11 @@ import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundE
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,6 +50,7 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final LikeRepository likeRepository;
     private final MemberRepository memberRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 정책 댓글 생성
@@ -56,6 +62,7 @@ public class CommentServiceImpl implements CommentService {
         policyComment.setPolicy(policy);
         policyComment.setWriter(member);
         commentRepository.save(policyComment);
+
         return policyComment;
     }
 
@@ -69,6 +76,19 @@ public class CommentServiceImpl implements CommentService {
         postComment.setPost(post);
         postComment.setWriter(member);
         commentRepository.save(postComment);
+
+        // 자신의 게시글에 작성한 댓글이 아니면 알림 전송
+        if(!post.getWriter().getId().equals(member.getId())){
+            eventPublisher.publishEvent(SSEEvent.builder()
+                    .detail(NotificationDetail.POST_COMMENT)
+                    .receiver(post.getWriter())              // 단일 수신자용 @Singular 메서드
+                    .sender(member.getNickname())
+                    .policyTitle(null)
+                    .type(NotificationType.POST)
+                    .id(post.getId())
+                    .comment(postComment.getContent())
+                    .build());
+        }
         return postComment;
     }
 
@@ -196,6 +216,27 @@ public class CommentServiceImpl implements CommentService {
         like.setComment(comment);
         like.setMember(member);
         likeRepository.save(like);
+
+        // 나의 댓글에 좋아요를 누른게 아니라면 알림 전송
+        if(!comment.getWriter().getId().equals(member.getId())){
+            eventPublisher.publishEvent(SSEEvent.builder()
+                    .detail(
+                            isPostComment(comment)
+                                    ? NotificationDetail.POST_COMMENT_LIKE
+                                    : NotificationDetail.POLICY_COMMENT_LIKE
+                    )
+                    .receiver(comment.getWriter())    // @Singular("receiver") 덕분에 리스트에 추가됩니다
+                    .sender(member.getNickname())
+                    .policyTitle(null)
+                    .type(isPostComment(comment) ? NotificationType.POST : NotificationType.POLICY)
+                    .id(
+                            isPostComment(comment)
+                                    ? ((PostComment) comment).getPost().getId()
+                                    : ((PolicyComment) comment).getPolicy().getPolicyId()
+                    )
+                    .comment(comment.getContent())
+                    .build());
+        }
     }
 
     /**
@@ -212,4 +253,7 @@ public class CommentServiceImpl implements CommentService {
         likeRepository.delete(like);
     }
 
+    private boolean isPostComment(Comment comment) {
+        return comment instanceof PostComment;
+    }
 }

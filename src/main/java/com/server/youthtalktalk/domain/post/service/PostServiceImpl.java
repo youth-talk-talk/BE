@@ -4,6 +4,9 @@ import com.server.youthtalktalk.domain.ItemType;
 import com.server.youthtalktalk.domain.image.entity.PostImage;
 import com.server.youthtalktalk.domain.image.service.ImageService;
 import com.server.youthtalktalk.domain.member.entity.Member;
+import com.server.youthtalktalk.domain.notification.entity.NotificationDetail;
+import com.server.youthtalktalk.domain.notification.entity.NotificationType;
+import com.server.youthtalktalk.domain.notification.entity.SSEEvent;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.post.dto.PostCreateReqDto;
@@ -24,8 +27,10 @@ import com.server.youthtalktalk.global.response.exception.post.PostNotFoundExcep
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +43,7 @@ public class PostServiceImpl implements PostService{
     private final PolicyRepository policyRepository;
     private final ImageService imageService;
     private final ScrapRepository scrapRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public PostRepDto createPost(PostCreateReqDto postCreateReqDto, Member writer){
@@ -126,11 +132,14 @@ public class PostServiceImpl implements PostService{
             return null;
         }
         else{
-            return scrapRepository.save(Scrap.builder() // 스크랩할 경우
+            Scrap savedScrap = scrapRepository.save(Scrap.builder() // 스크랩할 경우
                     .itemId(postId)
                     .itemType(ItemType.POST)
                     .member(member)
+                    .createdAt(LocalDateTime.now())
                     .build());
+
+            return savedScrap;
         }
     }
 
