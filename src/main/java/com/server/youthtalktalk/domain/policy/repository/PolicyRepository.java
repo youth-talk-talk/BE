@@ -18,7 +18,7 @@ import java.util.Optional;
 public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQueryRepository {
 
     /**
-     * top5 정책 조회 (조회수순)
+     * 지역 기반 top5 정책 조회 (조회수순)
      */
     @Query("SELECT p FROM Policy p WHERE p.region = :region OR p.region = 'ALL' ORDER BY p.view DESC")
     Page<Policy> findTop5ByRegionOrderByViewsDesc(@Param("region") Region region, Pageable pageable);
@@ -59,4 +59,9 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
      * policyId로 정책 존재 여부 검사
      */
     boolean existsByPolicyId(Long policyId);
+
+    /**
+     * 조회수 top5 정책 조회
+     */
+    List<Policy> findTop5ByOrderByViewDesc();
 }

@@ -1,6 +1,5 @@
 package com.server.youthtalktalk.domain.policy.service;
 
-import com.server.youthtalktalk.domain.ItemType;
 import com.server.youthtalktalk.domain.policy.dto.SearchConditionDto;
 import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
 import com.server.youthtalktalk.domain.policy.entity.SortOption;
@@ -11,6 +10,8 @@ import com.server.youthtalktalk.domain.policy.entity.condition.Marriage;
 import com.server.youthtalktalk.domain.policy.entity.condition.Specialization;
 import com.server.youthtalktalk.domain.policy.entity.region.SubRegion;
 import com.server.youthtalktalk.domain.policy.repository.region.SubRegionRepository;
+import com.server.youthtalktalk.domain.post.entity.Post;
+import com.server.youthtalktalk.domain.post.repostiory.PostRepositoryCustomImpl;
 import com.server.youthtalktalk.domain.scrap.entity.Scrap;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.service.MemberService;
@@ -20,7 +21,6 @@ import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
-import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.server.youthtalktalk.domain.ItemType.*;
 import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
 @Service
@@ -51,11 +52,13 @@ public class PolicyServiceImpl implements PolicyService {
     public static final int MIN_EARN_INPUT = 0;
     public static final int MAX_EARN_INPUT = 50_000_000;
     public static final String APPLY_DUE_FORMAT = "yyyy-MM-dd";
+    public static final int POST_PREVIEW_MAX_LENGTH = 50;
 
     private final PolicyRepository policyRepository;
     private final ScrapRepository scrapRepository;
     private final MemberService memberService;
     private final SubRegionRepository subRegionRepository;
+    private final PostRepositoryCustomImpl postRepository;
 
     /**
      * top 5 정책 조회
@@ -79,7 +82,7 @@ public class PolicyServiceImpl implements PolicyService {
 
         List<PolicyListResponseDto> result = policies.stream()
                 .map(policy -> {
-                    boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), ItemType.POLICY);
+                    boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), POLICY);
                     return PolicyListResponseDto.toListDto(policy, isScrap);
                 })
                 .collect(Collectors.toList());
@@ -108,7 +111,7 @@ public class PolicyServiceImpl implements PolicyService {
         }
         List<PolicyListResponseDto> result =  policies.stream()
                 .map(policy -> {
-                    boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), ItemType.POLICY);
+                    boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), POLICY);
                     return PolicyListResponseDto.toListDto(policy, isScrap);
                 })
                 .collect(Collectors.toList());
@@ -134,7 +137,7 @@ public class PolicyServiceImpl implements PolicyService {
 
         policyRepository.save(policy.toBuilder().view(policy.getView()+1).build());
 
-        boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), ItemType.POLICY);
+        boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), POLICY);
         PolicyDetailResponseDto result = PolicyDetailResponseDto.toDto(policy, isScrap);
         log.info("특정 정책 세부 조회 성공");
         return result;
@@ -155,7 +158,7 @@ public class PolicyServiceImpl implements PolicyService {
         List<PolicyListResponseDto> result = policies.stream()
                 .map(policy -> {
                     boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(
-                            memberService.getCurrentMember().getId(), policy.getPolicyId(), ItemType.POLICY);
+                            memberService.getCurrentMember().getId(), policy.getPolicyId(), POLICY);
                     return PolicyListResponseDto.toListDto(policy, isScrap);
                 })
                 .collect(Collectors.toList());
@@ -391,11 +394,11 @@ public class PolicyServiceImpl implements PolicyService {
     @Override
     public Scrap scrapPolicy(Long policyId, Member member) {
         policyRepository.findByPolicyId(policyId).orElseThrow(PolicyNotFoundException::new); // 정책 존재 유무
-        Scrap scrap = scrapRepository.findByMemberAndItemIdAndItemType(member,policyId, ItemType.POLICY).orElse(null);
+        Scrap scrap = scrapRepository.findByMemberAndItemIdAndItemType(member,policyId, POLICY).orElse(null);
         if(scrap == null){
             return scrapRepository.save(Scrap.builder() // 스크랩할 경우
                     .itemId(policyId)
-                    .itemType(ItemType.POLICY)
+                    .itemType(POLICY)
                     .member(member)
                     .build());
         }
@@ -430,6 +433,51 @@ public class PolicyServiceImpl implements PolicyService {
                     return PolicyListResponseDto.toListDto(policy, isScrap);
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PolicyWithReviewsDto> getTop5PoliciesWithReviews(Member member) {
+        List<Policy> topPolicies = policyRepository.findTop5ByOrderByViewDesc();
+
+        return topPolicies.stream()
+                .map(policy -> toPolicyWithReviewsDto(member, policy))
+                .toList();
+    }
+
+    private PolicyWithReviewsDto toPolicyWithReviewsDto(Member member, Policy policy) {
+        // 정책의 후기글 중에서 조회수 top3 조회
+        List<Post> topReviews = postRepository.findTopReviewsByPolicy(member, policy, 3);
+
+        List<ReviewInPolicyDto> reviews = topReviews.stream()
+                .map(this::toReviewInPolicyDto)
+                .toList();
+
+        return new PolicyWithReviewsDto(
+                policy.getPolicyId(), // 정책 id
+                policy.getTitle(), // 정책 제목
+                policy.getDepartment().getImage_url(), // 정책 이미지 URL
+                reviews // 정책의 인기 후기글 목록 (조회수 기준 top3)
+        );
+    }
+
+    private ReviewInPolicyDto toReviewInPolicyDto(Post review) {
+        // 후기글의 스크랩 수 조회
+        int scrapCount = scrapRepository.countByItemIdAndItemType(review.getId(), POST);
+
+        return new ReviewInPolicyDto(
+                review.getId(), // 게시글 id
+                review.getTitle(), // 게시글 제목
+                createContentSnippet(review.getContent()), // 내용 미리보기
+                review.getPostComments().size(), // 댓글 수
+                scrapCount, // 스크랩 수
+                review.getCreatedAt().toLocalDate() // 작성일
+        );
+    }
+
+    private String createContentSnippet(String content) {
+        return content.length() > POST_PREVIEW_MAX_LENGTH
+                ? content.substring(0, POST_PREVIEW_MAX_LENGTH) + "..."
+                : content;
     }
 
 }

@@ -8,6 +8,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.entity.QBlock;
 import com.server.youthtalktalk.domain.policy.entity.Category;
+import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.post.entity.QPost;
 import com.server.youthtalktalk.domain.post.entity.QReview;
@@ -211,6 +212,21 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .fetchOne();
 
         return new PageImpl<>(posts, pageable, total == null ? 0 : total);
+    }
+
+    @Override
+    public List<Post> findTopReviewsByPolicy(Member member, Policy policy, int top) {
+        return queryFactory
+                .selectFrom(post)
+                .leftJoin(block).on(blockJoinWithPost(member))
+                .leftJoin(report).on(reportJoinWithPost(member))
+                .where(
+                        review.policy.eq(policy),
+                        reviewConditionsExcludeReportAndBlocked()
+                )
+                .orderBy(review.view.desc())
+                .limit(top)
+                .fetch();
     }
 
     BooleanExpression blockJoinWithPost(Member member){
