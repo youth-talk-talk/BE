@@ -16,9 +16,10 @@ public class PolicyListResponseDto {
     private String deadlineStatus; // 마감 상태
     private String hostDep; // 주관 기관명
     private boolean isScrap; // 스크랩 여부
+    private long scrapCount; // 스크랩 수
     private String departmentImgUrl; // 중앙부처 이미지 url
 
-    public static PolicyListResponseDto toListDto(Policy policy, Boolean isScrap) {
+    public static PolicyListResponseDto toListDto(Policy policy, Boolean isScrap, long scrapCount) {
         return PolicyListResponseDto.builder()
                 .policyId(policy.getPolicyId())
                 .category(policy.getCategory())
@@ -26,6 +27,7 @@ public class PolicyListResponseDto {
                 .deadlineStatus(DeadlineStatusCalculator.calculateDeadline(policy.getApplyDue()))
                 .hostDep(policy.getHostDep())
                 .isScrap(isScrap)
+                .scrapCount(scrapCount)
                 .departmentImgUrl(policy.getDepartment().getImage_url())
                 .build();
     }

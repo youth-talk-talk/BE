@@ -79,8 +79,9 @@ public class PolicyServiceImpl implements PolicyService {
 
         List<PolicyListResponseDto> result = policies.stream()
                 .map(policy -> {
+                    long scrapCount = scrapRepository.countByItemTypeAndItemId(ItemType.POLICY, policy.getPolicyId());
                     boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), ItemType.POLICY);
-                    return PolicyListResponseDto.toListDto(policy, isScrap);
+                    return PolicyListResponseDto.toListDto(policy, isScrap, scrapCount);
                 })
                 .collect(Collectors.toList());
 
@@ -109,8 +110,9 @@ public class PolicyServiceImpl implements PolicyService {
         }
         List<PolicyListResponseDto> result =  policies.stream()
                 .map(policy -> {
+                    long scrapCount = scrapRepository.countByItemTypeAndItemId(ItemType.POLICY, policy.getPolicyId());
                     boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), ItemType.POLICY);
-                    return PolicyListResponseDto.toListDto(policy, isScrap);
+                    return PolicyListResponseDto.toListDto(policy, isScrap, scrapCount);
                 })
                 .collect(Collectors.toList());
         log.info("카테고리별 정책 조회 성공");
@@ -150,8 +152,9 @@ public class PolicyServiceImpl implements PolicyService {
 
         return policies.stream()
                 .map(policy -> {
+                    long scrapCount = scrapRepository.countByItemTypeAndItemId(ItemType.POLICY, policy.getPolicyId());
                     boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), ItemType.POLICY);
-                    return PolicyListResponseDto.toListDto(policy, isScrap);
+                    return PolicyListResponseDto.toListDto(policy, isScrap, scrapCount);
                 })
                 .collect(Collectors.toList());
     }
@@ -194,9 +197,10 @@ public class PolicyServiceImpl implements PolicyService {
 
         List<PolicyListResponseDto> result = policies.stream()
                 .map(policy -> {
+                    long scrapCount = scrapRepository.countByItemTypeAndItemId(ItemType.POLICY, policy.getPolicyId());
                     boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(
                             memberService.getCurrentMember().getId(), policy.getPolicyId(), ItemType.POLICY);
-                    return PolicyListResponseDto.toListDto(policy, isScrap);
+                    return PolicyListResponseDto.toListDto(policy, isScrap, scrapCount);
                 })
                 .collect(Collectors.toList());
         log.info("조건 적용 정책 조회 성공");
@@ -451,8 +455,9 @@ public class PolicyServiceImpl implements PolicyService {
         List<Policy> policies = policyRepository.findAllByScrap(member, pageRequest).getContent();
         return policies.stream()
                 .map(policy -> {
+                    long scrapCount = scrapRepository.countByItemTypeAndItemId(ItemType.POLICY, policy.getPolicyId());
                     boolean isScrap = true;
-                    return PolicyListResponseDto.toListDto(policy, isScrap);
+                    return PolicyListResponseDto.toListDto(policy, isScrap, scrapCount);
                 })
                 .collect(Collectors.toList());
     }
@@ -466,8 +471,9 @@ public class PolicyServiceImpl implements PolicyService {
         List<Policy> policies = policyRepository.findTop5OrderByDeadlineAsc(member, pageRequest).getContent();
         return policies.stream()
                 .map(policy -> {
+                    long scrapCount = scrapRepository.countByItemTypeAndItemId(ItemType.POLICY, policy.getPolicyId());
                     boolean isScrap = true;
-                    return PolicyListResponseDto.toListDto(policy, isScrap);
+                    return PolicyListResponseDto.toListDto(policy, isScrap, scrapCount);
                 })
                 .collect(Collectors.toList());
     }

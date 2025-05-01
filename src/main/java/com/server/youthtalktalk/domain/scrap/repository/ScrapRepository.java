@@ -16,4 +16,7 @@ public interface ScrapRepository extends JpaRepository<Scrap, Long> {
     Optional<Scrap> findByMemberAndItemIdAndItemType(Member memberId, Long itemId, ItemType itemType);
     List<Scrap> findAllByItemIdAndItemType(Long itemId, ItemType itemType);
     void deleteAllByItemIdAndItemType(Long itemId, ItemType itemType);
+
+    long countByItemTypeAndItemId(ItemType itemType, Long itemId);
+
 }
