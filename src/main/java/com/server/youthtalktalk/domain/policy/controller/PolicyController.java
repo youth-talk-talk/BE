@@ -1,12 +1,13 @@
 package com.server.youthtalktalk.domain.policy.controller;
 
-import com.server.youthtalktalk.domain.policy.entity.Category;
+import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.policy.dto.*;
+import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.SortOption;
+import com.server.youthtalktalk.domain.policy.entity.region.Region;
+import com.server.youthtalktalk.domain.policy.service.PolicyService;
 import com.server.youthtalktalk.global.response.BaseResponse;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
-import com.server.youthtalktalk.domain.member.service.MemberService;
-import com.server.youthtalktalk.domain.policy.service.PolicyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -26,18 +27,17 @@ public class PolicyController {
     private final MemberService memberService;
 
     /**
-     * 홈 화면 정책 조회 (top5 + allByCategory)
+     * 홈 화면 정책 조회 (우리 지역 인기 정책 + 따끈따끈 새로운 정책)
      */
     @GetMapping("/policies")
-    public BaseResponse<Map<String, List<PolicyListResponseDto>>> getTop5AndCategoryPolicies(@RequestParam List<Category> categories,
-                                                                                             @PageableDefault(size = 10) Pageable pageable) {
-
-        List<PolicyListResponseDto> top5Policies = policyService.getTop5Policies();
-        List<PolicyListResponseDto> allPolicies = policyService.getPoliciesByCategories(categories, pageable);
+    public BaseResponse<Map<String, List<PolicyListResponseDto>>> getTop5AndCategoryPolicies(@RequestParam List<Region> regions,
+                                                                                             @RequestParam List<Category> categories) {
+        List<PolicyListResponseDto> top20Policies = policyService.getTop20Policies(regions);
+        List<PolicyListResponseDto> newPolicies = policyService.getNewPoliciesByCategories(regions, categories);
 
         Map<String, List<PolicyListResponseDto>> responseMap = new LinkedHashMap<>();
-        responseMap.put("top5Policies", top5Policies);
-        responseMap.put("allPolicies", allPolicies);
+        responseMap.put("top20Policies", top20Policies);
+        responseMap.put("newPolicies", newPolicies);
 
         return new BaseResponse<>(responseMap, BaseResponseCode.SUCCESS_POLICY_FOUND);
     }
