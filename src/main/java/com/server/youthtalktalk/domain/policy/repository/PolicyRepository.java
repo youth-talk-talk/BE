@@ -97,4 +97,9 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
      * policyId로 정책 존재 여부 검사
      */
     boolean existsByPolicyId(Long policyId);
+
+    /**
+     * 조회수 top5 정책 조회
+     */
+    List<Policy> findTop5ByOrderByViewDesc();
 }

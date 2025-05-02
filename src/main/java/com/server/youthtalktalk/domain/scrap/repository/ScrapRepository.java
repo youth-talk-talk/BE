@@ -11,12 +11,9 @@ import java.util.Optional;
 
 @Repository
 public interface ScrapRepository extends JpaRepository<Scrap, Long> {
-    // 특정 사용자가 특정 타입의 아이템을 스크랩했는지의 여부
-    boolean existsByMemberIdAndItemIdAndItemType(Long memberId, Long itemId, ItemType itemType);
+    boolean existsByMemberIdAndItemIdAndItemType(Long memberId, Long itemId, ItemType itemType); // 특정 사용자가 특정 타입의 아이템을 스크랩했는지의 여부
     Optional<Scrap> findByMemberAndItemIdAndItemType(Member memberId, Long itemId, ItemType itemType);
     List<Scrap> findAllByItemIdAndItemType(Long itemId, ItemType itemType);
     void deleteAllByItemIdAndItemType(Long itemId, ItemType itemType);
-
     long countByItemTypeAndItemId(ItemType itemType, Long itemId);
-
 }
