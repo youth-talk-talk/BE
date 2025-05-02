@@ -82,9 +82,9 @@ public class PolicyServiceTest {
 
         // 2. 각 정책에 대한 리뷰 3개씩 mock
         for (Policy policy : policies) {
-            List<Post> reviews = IntStream.rangeClosed(1, 3)
+            List<Review> reviews = IntStream.rangeClosed(1, 3)
                     .mapToObj(j -> {
-                        Post review = mock(Post.class);
+                        Review review = mock(Review.class);
                         when(review.getId()).thenReturn(policy.getPolicyId() * 100 + (long) j);
                         when(review.getTitle()).thenReturn("Review " + j);
                         when(review.getContent()).thenReturn("후기내용".repeat(20));

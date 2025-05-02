@@ -215,9 +215,9 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
     }
 
     @Override
-    public List<Post> findTopReviewsByPolicy(Member member, Policy policy, int top) {
+    public List<Review> findTopReviewsByPolicy(Member member, Policy policy, int top) {
         return queryFactory
-                .selectFrom(post)
+                .selectFrom(review)
                 .leftJoin(block).on(blockJoinWithPost(member))
                 .leftJoin(report).on(reportJoinWithPost(member))
                 .where(

@@ -11,6 +11,7 @@ import com.server.youthtalktalk.domain.policy.entity.condition.Specialization;
 import com.server.youthtalktalk.domain.policy.entity.region.SubRegion;
 import com.server.youthtalktalk.domain.policy.repository.region.SubRegionRepository;
 import com.server.youthtalktalk.domain.post.entity.Post;
+import com.server.youthtalktalk.domain.post.entity.Review;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepositoryCustomImpl;
 import com.server.youthtalktalk.domain.scrap.entity.Scrap;
 import com.server.youthtalktalk.domain.ItemType;
@@ -504,7 +505,7 @@ public class PolicyServiceImpl implements PolicyService {
 
     private PolicyWithReviewsDto toPolicyWithReviewsDto(Member member, Policy policy) {
         // 정책의 후기글 중에서 조회수 top3 조회
-        List<Post> topReviews = postRepository.findTopReviewsByPolicy(member, policy, 3);
+        List<Review> topReviews = postRepository.findTopReviewsByPolicy(member, policy, 3);
 
         List<ReviewInPolicyDto> reviews = topReviews.stream()
                 .map(this::toReviewInPolicyDto)
