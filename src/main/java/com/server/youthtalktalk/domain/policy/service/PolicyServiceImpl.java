@@ -495,7 +495,7 @@ public class PolicyServiceImpl implements PolicyService {
 
     @Override
     public List<PolicyWithReviewsDto> getTop5PoliciesWithReviews(Member member) {
-        List<Policy> topPolicies = policyRepository.findTop5ByOrderByViewDesc();
+        List<Policy> topPolicies = policyRepository.findTop5ByOrderByViewDescPolicyNumDesc();
 
         return topPolicies.stream()
                 .map(policy -> toPolicyWithReviewsDto(member, policy))

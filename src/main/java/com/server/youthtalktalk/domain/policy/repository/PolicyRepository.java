@@ -100,6 +100,7 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
 
     /**
      * 조회수 top5 정책 조회
+     * (기본 조회수순, 조회수 같으면 최신순 정렬)
      */
-    List<Policy> findTop5ByOrderByViewDesc();
+    List<Policy> findTop5ByOrderByViewDescPolicyNumDesc();
 }

@@ -78,7 +78,7 @@ public class PolicyServiceTest {
                 .sorted(Comparator.comparingLong(Policy::getView).reversed()) // 조회수 내림차순으로 정렬
                 .toList();
 
-        when(policyRepository.findTop5ByOrderByViewDesc()).thenReturn(policies);
+        when(policyRepository.findTop5ByOrderByViewDescPolicyNumDesc()).thenReturn(policies);
 
         // 2. 각 정책에 대한 리뷰 3개씩 mock
         for (Policy policy : policies) {
