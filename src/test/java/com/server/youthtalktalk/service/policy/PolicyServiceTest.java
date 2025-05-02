@@ -85,7 +85,7 @@ public class PolicyServiceTest {
             List<Post> reviews = IntStream.rangeClosed(1, 3)
                     .mapToObj(j -> {
                         Post review = mock(Post.class);
-                        when(review.getId()).thenReturn(policy.getPolicyId() * 100 + j);
+                        when(review.getId()).thenReturn(policy.getPolicyId() * 100 + (long) j);
                         when(review.getTitle()).thenReturn("Review " + j);
                         when(review.getContent()).thenReturn("후기내용".repeat(20));
                         when(review.getPostComments()).thenReturn(List.of(new PostComment(review), new PostComment(review)));
@@ -98,7 +98,7 @@ public class PolicyServiceTest {
 
             // 3. 각 리뷰에 대한 스크랩 수
             for (Post review : reviews) {
-                when(scrapRepository.countByItemIdAndItemType(review.getId(), POST)).thenReturn(5);
+                when(scrapRepository.countByItemTypeAndItemId(POST, review.getId())).thenReturn(5L);
             }
         }
 
@@ -114,8 +114,8 @@ public class PolicyServiceTest {
             assertThat(dto.imgUrl()).isEqualTo(policies.get(i).getDepartment().getImage_url());
             assertThat(dto.reviews()).hasSize(3); // 정책별 후기 3개
             for (ReviewInPolicyDto review : dto.reviews()) {
-                assertThat(review.scrapCount()).isEqualTo(5);
-                assertThat(review.commentCount()).isEqualTo(2);
+                assertThat(review.scrapCount()).isEqualTo(5L);
+                assertThat(review.commentCount()).isEqualTo(2L);
                 assertThat(review.contentPreview()).endsWith("...");
             }
         }

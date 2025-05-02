@@ -13,6 +13,7 @@ import com.server.youthtalktalk.domain.policy.repository.region.SubRegionReposit
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepositoryCustomImpl;
 import com.server.youthtalktalk.domain.scrap.entity.Scrap;
+import com.server.youthtalktalk.domain.ItemType;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.policy.dto.*;
@@ -462,7 +463,7 @@ public class PolicyServiceImpl implements PolicyService {
 
     private ReviewInPolicyDto toReviewInPolicyDto(Post review) {
         // 후기글의 스크랩 수 조회
-        int scrapCount = scrapRepository.countByItemIdAndItemType(review.getId(), POST);
+        long scrapCount = scrapRepository.countByItemTypeAndItemId(POST, review.getId());
 
         return new ReviewInPolicyDto(
                 review.getId(), // 게시글 id

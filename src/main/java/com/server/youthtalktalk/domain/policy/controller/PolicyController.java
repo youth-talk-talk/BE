@@ -3,11 +3,12 @@ package com.server.youthtalktalk.domain.policy.controller;
 import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
 import com.server.youthtalktalk.domain.policy.entity.Category;
+import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.policy.dto.*;
 import com.server.youthtalktalk.domain.policy.entity.SortOption;
 import com.server.youthtalktalk.global.response.BaseResponse;
-import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.policy.service.PolicyService;
+import com.server.youthtalktalk.global.response.BaseResponseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;

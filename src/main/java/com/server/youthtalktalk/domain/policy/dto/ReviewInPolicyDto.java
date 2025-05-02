@@ -6,8 +6,8 @@ public record ReviewInPolicyDto(
         Long postId,
         String title,
         String contentPreview,
-        int commentCount,
-        int scrapCount,
+        long commentCount,
+        long scrapCount,
         LocalDate createdAt
 ) {
 }
