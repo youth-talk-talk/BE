@@ -44,12 +44,12 @@ public class ScrapServiceImpl implements ScrapService {
 
     private NotificationDetail getNotificationDetail(LocalDate applyDue, LocalDateTime scrapCreatedAt) {
         // 오늘 마감일인 경우
-        if (applyDue.equals(LocalDate.now())) {
+        if (applyDue != null && applyDue.equals(LocalDate.now())) {
             return NotificationDetail.TODAY_FINISHED;
         }
 
         // 마감일이 일주일 후인 경우
-        else if (applyDue.equals(LocalDate.now().plusDays(7))) {
+        else if (applyDue != null && applyDue.equals(LocalDate.now().plusDays(7))) {
             return NotificationDetail.WEEK_BEFORE_FINISHED;
         }
 
