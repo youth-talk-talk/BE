@@ -80,7 +80,7 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.save(postComment);
 
         // 자신의 게시글에 작성한 댓글이 아니면 알림 전송
-        if(!post.getWriter().getId().equals(member.getId())){
+        if(post.getWriter() != null && !isEqualsPostWriter(member, post)){
             eventPublisher.publishEvent(SSEEvent.builder()
                     .detail(NotificationDetail.POST_COMMENT)
                     .receiver(post.getWriter())              // 단일 수신자용 @Singular 메서드
@@ -221,7 +221,7 @@ public class CommentServiceImpl implements CommentService {
         likeRepository.save(like);
 
         // 나의 댓글에 좋아요를 누른게 아니라면 알림 전송
-        if(!comment.getWriter().getId().equals(member.getId())){
+        if(comment.getWriter() != null && !isEqualsCommentWriter(member, comment)){
             eventPublisher.publishEvent(SSEEvent.builder()
                     .detail(
                             isPostComment(comment)
@@ -259,4 +259,13 @@ public class CommentServiceImpl implements CommentService {
     private boolean isPostComment(Comment comment) {
         return comment instanceof PostComment;
     }
+
+    private static boolean isEqualsPostWriter(Member member, Post post) {
+        return post.getWriter().getId().equals(member.getId());
+    }
+
+    private static boolean isEqualsCommentWriter(Member member, Comment comment) {
+        return comment.getWriter().getId().equals(member.getId());
+    }
+    
 }
