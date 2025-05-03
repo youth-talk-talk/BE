@@ -517,14 +517,13 @@ public class PolicyServiceImpl implements PolicyService {
     private ReviewInPolicyDto toReviewInPolicyDto(Post review) {
         // 후기글의 스크랩 수 조회
         long scrapCount = scrapRepository.countByItemTypeAndItemId(POST, review.getId());
-
         return new ReviewInPolicyDto(
                 review.getId(), // 게시글 id
                 review.getTitle(), // 게시글 제목
                 createContentSnippet(review.getContents().get(0).getContent()), // 내용 미리보기
                 review.getPostComments().size(), // 댓글 수
                 scrapCount, // 스크랩 수
-                review.getCreatedAt().toLocalDate() // 작성일
+                review.getCreatedAt().toLocalDate().toString() // 작성일
         );
     }
 
