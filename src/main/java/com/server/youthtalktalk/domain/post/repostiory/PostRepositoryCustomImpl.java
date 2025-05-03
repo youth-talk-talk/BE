@@ -8,6 +8,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.entity.QBlock;
 import com.server.youthtalktalk.domain.policy.entity.Category;
+import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.post.entity.QPost;
 import com.server.youthtalktalk.domain.post.entity.QReview;
@@ -213,6 +214,22 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
         return new PageImpl<>(posts, pageable, total == null ? 0 : total);
     }
 
+    /** 특정 정책의 리뷰 Top N개 조회수순 검색*/
+    @Override
+    public List<Review> findTopReviewsByPolicy(Member member, Policy policy, int top) {
+        return queryFactory
+                .selectFrom(review)
+                .leftJoin(block).on(blockJoinWithReview(member))
+                .leftJoin(report).on(reportJoinWithReview(member))
+                .where(
+                        review.policy.eq(policy),
+                        report.id.isNull().and(block.id.isNull())
+                )
+                .orderBy(review.view.desc())
+                .limit(top)
+                .fetch();
+    }
+
     BooleanExpression blockJoinWithPost(Member member){
         return post.writer.eq(block.blockedMember)
                 .and(block.member.eq(member));
@@ -220,6 +237,16 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
 
     BooleanExpression reportJoinWithPost(Member member){
         return post.eq(report.post)
+                .and(report.reporter.eq(member));
+    }
+
+    BooleanExpression blockJoinWithReview(Member member){
+        return review.writer.eq(block.blockedMember)
+                .and(block.member.eq(member));
+    }
+
+    BooleanExpression reportJoinWithReview(Member member){
+        return review.eq(report.post)
                 .and(report.reporter.eq(member));
     }
 

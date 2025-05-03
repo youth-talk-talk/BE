@@ -1,12 +1,17 @@
 package com.server.youthtalktalk.domain.policy.controller;
 
+import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
+
 import com.server.youthtalktalk.domain.policy.entity.Category;
-import com.server.youthtalktalk.domain.policy.dto.*;
-import com.server.youthtalktalk.domain.policy.entity.SortOption;
-import com.server.youthtalktalk.global.response.BaseResponse;
-import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.domain.member.service.MemberService;
+import com.server.youthtalktalk.domain.policy.dto.*;
+import com.server.youthtalktalk.domain.policy.entity.Category;
+import com.server.youthtalktalk.domain.policy.entity.SortOption;
+import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.service.PolicyService;
+import com.server.youthtalktalk.global.response.BaseResponse;
+import com.server.youthtalktalk.domain.policy.service.PolicyService;
+import com.server.youthtalktalk.global.response.BaseResponseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -26,20 +31,19 @@ public class PolicyController {
     private final MemberService memberService;
 
     /**
-     * 홈 화면 정책 조회 (top5 + allByCategory)
+     * 홈 화면 정책 조회 (우리 지역 인기 정책 + 따끈따끈 새로운 정책)
      */
     @GetMapping("/policies")
-    public BaseResponse<Map<String, List<PolicyListResponseDto>>> getTop5AndCategoryPolicies(@RequestParam List<Category> categories,
-                                                                                             @PageableDefault(size = 10) Pageable pageable) {
-
-        List<PolicyListResponseDto> top5Policies = policyService.getTop5Policies();
-        List<PolicyListResponseDto> allPolicies = policyService.getPoliciesByCategories(categories, pageable);
+    public BaseResponse<Map<String, List<PolicyListResponseDto>>> getHomePolicies(@RequestParam(required = false) List<Region> regions,
+                                                                                             @RequestParam(required = false) List<Category> categories) {
+        List<PolicyListResponseDto> top20Policies = policyService.getTop20Policies(regions);
+        List<PolicyListResponseDto> newPolicies = policyService.getNewPoliciesByCategories(regions, categories);
 
         Map<String, List<PolicyListResponseDto>> responseMap = new LinkedHashMap<>();
-        responseMap.put("top5Policies", top5Policies);
-        responseMap.put("allPolicies", allPolicies);
+        responseMap.put("top20Policies", top20Policies);
+        responseMap.put("newPolicies", newPolicies);
 
-        return new BaseResponse<>(responseMap, BaseResponseCode.SUCCESS_POLICY_FOUND);
+        return new BaseResponse<>(responseMap, SUCCESS_POLICY_FOUND);
     }
 
     /**
@@ -48,7 +52,7 @@ public class PolicyController {
     @GetMapping("/policies/{id}")
     public BaseResponse<PolicyDetailResponseDto> getPolicyDetail(@PathVariable Long id) {
         PolicyDetailResponseDto policyDetail = policyService.getPolicyDetail(id);
-        return new BaseResponse<>(policyDetail, BaseResponseCode.SUCCESS_POLICY_FOUND);
+        return new BaseResponse<>(policyDetail, SUCCESS_POLICY_FOUND);
     }
 
     /**
@@ -57,9 +61,9 @@ public class PolicyController {
     @PostMapping("/policies/{id}/scrap")
     public BaseResponse<String> scrap(@PathVariable Long id){
         if(policyService.scrapPolicy(id,memberService.getCurrentMember())!=null)
-            return new BaseResponse<>(BaseResponseCode.SUCCESS_SCRAP);
+            return new BaseResponse<>(SUCCESS_SCRAP);
         else
-            return new BaseResponse<>(BaseResponseCode.SUCCESS_SCRAP_CANCEL);
+            return new BaseResponse<>(SUCCESS_SCRAP_CANCEL);
     }
 
     /**
@@ -68,7 +72,7 @@ public class PolicyController {
     @GetMapping("/policies/scrap")
     public BaseResponse<List<PolicyListResponseDto>> getMyScrapedPolicies(@PageableDefault(size = 10) Pageable pageable){
         List<PolicyListResponseDto> listResponseDto = policyService.getScrapPolicies(pageable,memberService.getCurrentMember());
-        return new BaseResponse<>(listResponseDto, BaseResponseCode.SUCCESS);
+        return new BaseResponse<>(listResponseDto, SUCCESS);
     }
 
     /**
@@ -84,9 +88,9 @@ public class PolicyController {
         Pageable pageable = PageRequest.of(page, size);
         SearchConditionResponseDto listResponseDto = policyService.getPoliciesByCondition(request, pageable, sort);
         if (listResponseDto.getPolicyList().isEmpty()) {
-            return new BaseResponse<>(listResponseDto, BaseResponseCode.SUCCESS_POLICY_SEARCH_NO_RESULT);
+            return new BaseResponse<>(listResponseDto, SUCCESS_POLICY_SEARCH_NO_RESULT);
         }
-        return new BaseResponse<>(listResponseDto, BaseResponseCode.SUCCESS_POLICY_FOUND);
+        return new BaseResponse<>(listResponseDto, SUCCESS_POLICY_FOUND);
     }
 
     /**
@@ -99,8 +103,8 @@ public class PolicyController {
         Pageable pageable = PageRequest.of(page, size);
         List<SearchNameResponseDto> listResponseDto = policyService.getPoliciesByName(title, pageable);
         if(listResponseDto.isEmpty())
-            return new BaseResponse<>(listResponseDto, BaseResponseCode.SUCCESS_POLICY_SEARCH_NO_RESULT);
-        return new BaseResponse<>(listResponseDto, BaseResponseCode.SUCCESS_POLICY_FOUND);
+            return new BaseResponse<>(listResponseDto, SUCCESS_POLICY_SEARCH_NO_RESULT);
+        return new BaseResponse<>(listResponseDto, SUCCESS_POLICY_FOUND);
     }
 
     /**
@@ -109,7 +113,16 @@ public class PolicyController {
     @GetMapping("/policies/scrapped/upcoming-deadline")
     public BaseResponse<List<PolicyListResponseDto>> getScrappedPoliciesWithUpcomingDeadline() {
         List<PolicyListResponseDto> listResponseDto = policyService.getScrappedPoliciesWithUpcomingDeadline(memberService.getCurrentMember());
-        return new BaseResponse<>(listResponseDto, BaseResponseCode.SUCCESS);
+        return new BaseResponse<>(listResponseDto, SUCCESS);
+    }
+
+    /**
+     * 조회수 top5 정책 조회 (최대 5개, 정책별로 후기게시글 같이 반환)
+     */
+    @GetMapping("/policies/top5-with-reviews")
+    public BaseResponse<List<PolicyWithReviewsDto>> getTop5PoliciesWithReviews() {
+        List<PolicyWithReviewsDto> top5PoliciesWithReviews = policyService.getTop5PoliciesWithReviews(memberService.getCurrentMember());
+        return new BaseResponse<>(top5PoliciesWithReviews, SUCCESS);
     }
 
 }
