@@ -3,6 +3,7 @@ package com.server.youthtalktalk.domain.member.entity;
 import com.server.youthtalktalk.domain.BaseTimeEntity;
 import com.server.youthtalktalk.domain.image.entity.ProfileImage;
 import com.server.youthtalktalk.domain.likes.entity.Likes;
+import com.server.youthtalktalk.domain.notification.entity.Notification;
 import com.server.youthtalktalk.domain.report.entity.Report;
 import com.server.youthtalktalk.domain.scrap.entity.Scrap;
 import com.server.youthtalktalk.domain.comment.entity.Comment;
@@ -64,6 +65,9 @@ public class Member extends BaseTimeEntity {
     @Builder.Default
     @OneToMany(mappedBy = "reporter", cascade = CascadeType.ALL)
     private List<Report> reports = new ArrayList<>();
+
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
+    private List<Notification> notifications = new ArrayList<>();
 
     @JoinColumn(name = "img_id")
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
