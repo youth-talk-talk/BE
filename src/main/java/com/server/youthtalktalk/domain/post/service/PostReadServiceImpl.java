@@ -42,6 +42,7 @@ public class PostReadServiceImpl implements PostReadService {
     private final BlockRepository blockRepository;
     private final PostRepositoryCustom postRepositoryCustom;
     private static final int TOP = 5;
+    private static final int CONTENT_PREVIEW_MAX_LEN = 50;
     /** 게시글, 리뷰 상세 조회 */
     @Override
     @Transactional
@@ -142,6 +143,7 @@ public class PostReadServiceImpl implements PostReadService {
                 .policyId(post instanceof Review ? ((Review) post).getPolicy().getPolicyId() : null)
                 .policyTitle(post instanceof Review ? ((Review)post).getPolicy().getTitle() : null )
                 .comments(post.getPostComments().size())
+                .contentPreview(createContentSnippet(post.getContents().get(0).getContent()))
                 .scrap(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId(),ItemType.POST))
                 .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST).size())
                 .build();
@@ -157,9 +159,16 @@ public class PostReadServiceImpl implements PostReadService {
                 .policyId(post instanceof Review ? ((Review) post).getPolicy().getPolicyId() : null)
                 .policyTitle(post instanceof Review ? ((Review)post).getPolicy().getTitle() : null )
                 .comments(post.getPostComments().size())
+                .contentPreview(createContentSnippet(post.getContents().get(0).getContent()))
                 .scrap(true)
                 .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST).size())
                 .scrapId(scrap.getId())
                 .build();
+    }
+
+    private String createContentSnippet(String content) {
+        return content.length() > CONTENT_PREVIEW_MAX_LEN
+                ? content.substring(0, CONTENT_PREVIEW_MAX_LEN) + "..."
+                : content;
     }
 }
