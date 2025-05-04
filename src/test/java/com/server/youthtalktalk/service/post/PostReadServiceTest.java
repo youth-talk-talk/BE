@@ -61,6 +61,9 @@ public class PostReadServiceTest {
 
     private static final int LEN = 5;
     private static final int TOP = 5;
+    private static final String content = "content";
+    private static final String longContent = "상품이 정말 마음에 들어요. 품질도 좋고 사용하기 편리합니다. 정말 좋은 상품인거 같습니다. 앞으로도 잘 사용할게요.";
+    private static final int CONTENT_MAX_LEN = 50;
 
     @Test
     @DisplayName("게시글 상세 조회 성공")
@@ -71,7 +74,7 @@ public class PostReadServiceTest {
         Post post = Post.builder()
                 .title("post")
                 .id(1L)
-                .contents(new ArrayList<>(List.of(createContent())))
+                .contents(createContent(content))
                 .view(1L)
                 .writer(member2)
                 .build();
@@ -141,7 +144,14 @@ public class PostReadServiceTest {
     void successFreePostToPostDto(){
         // Given
         Member member = createMember("member",1L);
-        Post post = createPost("post",1L, member, 10L);
+
+        Post post = Post.builder()
+                .title("post")
+                .id(1L)
+                .writer(member)
+                .view(10L)
+                .contents(createContent(longContent))
+                .build();
         when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId(),ItemType.POST))
                 .thenReturn(true);
         when(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST))
@@ -156,6 +166,7 @@ public class PostReadServiceTest {
         assertThat(postListDto.getPolicyId()).isNull();
         assertThat(postListDto.getPolicyTitle()).isNull();
         assertThat(postListDto.getComments()).isEqualTo(0);
+        assertThat(postListDto.getContentPreview()).isEqualTo(longContent.substring(0, CONTENT_MAX_LEN) + "...");
 
         verify(scrapRepository).existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId(),ItemType.POST);
         verify(scrapRepository).findAllByItemIdAndItemType(post.getId(), ItemType.POST);
@@ -175,6 +186,7 @@ public class PostReadServiceTest {
                 .postComments(new ArrayList<>())
                 .policy(policy)
                 .title("review")
+                .contents(createContent(longContent))
                 .writer(member)
                 .build();
         when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),review.getId(),ItemType.POST))
@@ -190,6 +202,7 @@ public class PostReadServiceTest {
         assertThat(postListDto.isScrap()).isTrue();
         assertThat(postListDto.getPolicyTitle()).isEqualTo("policy");
         assertThat(postListDto.getComments()).isEqualTo(0);
+        assertThat(postListDto.getContentPreview()).isEqualTo(longContent.substring(0, CONTENT_MAX_LEN) + "...");
 
         verify(scrapRepository).existsByMemberIdAndItemIdAndItemType(member.getId(),review.getId(),ItemType.POST);
         verify(scrapRepository).findAllByItemIdAndItemType(review.getId(), ItemType.POST);
@@ -252,6 +265,7 @@ public class PostReadServiceTest {
                     .view(LEN - i)
                     .title("review" + i + 1)
                     .writer(member)
+                    .contents(createContent(content))
                     .build();
             posts.add(review);
         }
@@ -308,6 +322,7 @@ public class PostReadServiceTest {
                 .id(2L)
                 .title("testReview")
                 .policy(policy)
+                .contents(createContent(content))
                 .build()));
 
         Pageable pageable = PageRequest.of(0, 1);
@@ -401,6 +416,7 @@ public class PostReadServiceTest {
                 .id(2L)
                 .title("testReview")
                 .policy(policy)
+                .contents(createContent(content))
                 .build()));
 
 
@@ -433,7 +449,7 @@ public class PostReadServiceTest {
     private Post createPost(String title, Long id, Member writer, Long view){
         return Post.builder()
                 .id(id)
-                .contents(new ArrayList<>(List.of(createContent())))
+                .contents(createContent(content))
                 .writer(writer)
                 .view(view)
                 .title(title)
@@ -449,11 +465,11 @@ public class PostReadServiceTest {
                 .build();
     }
 
-    private Content createContent(){
-        return Content.builder()
-                .content("content")
+    private List<Content> createContent(String content){
+        return new ArrayList<>(List.of(Content.builder()
+                .content(content)
                 .type(ContentType.TEXT)
-                .build();
+                .build()));
     }
 
     private Page<Post> convertListToPage(List<Post> posts, Pageable pageable) {

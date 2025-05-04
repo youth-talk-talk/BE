@@ -24,6 +24,8 @@ import com.server.youthtalktalk.domain.policy.repository.PolicyQueryRepository;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.policy.service.PolicyService;
 import com.server.youthtalktalk.domain.policy.service.PolicyServiceImpl;
+import com.server.youthtalktalk.domain.post.entity.Content;
+import com.server.youthtalktalk.domain.post.entity.ContentType;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.post.entity.Review;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
@@ -31,6 +33,7 @@ import com.server.youthtalktalk.domain.post.repostiory.PostRepositoryCustom;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepositoryCustomImpl;
 import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -87,7 +90,7 @@ public class PolicyServiceTest {
                         Review review = mock(Review.class);
                         when(review.getId()).thenReturn(policy.getPolicyId() * 100 + (long) j);
                         when(review.getTitle()).thenReturn("Review " + j);
-                        when(review.getContent()).thenReturn("후기내용".repeat(20));
+                        when(review.getContents()).thenReturn(createContent("후기내용".repeat(20)));
                         when(review.getPostComments()).thenReturn(List.of(new PostComment(review), new PostComment(review)));
                         when(review.getCreatedAt()).thenReturn(LocalDateTime.now());
                         return review;
@@ -119,6 +122,12 @@ public class PolicyServiceTest {
                 assertThat(review.contentPreview()).endsWith("...");
             }
         }
+    }
 
+    private List<Content> createContent(String content){
+        return new ArrayList<>(List.of(Content.builder()
+                .content(content)
+                .type(ContentType.TEXT)
+                .build()));
     }
 }
