@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -73,13 +74,16 @@ public class PolicyServiceImpl implements PolicyService {
         Region memberRegion = member.getRegion();
         Long memberId = member.getId();
 
-        PageRequest pageRequest = PageRequest.of(0, 20); // top 20
+        PageRequest pageRequest = PageRequest.of(0, 20, Sort.by(
+                Sort.Order.desc("view"),         // 1순위 - 조회수 높은 순
+                Sort.Order.desc("policyNum")     // 2순위 - 조회수 같으면 최신순
+        ));
 
         List<Policy> policies;
         if (memberRegion == NATIONWIDE) {
-            policies = policyRepository.findTop20OrderByViewsDesc(pageRequest).getContent();
+            policies = policyRepository.findAll(pageRequest).getContent();
         } else {
-            policies = policyRepository.findTop20ByRegionOrderByViewsDesc(memberRegion, pageRequest).getContent();
+            policies = policyRepository.findTop20ByRegion(memberRegion, pageRequest).getContent();
         }
 
         if(policies.isEmpty()){
@@ -141,11 +145,17 @@ public class PolicyServiceImpl implements PolicyService {
         LocalDateTime fromDateTime = fromDate.atStartOfDay(); // 일주일 전 0시
         LocalDateTime toDateTime = today.plusDays(1).atStartOfDay(); // 오늘 24시
 
-        PageRequest pageRequest = PageRequest.of(0, 20); // 20개 제한
+        PageRequest pageRequest = PageRequest.of(0, 20, Sort.by(
+                Sort.Order.desc("policyNum")     // 2순위 - 조회수 같으면 최신순
+        ));
 
-        List<Policy> policies = policyRepository
-                .findRecentPoliciesByCategory(categories, fromDateTime, toDateTime, pageRequest)
-                .getContent();
+        List<Policy> policies;
+        if (categories != null && !categories.isEmpty()) {
+            policies = policyRepository.findRecentPoliciesByCategory(categories, fromDateTime, toDateTime, pageRequest).getContent();
+        } else {
+            policies = policyRepository.findRecentPolicies(fromDateTime, toDateTime, pageRequest).getContent();
+        }
+
 
         return policies.stream()
                 .map(policy -> {
