@@ -21,4 +21,5 @@ public interface PolicyService {
     List<PolicyListResponseDto> getScrapPolicies(Pageable pageable,Member member);
     List<PolicyListResponseDto> getScrappedPoliciesWithUpcomingDeadline(Member member);
     List<PolicyWithReviewsDto> getTop5PoliciesWithReviews(Member member);
+    List<PolicyListResponseDto> getRecentViewedPolicies();
 }
