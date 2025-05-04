@@ -21,10 +21,10 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
 
     /**
      * top20 정책 조회 (조회수순)
-     * 여러 지역 선택 가능
+     * 특정 지역 선택
      */
-    @Query("SELECT p FROM Policy p WHERE p.region IN :regions OR p.region = 'ALL' ORDER BY p.view DESC")
-    Page<Policy> findTop20ByRegionsOrderByViewsDesc(@Param("regions") List<Region> regions, Pageable pageable);
+    @Query("SELECT p FROM Policy p WHERE p.region = :region OR p.region = 'CENTER' ORDER BY p.view DESC")
+    Page<Policy> findTop20ByRegionOrderByViewsDesc(@Param("region") Region region, Pageable pageable);
 
     /**
      * top20 정책 조회 (조회수순)
@@ -36,7 +36,7 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
     /**
      * 카테고리별 정책 조회 (최신순) - 카테고리 중복 선택 가능
      */
-    @Query("SELECT p FROM Policy p WHERE (p.region = :region OR p.region = 'ALL') AND (p.category IN :categories) ORDER BY p.policyNum DESC")
+    @Query("SELECT p FROM Policy p WHERE (p.region = :region OR p.region = 'CENTER') AND (p.category IN :categories) ORDER BY p.policyNum DESC")
     Page<Policy> findByRegionAndCategory(@Param("region") Region region, @Param("categories") List<Category> categories, Pageable pageable);
 
 
@@ -45,7 +45,7 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
      * 여러 지역 선택 가능
      */
     @Query("SELECT p FROM Policy p " +
-            "WHERE (p.region IN :regions OR p.region = 'ALL') " +
+            "WHERE (p.region IN :regions OR p.region = 'CENTER') " +
             "AND p.category IN :categories " +
             "AND p.createdAt BETWEEN :from AND :to " +
             "ORDER BY p.createdAt DESC")
@@ -62,15 +62,15 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
             "WHERE p.category IN :categories " +
             "AND p.createdAt BETWEEN :from AND :to " +
             "ORDER BY p.createdAt DESC")
-    Page<Policy> findRecentPoliciesAndCategory(@Param("categories") List<Category> categories,
-                                                       @Param("from") LocalDateTime from,
-                                                       @Param("to") LocalDateTime to,
-                                                       Pageable pageable);
+    Page<Policy> findRecentPoliciesByCategory(@Param("categories") List<Category> categories,
+                                              @Param("from") LocalDateTime from,
+                                              @Param("to") LocalDateTime to,
+                                              Pageable pageable);
 
     /**
      * 이름으로 정책 조회 (최신순)
      */
-    @Query("SELECT p FROM Policy p WHERE (p.region = :region OR p.region = 'ALL') AND  (REPLACE(p.title, ' ', '') LIKE CONCAT('%', :title, '%')) ORDER BY p.policyNum DESC")
+    @Query("SELECT p FROM Policy p WHERE (p.region = :region OR p.region = 'CENTER') AND  (REPLACE(p.title, ' ', '') LIKE CONCAT('%', :title, '%')) ORDER BY p.policyNum DESC")
     Page<Policy> findByRegionAndTitle(@Param("region") Region region, @Param("title") String title, Pageable pageable);
 
     /**

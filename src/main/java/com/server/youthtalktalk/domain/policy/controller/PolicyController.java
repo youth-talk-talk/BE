@@ -34,10 +34,9 @@ public class PolicyController {
      * 홈 화면 정책 조회 (우리 지역 인기 정책 + 따끈따끈 새로운 정책)
      */
     @GetMapping("/policies")
-    public BaseResponse<Map<String, List<PolicyListResponseDto>>> getHomePolicies(@RequestParam(required = false) List<Region> regions,
-                                                                                             @RequestParam(required = false) List<Category> categories) {
-        List<PolicyListResponseDto> top20Policies = policyService.getTop20Policies(regions);
-        List<PolicyListResponseDto> newPolicies = policyService.getNewPoliciesByCategories(regions, categories);
+    public BaseResponse<Map<String, List<PolicyListResponseDto>>> getHomePolicies(@RequestParam(required = false) List<Category> categories) {
+        List<PolicyListResponseDto> top20Policies = policyService.getTop20Policies();
+        List<PolicyListResponseDto> newPolicies = policyService.getNewPoliciesByCategories(categories);
 
         Map<String, List<PolicyListResponseDto>> responseMap = new LinkedHashMap<>();
         responseMap.put("top20Policies", top20Policies);

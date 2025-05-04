@@ -19,15 +19,9 @@ import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.policy.dto.*;
 import com.server.youthtalktalk.domain.policy.entity.Category;
-import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
-import com.server.youthtalktalk.domain.policy.entity.SortOption;
-import com.server.youthtalktalk.domain.policy.entity.condition.*;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
-import com.server.youthtalktalk.domain.policy.entity.region.SubRegion;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
-import com.server.youthtalktalk.domain.policy.repository.region.SubRegionRepository;
-import com.server.youthtalktalk.domain.scrap.entity.Scrap;
 import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
@@ -48,6 +42,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.server.youthtalktalk.domain.ItemType.*;
+import static com.server.youthtalktalk.domain.policy.entity.region.Region.*;
 import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
 @Service
@@ -70,24 +65,21 @@ public class PolicyServiceImpl implements PolicyService {
     private final PostRepositoryCustomImpl postRepository;
 
     /**
-     * top 5 정책 조회
+     * top 20 정책 조회
      */
     @Override
-    public List<PolicyListResponseDto> getTop20Policies(List<Region> regions) {
-        Long memberId;
-        try {
-            memberId = memberService.getCurrentMember().getId();
-        } catch (Exception e) {
-            throw new MemberNotFoundException();
-        }
+    public List<PolicyListResponseDto> getTop20Policies() {
+        Member member = memberService.getCurrentMember();
+        Region memberRegion = member.getRegion();
+        Long memberId = member.getId();
 
         PageRequest pageRequest = PageRequest.of(0, 20); // top 20
 
         List<Policy> policies;
-        if (regions== null){
+        if (memberRegion == NATIONWIDE) {
             policies = policyRepository.findTop20OrderByViewsDesc(pageRequest).getContent();
-        } else{
-            policies = policyRepository.findTop20ByRegionsOrderByViewsDesc(regions, pageRequest).getContent();
+        } else {
+            policies = policyRepository.findTop20ByRegionOrderByViewsDesc(memberRegion, pageRequest).getContent();
         }
 
         if(policies.isEmpty()){
@@ -141,13 +133,8 @@ public class PolicyServiceImpl implements PolicyService {
      * 카테고리 별 새로운 정책 조회 (최근 7일 기준)
      */
     @Override
-    public List<PolicyListResponseDto> getNewPoliciesByCategories(List<Region> regions, List<Category> categories) {
-        Long memberId;
-        try {
-            memberId = memberService.getCurrentMember().getId();
-        } catch (Exception e) {
-            throw new MemberNotFoundException();
-        }
+    public List<PolicyListResponseDto> getNewPoliciesByCategories(List<Category> categories) {
+        Long memberId = memberService.getCurrentMember().getId();
 
         LocalDate today = LocalDate.now(); // 오늘 날짜
         LocalDate fromDate = today.minusDays(6); // 일주일 전 날짜
@@ -156,16 +143,9 @@ public class PolicyServiceImpl implements PolicyService {
 
         PageRequest pageRequest = PageRequest.of(0, 20); // 20개 제한
 
-        List<Policy> policies;
-        if (regions== null) {
-            policies = policyRepository
-                    .findRecentPoliciesAndCategory(categories, fromDateTime, toDateTime, pageRequest)
-                    .getContent();
-        }else {
-            policies = policyRepository
-                    .findRecentPoliciesByRegionAndCategory(regions, categories, fromDateTime, toDateTime, pageRequest)
-                    .getContent();
-        }
+        List<Policy> policies = policyRepository
+                .findRecentPoliciesByCategory(categories, fromDateTime, toDateTime, pageRequest)
+                .getContent();
 
         return policies.stream()
                 .map(policy -> {
@@ -380,7 +360,7 @@ public class PolicyServiceImpl implements PolicyService {
     }
 
     private void resolveToSubRegionId(Set<Long> subRegionIds, String name) {
-        Region region = Region.fromName(name); // 지역 입력값으로 상위 지역 찾기
+        Region region = fromName(name); // 지역 입력값으로 상위 지역 찾기
 
         // 상위 지역과 매핑 성공 시, 상위 지역이 갖고 있는 모든 하위 지역 저장
         if (region != null) {

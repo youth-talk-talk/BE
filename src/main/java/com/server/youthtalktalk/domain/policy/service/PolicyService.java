@@ -11,9 +11,9 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface PolicyService {
-    List<PolicyListResponseDto> getTop20Policies(List<Region> regions);
+    List<PolicyListResponseDto> getTop20Policies();
     List<PolicyListResponseDto> getPoliciesByCategories(List<Category> categories, Pageable pageable);
-    List<PolicyListResponseDto> getNewPoliciesByCategories(List<Region> regions, List<Category> categories);
+    List<PolicyListResponseDto> getNewPoliciesByCategories(List<Category> categories);
     SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto condition, Pageable pageable, SortOption sortOption);
     List<SearchNameResponseDto> getPoliciesByName(String title, Pageable pageable);
     PolicyDetailResponseDto getPolicyDetail(Long policyId);
