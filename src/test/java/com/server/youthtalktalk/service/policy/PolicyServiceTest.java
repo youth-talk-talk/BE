@@ -71,7 +71,7 @@ public class PolicyServiceTest {
 
     private final Member member = Member.builder().role(USER).build();
     private final Department dept = Department.builder().code("0000000").name("deptName").image_url("image.png").build();
-    private static final long RECENT_VIEW_MAX_LEN = 20;
+    private static final long RECENT_VIEW_MAX_LEN = 10;
 
     @Test
     @DisplayName("인기 정책 5개와 각각의 인기 후기글 3개, 스크랩 수를 포함한 DTO를 반환한다.")

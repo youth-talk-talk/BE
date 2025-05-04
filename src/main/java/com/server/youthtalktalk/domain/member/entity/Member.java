@@ -120,8 +120,8 @@ public class Member extends BaseTimeEntity {
         }
         recentViewedPolicies.add(policyId);
 
-        // 20개 초과 시 가장 오래된 정책 제거
-        if (recentViewedPolicies.size() > 20) {
+        // 10개 초과 시 가장 오래된 정책 제거
+        if (recentViewedPolicies.size() > 10) {
             recentViewedPolicies.remove(0); // 가장 오래된 값 제거
         }
     }
