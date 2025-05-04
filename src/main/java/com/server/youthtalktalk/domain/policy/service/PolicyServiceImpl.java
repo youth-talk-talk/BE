@@ -380,7 +380,7 @@ public class PolicyServiceImpl implements PolicyService {
     }
 
     private void resolveToSubRegionId(Set<Long> subRegionIds, String name) {
-        Region region = Region.fromName(name); // 지역 입력값이 상위 지역 이름과 매핑 시도
+        Region region = Region.fromName(name); // 지역 입력값으로 상위 지역 찾기
 
         // 상위 지역과 매핑 성공 시, 상위 지역이 갖고 있는 모든 하위 지역 저장
         if (region != null) {

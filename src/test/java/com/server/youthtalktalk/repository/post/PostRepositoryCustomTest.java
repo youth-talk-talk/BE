@@ -82,7 +82,7 @@ public class PostRepositoryCustomTest {
                 .repeatCode(RepeatCode.PERIOD)
                 .earn(Earn.UNRESTRICTED)
                 .institutionType(InstitutionType.CENTER)
-                .region(Region.ALL)
+                .region(Region.CENTER)
                 .marriage(Marriage.UNRESTRICTED)
                 .build());
 

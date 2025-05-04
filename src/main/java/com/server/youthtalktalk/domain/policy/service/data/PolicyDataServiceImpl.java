@@ -66,7 +66,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
         // 하위 지역 코드 매핑
         List<PolicySubRegion> policySubRegionList = new ArrayList<>();
         savedPolicyList.stream()
-                .filter(policy -> !policy.getRegion().equals(Region.ALL))
+                .filter(policy -> !policy.getRegion().equals(Region.CENTER))
                 .forEach(policy -> policySubRegionList.addAll(setPolicySubRegions(policy)));
         policySubRegionRepository.saveAll(policySubRegionList);
     }
@@ -276,11 +276,11 @@ public class PolicyDataServiceImpl implements PolicyDataService {
         if(!regionCodes[0].isBlank()){
             Region region = Region.fromNum(Integer.valueOf(regionCodes[0].substring(0,2)));
             if(region == null){
-                return Region.ALL;
+                return Region.CENTER;
             }
             return region;
         }
-        return Region.ALL;
+        return Region.CENTER;
     }
 
     private Policy setRegionForPolicy(Policy policy) {

@@ -164,7 +164,7 @@ public record PolicyData(
                     .orElse(null);
         }
         else{
-            return Region.ALL; // 이외는 중앙부처 처리
+            return Region.CENTER; // 이외는 중앙부처 처리
         }
     }
 
