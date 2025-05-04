@@ -176,9 +176,11 @@ public class PolicyServiceImpl implements PolicyService {
      */
     @Override
     public PolicyDetailResponseDto getPolicyDetail(Long policyId){
+        Member member;
         Long memberId;
         try {
-            memberId = memberService.getCurrentMember().getId();
+            member = memberService.getCurrentMember();
+            memberId = member.getId();
         } catch (Exception e) {
             throw new MemberNotFoundException();
         }
@@ -187,6 +189,7 @@ public class PolicyServiceImpl implements PolicyService {
                 .orElseThrow(PolicyNotFoundException::new);
 
         policyRepository.save(policy.toBuilder().view(policy.getView()+1).build());
+        member.addRecentViewedPolicies(policy.getPolicyId());
 
         boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), POLICY);
         PolicyDetailResponseDto result = PolicyDetailResponseDto.toDto(policy, isScrap);
@@ -495,6 +498,36 @@ public class PolicyServiceImpl implements PolicyService {
 
         return topPolicies.stream()
                 .map(policy -> toPolicyWithReviewsDto(member, policy))
+                .toList();
+    }
+
+    /**
+     * 최근 본 정책 리스트 조회
+     */
+    @Override
+    public List<PolicyListResponseDto> getRecentViewedPolicies() {
+        Member member = memberService.getCurrentMember();
+
+        List<Long> recentViewedPolicyIds = member.getRecentViewedPolicies();
+        List<Policy> recentViewedPolicies = policyRepository.findAllByPolicyIdIn(recentViewedPolicyIds);
+        Map<Long, Policy> policyMap = new HashMap<>();
+        for(Policy policy : recentViewedPolicies){
+            policyMap.put(policy.getPolicyId(), policy);
+        }
+
+        // 역순으로 정렬
+        List<Policy> sortedPolicies = new ArrayList<>();
+        for(int i = recentViewedPolicyIds.size() - 1; i >= 0; i--) {
+            Long id = recentViewedPolicyIds.get(i);
+            sortedPolicies.add(policyMap.get(id));
+        }
+
+        return sortedPolicies.stream()
+                .map(policy -> {
+                    long scrapCount = scrapRepository.countByItemTypeAndItemId(ItemType.POLICY, policy.getPolicyId());
+                    boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(), policy.getPolicyId(), ItemType.POLICY);
+                    return PolicyListResponseDto.toListDto(policy, isScrap, scrapCount);
+                })
                 .toList();
     }
 
