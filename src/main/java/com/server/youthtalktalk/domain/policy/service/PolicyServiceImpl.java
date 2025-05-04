@@ -146,7 +146,7 @@ public class PolicyServiceImpl implements PolicyService {
         LocalDateTime toDateTime = today.plusDays(1).atStartOfDay(); // 오늘 24시
 
         PageRequest pageRequest = PageRequest.of(0, 20, Sort.by(
-                Sort.Order.desc("policyNum")     // 2순위 - 조회수 같으면 최신순
+                Sort.Order.desc("policyNum")     // 1순위 - 최신순
         ));
 
         List<Policy> policies;
