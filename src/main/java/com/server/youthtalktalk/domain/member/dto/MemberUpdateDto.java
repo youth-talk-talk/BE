@@ -12,7 +12,7 @@ public record MemberUpdateDto(
                 message = "닉네임은 한글과 영어(대소문자) 및 숫자만 가능하며, 공백과 특수문자는 사용할 수 없습니다."
         )
         String nickname,
-        @Pattern(regexp = "서울|부산|대구|인천|광주|대전|울산|경기|강원|충북|충남|전북|전남|경북|경남|제주|세종",
+        @Pattern(regexp = "서울|부산|대구|인천|광주|대전|울산|경기|강원|충북|충남|전북|전남|경북|경남|제주|세종|전국",
                  message = "지역이 유효하지 않습니다.")
         String region
 ) {

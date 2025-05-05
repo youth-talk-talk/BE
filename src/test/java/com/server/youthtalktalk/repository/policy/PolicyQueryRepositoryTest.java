@@ -35,7 +35,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -395,7 +394,7 @@ public class PolicyQueryRepositoryTest {
                 .earn(ANNUL_INCOME)
                 .marriage(Marriage.UNRESTRICTED)
                 .category(JOB)
-                .region(Region.ALL)
+                .region(Region.CENTER)
                 .build();
         return policyRepository.save(policy);
     }

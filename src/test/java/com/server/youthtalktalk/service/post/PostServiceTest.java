@@ -80,7 +80,7 @@ class PostServiceTest {
                         .category(Category.JOB)
                         .repeatCode(RepeatCode.PERIOD)
                         .earn(Earn.UNRESTRICTED)
-                        .region(Region.ALL)
+                        .region(Region.CENTER)
                         .institutionType(InstitutionType.CENTER)
                         .marriage(Marriage.UNRESTRICTED)
                         .build());

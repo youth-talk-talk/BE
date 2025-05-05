@@ -451,7 +451,7 @@ class CommentServiceTest {
                 .earn(Earn.UNRESTRICTED)
                 .marriage(Marriage.UNRESTRICTED)
                 .institutionType(InstitutionType.CENTER)
-                .region(Region.ALL)
+                .region(Region.CENTER)
                 .build();
     }
 
