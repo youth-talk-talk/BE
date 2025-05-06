@@ -12,11 +12,14 @@ import com.server.youthtalktalk.domain.likes.entity.Likes;
 import com.server.youthtalktalk.domain.likes.repository.LikeRepository;
 import com.server.youthtalktalk.domain.member.entity.Block;
 import com.server.youthtalktalk.domain.member.entity.Member;
+import com.server.youthtalktalk.domain.member.repository.BlockRepository;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
+import com.server.youthtalktalk.domain.report.entity.CommentReport;
+import com.server.youthtalktalk.domain.report.repository.ReportRepository;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.BusinessException;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
@@ -25,6 +28,9 @@ import com.server.youthtalktalk.global.response.exception.comment.CommentLikeNot
 import com.server.youthtalktalk.global.response.exception.comment.CommentNotFoundException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,11 +48,17 @@ import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 
+    public static final String DELETED_WRITER = "탈퇴한 회원";
+    public static final String DEFAULT_PROFILE = "기본 이미지";
+    public static final String COMMENT_TIME_FORMAT = "yyyy-MM-dd HH:mm";
+
     private final CommentRepository commentRepository;
     private final PolicyRepository policyRepository;
     private final PostRepository postRepository;
     private final LikeRepository likeRepository;
     private final MemberRepository memberRepository;
+    private final ReportRepository reportRepository;
+    private final BlockRepository blockRepository;
 
     /**
      * 정책 댓글 생성
@@ -78,22 +90,48 @@ public class CommentServiceImpl implements CommentService {
      * 정책 댓글 조회
      */
     @Override
-    public List<PolicyComment> getPolicyComments(Long policyId) {
+    public List<PolicyComment> getPolicyComments(Long policyId, Member member) {
         if (!policyRepository.existsByPolicyId(policyId)) {
             throw new PolicyNotFoundException();
         }
-        return commentRepository.findPolicyCommentsByPolicyIdOrderByCreatedAtAsc(policyId);
+        List<PolicyComment> policyComments = commentRepository.findPolicyCommentsByPolicyId(policyId);
+        Set<Comment> excludedComments = getExcludedComments(member); // 신고한 댓글 + 차단한 유저의 댓글
+
+        return policyComments.stream()
+                .filter(comment -> !excludedComments.contains(comment))
+                .sorted(Comparator.comparing(PolicyComment::getCreatedAt)) // 오래된 순 정렬
+                .collect(Collectors.toList());
     }
 
     /**
      * 게시글 댓글 조회
      */
     @Override
-    public List<PostComment> getPostComments(Long postId) {
+    public List<PostComment> getPostComments(Long postId, Member member) {
         if (!postRepository.existsById(postId)) {
             throw new PostNotFoundException();
         }
-        return commentRepository.findPostCommentsByPostIdOrderByCreatedAtAsc(postId);
+        List<PostComment> postComments = commentRepository.findPostCommentsByPostId(postId);
+        Set<Comment> excludedComments = getExcludedComments(member); // 신고한 댓글 + 차단한 유저의 댓글
+
+        return postComments.stream()
+                .filter(comment -> !excludedComments.contains(comment))
+                .sorted(Comparator.comparing(PostComment::getCreatedAt)) // 오래된 순 정렬
+                .collect(Collectors.toList());
+    }
+
+    public Set<Comment> getExcludedComments(Member member) {
+        // 차단한 유저들의 댓글
+        List<Comment> blockedComments = blockRepository.findBlockedMembersByBlocker(member).stream()
+                .flatMap(blockedMember -> blockedMember.getComments().stream()).toList();
+
+        // 신고한 댓글
+        List<Comment> reportedComments = reportRepository.findCommentReportsByReporter(member).stream()
+                .map(CommentReport::getComment).toList();
+
+        Set<Comment> excludedComments = new HashSet<>(blockedComments); // 중복 제거
+        excludedComments.addAll(reportedComments);
+        return excludedComments;
     }
 
     /**
@@ -114,18 +152,22 @@ public class CommentServiceImpl implements CommentService {
     }
 
     /**
-     * 연관엔티티 id 없는 CommentDto로 변환
+     * CommentDto로 변환
      */
     @Override
     public List<CommentDto> toCommentDtoList(List<? extends Comment> comments, Member member) {
-        Set<Member> blockedMembers = member.getBlocks().stream().map(Block::getBlockedMember).collect(Collectors.toSet());
-
         return comments.stream()
-                .filter(comment -> !blockedMembers.contains(comment.getWriter())) // 차단한 유저가 작성한 댓글은 제외
                 .map(comment -> {
-                    String nickname = (comment.getWriter() != null) ? comment.getWriter().getNickname() : "null"; // 댓글 작성자가 탈퇴한 경우 닉네임 치환
-                    Boolean isLikedByMember = isLikedByMember(comment, member); // 회원의 좋아요 여부 판단
-                    return new CommentDto(comment.getId(), nickname, comment.getContent(), isLikedByMember);
+                    Member writer = comment.getWriter();
+                    Long writerId = (writer == null) ? -1L : writer.getId();
+                    String writerNickname = (writer == null) ? DELETED_WRITER : writer.getNickname();
+                    String writerProfileImg = (writer == null || writer.getProfileImage() == null)
+                            ? DEFAULT_PROFILE : writer.getProfileImage().getImgUrl();
+                    String content = comment.getContent();
+                    String createdAt = comment.getCreatedAt()
+                            .format(DateTimeFormatter.ofPattern(COMMENT_TIME_FORMAT));
+                    Boolean isLikedByMember = isLikedByMember(comment, member);
+                    return new CommentDto(comment.getId(), writerId, writerNickname, writerProfileImg, content, isLikedByMember, createdAt);
                 })
                 .collect(Collectors.toList());
     }

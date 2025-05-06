@@ -6,6 +6,7 @@ import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.report.entity.CommentReport;
 import com.server.youthtalktalk.domain.report.entity.PostReport;
 import jakarta.persistence.*;
+import java.util.Objects;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -59,4 +60,18 @@ public abstract class Comment extends BaseTimeEntity {
 
     // 연관엔티티(post/policy) id 조회
     public abstract Long getRelatedEntityId();
+
+    @Override
+    public boolean equals(Object object) {
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+        Comment comment = (Comment) object;
+        return Objects.equals(id, comment.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
 }

@@ -51,20 +51,34 @@ public class CommentController {
      * 정책 댓글 조회 api
      */
     @GetMapping("/policies/{policyId}/comments")
-    public BaseResponse<List<CommentDto>> getPolicyComments(@PathVariable Long policyId) {
-        List<PolicyComment> policyComments = commentService.getPolicyComments(policyId);
-        List<CommentDto> commentDtoList = commentService.toCommentDtoList(policyComments, memberService.getCurrentMember());
-        return new BaseResponse<>(commentDtoList, SUCCESS);
+    public BaseResponse<CommentListResponseDto> getPolicyComments(@PathVariable Long policyId) {
+        Member member = memberService.getCurrentMember();
+        List<PolicyComment> policyComments = commentService.getPolicyComments(policyId, member);
+
+        if (policyComments.isEmpty()) {
+            return new BaseResponse<>(SUCCESS_COMMENT_EMPTY);
+        }
+
+        List<CommentDto> commentDtoList = commentService.toCommentDtoList(policyComments, member);
+        CommentListResponseDto response = new CommentListResponseDto(commentDtoList.size(), commentDtoList);
+        return new BaseResponse<>(response, SUCCESS);
     }
 
     /**
      * 게시글 댓글 조회 api
      */
     @GetMapping("/posts/{postId}/comments")
-    public BaseResponse<List<CommentDto>> getPostComments(@PathVariable Long postId) {
-        List<PostComment> postComments = commentService.getPostComments(postId);
-        List<CommentDto> commentDtoList = commentService.toCommentDtoList(postComments, memberService.getCurrentMember());
-        return new BaseResponse<>(commentDtoList, SUCCESS);
+    public BaseResponse<CommentListResponseDto> getPostComments(@PathVariable Long postId) {
+        Member member = memberService.getCurrentMember();
+        List<PostComment> postComments = commentService.getPostComments(postId, member);
+
+        if (postComments.isEmpty()) {
+            return new BaseResponse<>(SUCCESS_COMMENT_EMPTY);
+        }
+
+        List<CommentDto> commentDtoList = commentService.toCommentDtoList(postComments, member);
+        CommentListResponseDto response = new CommentListResponseDto(commentDtoList.size(), commentDtoList);
+        return new BaseResponse<>(response, SUCCESS);
     }
 
     /**
