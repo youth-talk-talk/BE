@@ -4,7 +4,6 @@ import com.server.youthtalktalk.domain.BaseTimeEntity;
 import com.server.youthtalktalk.domain.likes.entity.Likes;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.report.entity.CommentReport;
-import com.server.youthtalktalk.domain.report.entity.PostReport;
 import jakarta.persistence.*;
 import java.util.Objects;
 import lombok.*;
@@ -53,13 +52,15 @@ public abstract class Comment extends BaseTimeEntity {
         like.setComment(null);
     }
 
-    // content 업데이트
     public void updateContent(String content) {
         this.content = content;
     }
 
-    // 연관엔티티(post/policy) id 조회
-    public abstract Long getRelatedEntityId();
+    public abstract Long getArticleId();
+
+    public abstract String getArticleType();
+
+    public abstract String getArticleTitle();
 
     @Override
     public boolean equals(Object object) {

@@ -51,7 +51,7 @@ public class CommentController {
      * 정책 댓글 조회 api
      */
     @GetMapping("/policies/{policyId}/comments")
-    public BaseResponse<CommentListResponseDto> getPolicyComments(@PathVariable Long policyId) {
+    public BaseResponse<CommentListDto> getPolicyComments(@PathVariable Long policyId) {
         Member member = memberService.getCurrentMember();
         List<PolicyComment> policyComments = commentService.getPolicyComments(policyId, member);
 
@@ -60,7 +60,7 @@ public class CommentController {
         }
 
         List<CommentDto> commentDtoList = commentService.toCommentDtoList(policyComments, member);
-        CommentListResponseDto response = new CommentListResponseDto(commentDtoList.size(), commentDtoList);
+        CommentListDto response = new CommentListDto(policyComments.size(), commentDtoList);
         return new BaseResponse<>(response, SUCCESS);
     }
 
@@ -68,7 +68,7 @@ public class CommentController {
      * 게시글 댓글 조회 api
      */
     @GetMapping("/posts/{postId}/comments")
-    public BaseResponse<CommentListResponseDto> getPostComments(@PathVariable Long postId) {
+    public BaseResponse<CommentListDto> getPostComments(@PathVariable Long postId) {
         Member member = memberService.getCurrentMember();
         List<PostComment> postComments = commentService.getPostComments(postId, member);
 
@@ -77,37 +77,40 @@ public class CommentController {
         }
 
         List<CommentDto> commentDtoList = commentService.toCommentDtoList(postComments, member);
-        CommentListResponseDto response = new CommentListResponseDto(commentDtoList.size(), commentDtoList);
+        CommentListDto response = new CommentListDto(postComments.size(), commentDtoList);
         return new BaseResponse<>(response, SUCCESS);
     }
 
     /**
-     * 회원이 작성한 댓글 조회 api
+     * 내 댓글 조회 api
      */
     @GetMapping("/members/me/comments")
-    public BaseResponse<List<MyCommentDto>> getMemberComments() {
+    public BaseResponse<MyCommentListDto> getMemberComments() {
         Member member = memberService.getCurrentMember();
         List<Comment> comments = commentService.getMyComments(member);
 
-        if (comments.isEmpty()) // 회원이 작성한 댓글이 없는 경우
+        if (comments.isEmpty())
             return new BaseResponse<>(SUCCESS_COMMENT_EMPTY);
 
-        List<MyCommentDto> myCommentDtoList = commentService.toMyCommentDtoList(comments, member.getNickname());
-        return new BaseResponse<>(myCommentDtoList, SUCCESS);
+        List<MyCommentDto> myCommentDtoList = commentService.toMyCommentDtoList(comments, member);
+        MyCommentListDto response = new MyCommentListDto(comments.size(), myCommentDtoList);
+        return new BaseResponse<>(response, SUCCESS);
     }
 
     /**
      * 회원이 좋아요한 댓글 조회 api
      */
     @GetMapping("/members/me/comments/likes")
-    public BaseResponse<List<MyCommentDto>> getLikedComments() {
-        List<Comment> likedComments = commentService.getLikedComments(memberService.getCurrentMember());
+    public BaseResponse<LikeCommentListDto> getLikedComments() {
+        Member member = memberService.getCurrentMember();
+        List<Comment> likeComments = commentService.getLikedComments(member);
 
-        if(likedComments.isEmpty()) // 회원이 좋아요한 댓글이 없는 경우
+        if(likeComments.isEmpty())
             return new BaseResponse<>(SUCCESS_COMMENT_EMPTY);
 
-        List<MyCommentDto> likedCommentDtoList = commentService.toMyCommentDtoList(likedComments, null);
-        return new BaseResponse<>(likedCommentDtoList, SUCCESS);
+        List<LikeCommentDto> likeCommentDtoList = commentService.toLikeCommentDtoList(likeComments, member);
+        LikeCommentListDto response = new LikeCommentListDto(likeComments.size(), likeCommentDtoList);
+        return new BaseResponse<>(response, SUCCESS);
     }
 
     /**

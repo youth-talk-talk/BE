@@ -27,7 +27,17 @@ public class PostComment extends Comment{
     }
 
     @Override
-    public Long getRelatedEntityId() {
+    public Long getArticleId() {
         return post.getId();
+    }
+
+    @Override
+    public String getArticleType() {
+        return "post";
+    }
+
+    @Override
+    public String getArticleTitle() {
+        return post.getTitle();
     }
 }

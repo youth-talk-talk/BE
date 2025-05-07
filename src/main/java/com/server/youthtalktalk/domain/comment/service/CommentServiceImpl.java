@@ -1,26 +1,24 @@
 package com.server.youthtalktalk.domain.comment.service;
 
 import com.server.youthtalktalk.domain.comment.dto.CommentDto;
+import com.server.youthtalktalk.domain.comment.dto.LikeCommentDto;
 import com.server.youthtalktalk.domain.comment.dto.MyCommentDto;
-import com.server.youthtalktalk.domain.comment.dto.PolicyCommentDto;
-import com.server.youthtalktalk.domain.comment.dto.PostCommentDto;
 import com.server.youthtalktalk.domain.comment.entity.Comment;
 import com.server.youthtalktalk.domain.comment.entity.PolicyComment;
 import com.server.youthtalktalk.domain.comment.entity.PostComment;
 import com.server.youthtalktalk.domain.comment.repository.CommentRepository;
 import com.server.youthtalktalk.domain.likes.entity.Likes;
 import com.server.youthtalktalk.domain.likes.repository.LikeRepository;
-import com.server.youthtalktalk.domain.member.entity.Block;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.repository.BlockRepository;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.post.entity.Post;
+import com.server.youthtalktalk.domain.post.entity.Review;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import com.server.youthtalktalk.domain.report.entity.CommentReport;
 import com.server.youthtalktalk.domain.report.repository.ReportRepository;
-import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.BusinessException;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.comment.AlreadyLikedException;
@@ -40,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_INPUT_VALUE;
 
 @Slf4j
@@ -48,7 +47,7 @@ import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 
-    public static final String DELETED_WRITER = "탈퇴한 회원";
+    public static final String DELETED_WRITER = "알 수 없음";
     public static final String DEFAULT_PROFILE = "기본 이미지";
     public static final String COMMENT_TIME_FORMAT = "yyyy-MM-dd HH:mm";
 
@@ -87,7 +86,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     /**
-     * 정책 댓글 조회
+     * 정책 댓글 조회 (오래된 순)
      */
     @Override
     public List<PolicyComment> getPolicyComments(Long policyId, Member member) {
@@ -104,7 +103,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     /**
-     * 게시글 댓글 조회
+     * 게시글 댓글 조회 (오래된 순)
      */
     @Override
     public List<PostComment> getPostComments(Long postId, Member member) {
@@ -135,7 +134,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     /**
-     * 회원이 작성한 댓글 조회
+     * 회원이 작성한 댓글 조회 (최신순)
      */
     @Override
     public List<Comment> getMyComments(Member member) {
@@ -143,16 +142,16 @@ public class CommentServiceImpl implements CommentService {
     }
 
     /**
-     * 회원이 좋아요한 댓글 조회
+     * 회원이 좋아요한 댓글 조회 (최신순)
      */
     @Override
     public List<Comment> getLikedComments(Member member) {
         return likeRepository.findAllByMemberOrderByCreatedAtDesc(member)
-                .stream().map(Likes::getComment).collect(Collectors.toList());
+                .stream().map(Likes::getComment).toList();
     }
 
     /**
-     * CommentDto로 변환
+     * 게시글/정책 댓글 조회용 DTO 리스트로 변환
      */
     @Override
     public List<CommentDto> toCommentDtoList(List<? extends Comment> comments, Member member) {
@@ -160,37 +159,59 @@ public class CommentServiceImpl implements CommentService {
                 .map(comment -> {
                     Member writer = comment.getWriter();
                     Long writerId = (writer == null) ? -1L : writer.getId();
-                    String writerNickname = (writer == null) ? DELETED_WRITER : writer.getNickname();
-                    String writerProfileImg = (writer == null || writer.getProfileImage() == null)
+                    String nickname = (writer == null) ? DELETED_WRITER : writer.getNickname();
+                    String profileImg = (writer == null || writer.getProfileImage() == null)
                             ? DEFAULT_PROFILE : writer.getProfileImage().getImgUrl();
                     String content = comment.getContent();
                     String createdAt = comment.getCreatedAt()
                             .format(DateTimeFormatter.ofPattern(COMMENT_TIME_FORMAT));
                     Boolean isLikedByMember = isLikedByMember(comment, member);
-                    return new CommentDto(comment.getId(), writerId, writerNickname, writerProfileImg, content, isLikedByMember, createdAt);
+                    return new CommentDto(comment.getId(), writerId, nickname, profileImg, content, isLikedByMember, createdAt);
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
-     * 연관엔티티 id 있는 CommentDto로 변환 (마이페이지 용)
+     * 내가 작성한 댓글 조회용 DTO 리스트로 변환
      */
     @Override
-    public List<MyCommentDto> toMyCommentDtoList(List<Comment> comments, String nickname) {
+    public List<MyCommentDto> toMyCommentDtoList(List<Comment> comments, Member member) {
         return comments.stream()
                 .map(comment -> {
-                    String writerNickname = (nickname != null) ? nickname : comment.getWriter().getNickname();
-                    Long relatedEntityId = comment.getRelatedEntityId();
-
-                    if (comment instanceof PolicyComment) {
-                        return new PolicyCommentDto(comment.getId(), writerNickname, comment.getContent(), relatedEntityId);
-                    } else if (comment instanceof PostComment) {
-                        return new PostCommentDto(comment.getId(), writerNickname, comment.getContent(), relatedEntityId);
-                    } else {
-                        throw new BusinessException(BaseResponseCode.COMMENT_TYPE_UNKNOWN);
-                    }
+                    Long commentId = comment.getId();
+                    String content = comment.getContent();
+                    Long articleId = comment.getArticleId();
+                    String articleType = comment.getArticleType();
+                    String articleTitle = comment.getArticleTitle();
+                    Boolean isLikedByMember = isLikedByMember(comment, member);
+                    int likeCount = comment.getCommentLikes().size();
+                    return new MyCommentDto(commentId, content, articleId,
+                            articleType, articleTitle, isLikedByMember, likeCount);
                 })
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    /**
+     * 좋아요한 댓글 조회용 DTO 리스트로 변환
+     */
+    @Override
+    public List<LikeCommentDto> toLikeCommentDtoList(List<Comment> comments, Member member) {
+        return comments.stream()
+                .map(comment -> {
+                    Long commentId = comment.getId();
+                    Member writer = comment.getWriter();
+                    Long writerId = (writer == null) ? -1L : writer.getId();
+                    String nickname = (writer == null) ? DELETED_WRITER : writer.getNickname();
+                    String content = comment.getContent();
+                    Long articleId = comment.getArticleId();
+                    String articleType = comment.getArticleType();
+                    String articleTitle = comment.getArticleTitle();
+                    Boolean isLikedByMember = isLikedByMember(comment, member);
+                    int likeCount = comment.getCommentLikes().size();
+                    return new LikeCommentDto(commentId, writerId, nickname, content, articleId,
+                            articleType, articleTitle, isLikedByMember, likeCount);
+                })
+                .toList();
     }
 
     /**
