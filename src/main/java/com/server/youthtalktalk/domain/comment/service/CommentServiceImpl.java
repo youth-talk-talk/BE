@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,6 +59,7 @@ public class CommentServiceImpl implements CommentService {
     private final MemberRepository memberRepository;
     private final ReportRepository reportRepository;
     private final BlockRepository blockRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * 정책 댓글 생성
