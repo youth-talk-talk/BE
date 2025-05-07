@@ -1,12 +1,14 @@
 package com.server.youthtalktalk.domain.comment.entity;
 
 import com.server.youthtalktalk.domain.post.entity.Post;
+import com.server.youthtalktalk.domain.post.entity.Review;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.Hibernate;
 
 @Entity
 @Getter
@@ -33,7 +35,7 @@ public class PostComment extends Comment{
 
     @Override
     public String getArticleType() {
-        return "post";
+        return ((Hibernate.getClass(post).equals(Review.class))) ? "review" : "post";
     }
 
     @Override

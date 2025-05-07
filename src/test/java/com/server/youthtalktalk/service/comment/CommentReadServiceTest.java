@@ -22,6 +22,7 @@ import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.post.entity.Post;
+import com.server.youthtalktalk.domain.post.entity.Review;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import com.server.youthtalktalk.domain.report.entity.CommentReport;
 import com.server.youthtalktalk.domain.report.repository.ReportRepository;
@@ -232,10 +233,10 @@ public class CommentReadServiceTest {
     void toMyCommentDtoList_PostComment() {
         // given
         Member member = Member.builder().id(1L).username("member1").build();
-        Post post = Post.builder().id(10L).title("게시글 제목").build();
+        Review review = Review.builder().id(10L).title("리뷰 제목").build();
         PostComment comment = PostComment.builder().id(100L).content("댓글 내용").build();
         comment.setWriter(member);
-        comment.setPost(post);
+        comment.setPost(review);
 
         List<Comment> comments = List.of(comment);
 
@@ -247,9 +248,9 @@ public class CommentReadServiceTest {
         MyCommentDto dto = result.get(0);
         assertThat(dto.commentId()).isEqualTo(comment.getId());
         assertThat(dto.content()).isEqualTo(comment.getContent());
-        assertThat(dto.articleId()).isEqualTo(post.getId());
-        assertThat(dto.articleType()).isEqualTo("post");
-        assertThat(dto.articleTitle()).isEqualTo(post.getTitle());
+        assertThat(dto.articleId()).isEqualTo(review.getId());
+        assertThat(dto.articleType()).isEqualTo("review");
+        assertThat(dto.articleTitle()).isEqualTo(review.getTitle());
         assertThat(dto.isLikedByMember()).isFalse();
         assertThat(dto.likeCount()).isEqualTo(0);
     }
