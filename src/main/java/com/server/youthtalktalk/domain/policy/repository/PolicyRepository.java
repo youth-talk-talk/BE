@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 
 @Repository
@@ -94,4 +95,10 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
      * (기본 조회수순, 조회수 같으면 최신순 정렬)
      */
     List<Policy> findTop5ByOrderByViewDescPolicyNumDesc();
+
+    /**
+     * 최근 본 정책 아이디 리스트로 정책 조회
+     */
+    List<Policy> findAllByPolicyIdIn(List<Long> policyIds);
+
 }

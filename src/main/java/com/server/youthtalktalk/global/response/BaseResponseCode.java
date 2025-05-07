@@ -96,9 +96,11 @@ public enum BaseResponseCode {
     ANNOUNCEMENT_NOT_FOUND_EXCEPTION("A01","해당 공지사항을 찾을 수 없습니다.",HttpStatus.NOT_FOUND.value()),
 
     // Report
-    REPORT_ALREADY_EXISTENCE_EXCEPTION("R01","이미 신고한 게시글(또는 댓글)입니다.",HttpStatus.CONFLICT.value()),
-    SELF_REPORT_NOT_ALLOWED_EXCEPTION("R02", "본인의 게시글(또는 댓글)은 신고할 수 없습니다.", HttpStatus.BAD_REQUEST.value());
+    REPORT_ALREADY_EXISTENCE_EXCEPTION("R01","이미 신고한 게시글입니다.",HttpStatus.CONFLICT.value()),
+    SELF_REPORT_NOT_ALLOWED_EXCEPTION("R02", "본인의 게시글은 신고할 수 없습니다.", HttpStatus.BAD_REQUEST.value()),
 
+    // Notification
+    NOTIFICATION_NOT_FOUND_EXCEPTION("N01", "존재하지 않는 알림입니다.", HttpStatus.NOT_FOUND.value());
     private final String code;
     private final String message;
     private final int status;

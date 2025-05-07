@@ -172,9 +172,11 @@ public class PolicyServiceImpl implements PolicyService {
      */
     @Override
     public PolicyDetailResponseDto getPolicyDetail(Long policyId){
+        Member member;
         Long memberId;
         try {
-            memberId = memberService.getCurrentMember().getId();
+            member = memberService.getCurrentMember();
+            memberId = member.getId();
         } catch (Exception e) {
             throw new MemberNotFoundException();
         }
@@ -183,6 +185,7 @@ public class PolicyServiceImpl implements PolicyService {
                 .orElseThrow(PolicyNotFoundException::new);
 
         policyRepository.save(policy.toBuilder().view(policy.getView()+1).build());
+        member.addRecentViewedPolicies(policy.getPolicyId());
 
         boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), POLICY);
         PolicyDetailResponseDto result = PolicyDetailResponseDto.toDto(policy, isScrap);
@@ -447,6 +450,7 @@ public class PolicyServiceImpl implements PolicyService {
                     .itemId(policyId)
                     .itemType(POLICY)
                     .member(member)
+                    .createdAt(LocalDateTime.now())
                     .build());
         }
         else{
@@ -493,6 +497,36 @@ public class PolicyServiceImpl implements PolicyService {
                 .toList();
     }
 
+    /**
+     * 최근 본 정책 리스트 조회
+     */
+    @Override
+    public List<PolicyListResponseDto> getRecentViewedPolicies() {
+        Member member = memberService.getCurrentMember();
+
+        List<Long> recentViewedPolicyIds = member.getRecentViewedPolicies();
+        List<Policy> recentViewedPolicies = policyRepository.findAllByPolicyIdIn(recentViewedPolicyIds);
+        Map<Long, Policy> policyMap = new HashMap<>();
+        for(Policy policy : recentViewedPolicies){
+            policyMap.put(policy.getPolicyId(), policy);
+        }
+
+        // 역순으로 정렬
+        List<Policy> sortedPolicies = new ArrayList<>();
+        for(int i = recentViewedPolicyIds.size() - 1; i >= 0; i--) {
+            Long id = recentViewedPolicyIds.get(i);
+            sortedPolicies.add(policyMap.get(id));
+        }
+
+        return sortedPolicies.stream()
+                .map(policy -> {
+                    long scrapCount = scrapRepository.countByItemTypeAndItemId(ItemType.POLICY, policy.getPolicyId());
+                    boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(), policy.getPolicyId(), ItemType.POLICY);
+                    return PolicyListResponseDto.toListDto(policy, isScrap, scrapCount);
+                })
+                .toList();
+    }
+
     private PolicyWithReviewsDto toPolicyWithReviewsDto(Member member, Policy policy) {
         // 정책의 후기글 중에서 조회수 top3 조회
         List<Review> topReviews = postRepository.findTopReviewsByPolicy(member, policy, 3);
@@ -512,14 +546,13 @@ public class PolicyServiceImpl implements PolicyService {
     private ReviewInPolicyDto toReviewInPolicyDto(Post review) {
         // 후기글의 스크랩 수 조회
         long scrapCount = scrapRepository.countByItemTypeAndItemId(POST, review.getId());
-
         return new ReviewInPolicyDto(
                 review.getId(), // 게시글 id
                 review.getTitle(), // 게시글 제목
-                createContentSnippet(review.getContent()), // 내용 미리보기
+                createContentSnippet(review.getContents().get(0).getContent()), // 내용 미리보기
                 review.getPostComments().size(), // 댓글 수
                 scrapCount, // 스크랩 수
-                review.getCreatedAt().toLocalDate() // 작성일
+                review.getCreatedAt().toLocalDate().toString() // 작성일
         );
     }
 

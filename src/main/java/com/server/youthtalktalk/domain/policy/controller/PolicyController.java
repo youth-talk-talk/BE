@@ -124,4 +124,13 @@ public class PolicyController {
         return new BaseResponse<>(top5PoliciesWithReviews, SUCCESS);
     }
 
+    /**
+     * 최근 본 정책 20개 조회
+     */
+    @GetMapping("/policies/recent-view")
+    public BaseResponse<List<PolicyListResponseDto>> getRecentViewedPolicies() {
+        List<PolicyListResponseDto> recentViewedPolicies = policyService.getRecentViewedPolicies();
+        return new BaseResponse<>(recentViewedPolicies, SUCCESS);
+    }
+
 }

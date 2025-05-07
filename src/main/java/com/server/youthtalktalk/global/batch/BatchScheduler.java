@@ -9,21 +9,22 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
-@Component
-public class DeleteImgScheduler {
+@Configuration
+public class BatchScheduler {
     private final JobLauncher jobLauncher;
-    private final Job job;
+    private final Job deleteImgJob;
 
     @Async(value = "asyncTask")
     @Scheduled(cron = "0 0 0 * * SUN") // 매주 일요일 자정 실행
     public void runDeleteImgJob()
             throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException, JobRestartException {
-        jobLauncher.run(job, new JobParametersBuilder()
+        jobLauncher.run(deleteImgJob, new JobParametersBuilder()
                 .addLong("timestamp", System.currentTimeMillis()) // 유니크 파라미터 추가
                 .toJobParameters());
     }
