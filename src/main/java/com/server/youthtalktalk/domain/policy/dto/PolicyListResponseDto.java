@@ -18,6 +18,7 @@ public class PolicyListResponseDto {
     private boolean isScrap; // 스크랩 여부
     private long scrapCount; // 스크랩 수
     private String departmentImgUrl; // 중앙부처 이미지 url
+    private String region; // 지역
 
     public static PolicyListResponseDto toListDto(Policy policy, Boolean isScrap, long scrapCount) {
         return PolicyListResponseDto.builder()
@@ -29,6 +30,7 @@ public class PolicyListResponseDto {
                 .isScrap(isScrap)
                 .scrapCount(scrapCount)
                 .departmentImgUrl(policy.getDepartment().getImage_url())
+                .region(policy.getRegion().getName())
                 .build();
     }
 }
