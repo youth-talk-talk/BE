@@ -5,11 +5,15 @@ import static com.server.youthtalktalk.domain.member.controller.MemberController
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class SignUpRequestDto {
 
     @NotBlank(message = "socialId는 필수값입니다.")
