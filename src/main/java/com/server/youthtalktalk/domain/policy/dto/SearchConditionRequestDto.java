@@ -1,11 +1,15 @@
 package com.server.youthtalktalk.domain.policy.dto;
 
 import java.util.List;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class SearchConditionRequestDto {
     private String keyword; // 검색 키워드
     private String institutionType; // 담당기관 (중앙부처 또는 지자체)
