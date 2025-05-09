@@ -127,7 +127,7 @@ class CommentServiceTest {
 
         // when, then
         assertThrows(PolicyNotFoundException.class,
-                () -> commentService.createPolicyComment(123456L, "content", member));
+                () -> commentService.createPolicyComment(123456L, "policies", member));
     }
 
     @Test
@@ -138,7 +138,7 @@ class CommentServiceTest {
 
         // when, then
         assertThrows(PostNotFoundException.class,
-                () -> commentService.createPostComment(1000L, "content", member));
+                () -> commentService.createPostComment(1000L, "policies", member));
     }
 
     @Test
@@ -146,7 +146,7 @@ class CommentServiceTest {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
         Policy policy = createPolicy("policyNum");
-        PolicyComment comment = PolicyComment.builder().content("content").build();
+        PolicyComment comment = PolicyComment.builder().content("policies").build();
         comment.setWriter(member);
         comment.setPolicy(policy);
 
@@ -177,7 +177,7 @@ class CommentServiceTest {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
         Post post = Post.builder().title("post1").content("post1_content").build();
-        PostComment comment = PostComment.builder().content("content").build();
+        PostComment comment = PostComment.builder().content("policies").build();
         comment.setWriter(member);
         comment.setPost(post);
 
@@ -208,7 +208,7 @@ class CommentServiceTest {
     void 댓글_삭제_성공() {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
-        Comment comment = PostComment.builder().content("content").build();
+        Comment comment = PostComment.builder().content("policies").build();
         comment.setWriter(member);
 
         memberRepository.save(member);

@@ -61,7 +61,7 @@ public class PostReadServiceTest {
 
     private static final int LEN = 5;
     private static final int TOP = 5;
-    private static final String content = "content";
+    private static final String content = "policies";
     private static final String longContent = "상품이 정말 마음에 들어요. 품질도 좋고 사용하기 편리합니다. 정말 좋은 상품인거 같습니다. 앞으로도 잘 사용할게요.";
     private static final int CONTENT_MAX_LEN = 50;
 

@@ -64,7 +64,7 @@ class PostServiceTest {
     private Member member;
     private Policy policy;
     private Post post;
-    private static final String CONTENT = "content";
+    private static final String CONTENT = "policies";
     private static final String IMAGE_URL = "https://example-bucket-name.s3.amazonaws.com/long-file-name-1234";
     
     @BeforeEach

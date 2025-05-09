@@ -86,7 +86,7 @@ public class PostRepositoryCustomTest {
                 .marriage(Marriage.UNRESTRICTED)
                 .build());
 
-        List<Content> contentList = List.of(Content.builder().content("content").type(ContentType.TEXT).build());
+        List<Content> contentList = List.of(Content.builder().content("policies").type(ContentType.TEXT).build());
         for(long i = 1; i <= LEN; i++) {
             postList.add(postRepository.save(Post.builder()
                 .title("post" + i)

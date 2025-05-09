@@ -138,7 +138,7 @@ public class SSEService {
             case WEEK_BEFORE_FINISHED:
             case WEEK_AFTER_SCRAP:
                 title = messageSource.getMessage("notification." + detail.name() + ".title", null, null);
-                message = messageSource.getMessage("notification." + detail + ".content", new Object[]{policyTitle}, null);
+                message = messageSource.getMessage("notification." + detail + ".policies", new Object[]{policyTitle}, null);
                 break;
         }
 

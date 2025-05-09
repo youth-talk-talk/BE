@@ -2,16 +2,13 @@ package com.server.youthtalktalk.domain.policy.controller;
 
 import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
+import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.policy.dto.*;
-import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.SortOption;
-import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.service.PolicyService;
 import com.server.youthtalktalk.global.response.BaseResponse;
-import com.server.youthtalktalk.domain.policy.service.PolicyService;
-import com.server.youthtalktalk.global.response.BaseResponseCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -27,22 +24,35 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 public class PolicyController {
+
     private final PolicyService policyService;
     private final MemberService memberService;
 
     /**
-     * 홈 화면 정책 조회 (우리 지역 인기 정책 + 따끈따끈 새로운 정책)
+     * 홈 인기 컨텐츠 조회 (우리 지역 인기정책 + 실시간 정책 + 청년톡톡 BEST)
+     * 홈화면 내에서 페이지네이션이 불필요한 주요 데이터를 일괄 조회합니다.
      */
-    @GetMapping("/policies")
-    public BaseResponse<Map<String, List<PolicyListResponseDto>>> getHomePolicies(@RequestParam(required = false) List<Category> categories) {
-        List<PolicyListResponseDto> top20Policies = policyService.getTop20Policies();
-        List<PolicyListResponseDto> newPolicies = policyService.getNewPoliciesByCategories(categories);
+    @GetMapping("/home")
+    public BaseResponse<HomeResponseDto> home(){
+        Member member = memberService.getCurrentMember();
+        List<PolicyListResponseDto> popularPoliciesInArea = policyService.popularPoliciesInArea(member);
+        HomeResponseDto homeResponseDto = new HomeResponseDto(popularPoliciesInArea);
+        return new BaseResponse<>(homeResponseDto, SUCCESS);
+    }
 
-        Map<String, List<PolicyListResponseDto>> responseMap = new LinkedHashMap<>();
-        responseMap.put("top20Policies", top20Policies);
-        responseMap.put("newPolicies", newPolicies);
-
-        return new BaseResponse<>(responseMap, SUCCESS_POLICY_FOUND);
+    /**
+     * 카테고리별 새로운 정책 조회 (따끈따끈 새로운 정책)
+     * 최근 7일 기준 새롭게 등록된 정책들을 카테고리별로 조회합니다.
+     */
+    @GetMapping("/policies/new")
+    public BaseResponse<NewPoliciesResponseDto> getNewPolicies(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "4") int size,
+            @RequestParam(defaultValue = "RECENT") String sort){
+        Member member = memberService.getCurrentMember();
+        NewPoliciesResponseDto newPoliciesByCategory =
+                policyService.getNewPoliciesByCategory(member, page, size, sort);
+        return new BaseResponse<>(newPoliciesByCategory, SUCCESS);
     }
 
     /**
@@ -83,7 +93,6 @@ public class PolicyController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "RECENT") SortOption sort) {
-
         Pageable pageable = PageRequest.of(page, size);
         SearchConditionResponseDto listResponseDto = policyService.getPoliciesByCondition(request, pageable, sort);
         if (listResponseDto.getPolicyList().isEmpty()) {

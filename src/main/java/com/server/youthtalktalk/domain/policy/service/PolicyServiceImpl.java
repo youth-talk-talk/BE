@@ -26,6 +26,7 @@ import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -43,6 +44,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.server.youthtalktalk.domain.ItemType.*;
+import static com.server.youthtalktalk.domain.policy.entity.Category.*;
 import static com.server.youthtalktalk.domain.policy.entity.region.Region.*;
 import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
@@ -66,106 +68,87 @@ public class PolicyServiceImpl implements PolicyService {
     private final PostRepositoryCustomImpl postRepository;
 
     /**
-     * top 20 정책 조회
+     * 관심지역의 인기 정책 조회 (top20)
      */
     @Override
-    public List<PolicyListResponseDto> getTop20Policies() {
-        Member member = memberService.getCurrentMember();
+    public List<PolicyListResponseDto> popularPoliciesInArea(Member member) {
         Region memberRegion = member.getRegion();
         Long memberId = member.getId();
 
-        PageRequest pageRequest = PageRequest.of(0, 20, Sort.by(
-                Sort.Order.desc("view"),         // 1순위 - 조회수 높은 순
-                Sort.Order.desc("policyNum")     // 2순위 - 조회수 같으면 최신순
-        ));
+        // 정렬 기준 및 데이터 개수 설정
+        PageRequest pageRequest = PageRequest.of(0, 20, // 정책 20개
+                Sort.by(
+                        Sort.Order.desc("view"),
+                        Sort.Order.desc("policyNum")
+                )
+        );
 
+        // 관심지역 기반 필터링
         List<Policy> policies;
-        if (memberRegion == NATIONWIDE) {
+        if (memberRegion == NATIONWIDE) { // 관심지역이 전국이면 지역 필터링 X
             policies = policyRepository.findAll(pageRequest).getContent();
-        } else {
+        } else { // 관심지역이 특정 지역이면 지역 필터링 O
             policies = policyRepository.findTop20ByRegion(memberRegion, pageRequest).getContent();
         }
 
-        if(policies.isEmpty()){
-            throw new PolicyNotFoundException();
-        }
+        // DTO 변환
+        List<PolicyListResponseDto> result = parsePolicyListResponseDto(policies, memberId);
+        log.info("관심지역의 인기 정책 20개 조회 성공");
 
-        List<PolicyListResponseDto> result = policies.stream()
-                .map(policy -> {
-                    long scrapCount = scrapRepository.countByItemTypeAndItemId(ItemType.POLICY, policy.getPolicyId());
-                    boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), ItemType.POLICY);
-                    return PolicyListResponseDto.toListDto(policy, isScrap, scrapCount);
-                })
-                .collect(Collectors.toList());
-
-        log.info("상위 20개 정책 조회 성공");
         return result;
     }
 
-
-    /**
-     * 카테고리 별 정책 조회
-     */
-    @Override
-    public List<PolicyListResponseDto> getPoliciesByCategories(List<Category> categories, Pageable pageable) {
-        Long memberId;
-        Region region;
-        try {
-            memberId = memberService.getCurrentMember().getId();
-            region = memberService.getCurrentMember().getRegion();
-        } catch (Exception e) {
-            throw new MemberNotFoundException();
-        }
-
-        List<Policy> policies = policyRepository.findByRegionAndCategory(region, categories, pageable).getContent();
-        if (policies.isEmpty()) {
-            throw new PolicyNotFoundException();
-        }
-        List<PolicyListResponseDto> result =  policies.stream()
-                .map(policy -> {
-                    long scrapCount = scrapRepository.countByItemTypeAndItemId(ItemType.POLICY, policy.getPolicyId());
-                    boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), ItemType.POLICY);
-                    return PolicyListResponseDto.toListDto(policy, isScrap, scrapCount);
-                })
-                .collect(Collectors.toList());
-        log.info("카테고리별 정책 조회 성공");
-        return result;
-    }
-
-
-    /**
-     * 카테고리 별 새로운 정책 조회 (최근 7일 기준)
-     */
-    @Override
-    public List<PolicyListResponseDto> getNewPoliciesByCategories(List<Category> categories) {
-        Long memberId = memberService.getCurrentMember().getId();
-
-        LocalDate today = LocalDate.now(); // 오늘 날짜
-        LocalDate fromDate = today.minusDays(6); // 일주일 전 날짜
-        LocalDateTime fromDateTime = fromDate.atStartOfDay(); // 일주일 전 0시
-        LocalDateTime toDateTime = today.plusDays(1).atStartOfDay(); // 오늘 24시
-
-        PageRequest pageRequest = PageRequest.of(0, 20, Sort.by(
-                Sort.Order.desc("policyNum")     // 1순위 - 최신순
-        ));
-
-        List<Policy> policies;
-        if (categories != null && !categories.isEmpty()) {
-            policies = policyRepository.findRecentPoliciesByCategory(categories, fromDateTime, toDateTime, pageRequest).getContent();
-        } else {
-            policies = policyRepository.findRecentPolicies(fromDateTime, toDateTime, pageRequest).getContent();
-        }
-
-
+    public List<PolicyListResponseDto> parsePolicyListResponseDto(List<Policy> policies, Long memberId) {
         return policies.stream()
                 .map(policy -> {
                     long scrapCount = scrapRepository.countByItemTypeAndItemId(ItemType.POLICY, policy.getPolicyId());
                     boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), ItemType.POLICY);
                     return PolicyListResponseDto.toListDto(policy, isScrap, scrapCount);
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
+    /**
+     * 카테고리 별 새로운 정책 조회
+     */
+    @Override
+    public NewPoliciesResponseDto getNewPoliciesByCategory(Member member, int page, int size, String sortOption) {
+        // 시간 범위 설정
+        LocalDateTime from = LocalDate.now().minusDays(6).atStartOfDay(); // 6일 전 0시
+        LocalDateTime to = LocalDate.now().plusDays(1).atStartOfDay(); // 내일 0시 (오늘 24시)
+
+        // 정렬 기준 및 데이터 개수 설정
+        Sort sort = switch (sortOption) {
+            case "POPULAR" -> Sort.by(
+                    Sort.Order.desc("view"), // 조회수 높은 순
+                    Sort.Order.desc("policyNum") // 조회수 같으면 최신순
+            );
+            default -> Sort.by(Sort.Order.desc("policyNum")); // 최신순
+        };
+        PageRequest pageRequest = PageRequest.of(page, size, sort);
+
+        // 카테고리별 새로운 정책 조회
+        Page<Policy> all = policyRepository.findByCreatedAtBetween(from, to, pageRequest);
+        Page<Policy> job = policyRepository.findByCreatedAtBetweenAndCategory(from, to, JOB, pageRequest);
+        Page<Policy> dwelling = policyRepository.findByCreatedAtBetweenAndCategory(from, to, DWELLING, pageRequest);
+        Page<Policy> education = policyRepository.findByCreatedAtBetweenAndCategory(from, to, EDUCATION, pageRequest);
+        Page<Policy> life = policyRepository.findByCreatedAtBetweenAndCategory(from, to, LIFE, pageRequest);
+        Page<Policy> participation = policyRepository.findByCreatedAtBetweenAndCategory(from, to, PARTICIPATION, pageRequest);
+
+        // DTO 변환
+        Long memberId = member.getId();
+        NewPoliciesResponseDto result = new NewPoliciesResponseDto(
+                PolicyPageDto.from(all, parsePolicyListResponseDto(all.getContent(), memberId)),
+                PolicyPageDto.from(job, parsePolicyListResponseDto(job.getContent(), memberId)),
+                PolicyPageDto.from(dwelling, parsePolicyListResponseDto(dwelling.getContent(), memberId)),
+                PolicyPageDto.from(education, parsePolicyListResponseDto(education.getContent(), memberId)),
+                PolicyPageDto.from(life, parsePolicyListResponseDto(life.getContent(), memberId)),
+                PolicyPageDto.from(participation, parsePolicyListResponseDto(participation.getContent(), memberId))
+        );
+        log.info("카테고리별 새로운 정책 조회 성공");
+
+        return result;
+    }
 
     /**
      * 특정 정책 세부 조회
@@ -205,13 +188,7 @@ public class PolicyServiceImpl implements PolicyService {
             return SearchConditionResponseDto.toListDto(Collections.emptyList(), 0L); // 빈 리스트 반환
         }
 
-        List<PolicyListResponseDto> result = policies.stream()
-                .map(policy -> {
-                    long scrapCount = scrapRepository.countByItemTypeAndItemId(ItemType.POLICY, policy.getPolicyId());
-                    boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberService.getCurrentMember().getId(), policy.getPolicyId(), ItemType.POLICY);
-                    return PolicyListResponseDto.toListDto(policy, isScrap, scrapCount);
-                })
-                .collect(Collectors.toList());
+        List<PolicyListResponseDto> result = parsePolicyListResponseDto(policies.getContent(), memberService.getCurrentMember().getId());
         log.info("조건 적용 정책 조회 성공");
 
         return SearchConditionResponseDto.toListDto(result, policies.getTotalElements());

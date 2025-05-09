@@ -48,7 +48,7 @@ public class CommentRepositoryTest {
 
         // then
         assertThat(postComments.size()).isEqualTo(2);
-        assertThat(postComments).extracting("content").containsExactly("post comment1", "post comment2");
+        assertThat(postComments).extracting("policies").containsExactly("post comment1", "post comment2");
     }
 
     @Test
@@ -65,7 +65,7 @@ public class CommentRepositoryTest {
 
         // then
         assertThat(policyComments.size()).isEqualTo(2);
-        assertThat(policyComments).extracting("content").containsExactly("policy comment1", "policy comment2");
+        assertThat(policyComments).extracting("policies").containsExactly("policy comment1", "policy comment2");
     }
 
     private static Policy createPolicy() {

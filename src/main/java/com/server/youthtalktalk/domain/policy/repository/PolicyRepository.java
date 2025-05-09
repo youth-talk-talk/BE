@@ -34,30 +34,15 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
     Page<Policy> findTop20ByRegion(@Param("region") Region region, Pageable pageable);
 
     /**
-     * 오늘 포함 지난 7일의 정책 조회 (카테고리 필터링 X)
+     * 지정된 기간 동안 생성된 정책 조회 (카테고리 필터링 O)
      */
-    @Query("SELECT p FROM Policy p " +
-            "WHERE p.createdAt BETWEEN :from AND :to ")
-    Page<Policy> findRecentPolicies(@Param("from") LocalDateTime from,
-                                    @Param("to") LocalDateTime to,
-                                    Pageable pageable);
+    Page<Policy> findByCreatedAtBetweenAndCategory(LocalDateTime from, LocalDateTime to, Category category, Pageable pageable);
 
     /**
-     * 오늘 포함 지난 7일의 정책 조회 (카테고리 필터링 O)
+     * 지정된 기간 동안 생성된 정책 조회 (카테고리 필터링 X)
      */
-    @Query("SELECT p FROM Policy p " +
-            "WHERE p.category IN :categories " +
-            "AND p.createdAt BETWEEN :from AND :to")
-    Page<Policy> findRecentPoliciesByCategory(@Param("categories") List<Category> categories,
-                                              @Param("from") LocalDateTime from,
-                                              @Param("to") LocalDateTime to,
-                                              Pageable pageable);
+    Page<Policy> findByCreatedAtBetween(LocalDateTime from, LocalDateTime to, Pageable pageable);
 
-    /**
-     * 카테고리별 정책 조회 (최신순) - 카테고리 중복 선택 가능
-     */
-    @Query("SELECT p FROM Policy p WHERE (p.region = :region OR p.region = 'CENTER') AND (p.category IN :categories) ORDER BY p.policyNum DESC")
-    Page<Policy> findByRegionAndCategory(@Param("region") Region region, @Param("categories") List<Category> categories, Pageable pageable);
 
     /**
      * 이름으로 정책 조회 (최신순)

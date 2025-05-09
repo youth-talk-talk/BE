@@ -182,8 +182,8 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                         .uri(uriBuilder -> uriBuilder
                                 .path("/go/ythip/getPlcy")
                                 .queryParam("apiKeyNm", policySecretKey)
-                                .queryParam("pageSize", PAGE_SIZE)
-                                .queryParam("pageNum", pageNum)
+                                .queryParam("size", PAGE_SIZE)
+                                .queryParam("page", pageNum)
                                 .queryParam("rtnType", "json")
                                 .queryParam("pageType", "1")
                                 .build())
