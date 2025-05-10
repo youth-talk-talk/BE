@@ -280,6 +280,7 @@ public class PolicyServiceTest {
                             .title("title" + i)
                             .department(dept)
                             .region(SEOUL)
+                            .category(JOB)
                             .build());
         }
 
@@ -324,6 +325,7 @@ public class PolicyServiceTest {
                     .title("title" + i)
                     .department(dept)
                     .region(SEOUL)
+                    .category(JOB)
                     .institutionType(LOCAL)
                     .repeatCode(PERIOD)
                     .marriage(SINGLE)
