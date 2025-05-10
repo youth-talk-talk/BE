@@ -18,11 +18,9 @@ import com.server.youthtalktalk.domain.notification.entity.SSEEvent;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.post.entity.Post;
-import com.server.youthtalktalk.domain.post.entity.Review;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import com.server.youthtalktalk.domain.report.entity.CommentReport;
 import com.server.youthtalktalk.domain.report.repository.ReportRepository;
-import com.server.youthtalktalk.global.response.exception.BusinessException;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.comment.AlreadyLikedException;
 import com.server.youthtalktalk.global.response.exception.comment.CommentLikeNotFoundException;
@@ -39,11 +37,9 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_INPUT_VALUE;
 
 @Slf4j

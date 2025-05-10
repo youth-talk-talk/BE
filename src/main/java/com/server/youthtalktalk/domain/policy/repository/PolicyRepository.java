@@ -7,6 +7,7 @@ import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -34,15 +35,14 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
     Page<Policy> findTop20ByRegion(@Param("region") Region region, Pageable pageable);
 
     /**
-     * 지정된 기간 동안 생성된 정책 조회 (카테고리 필터링 O)
-     */
-    Page<Policy> findByCreatedAtBetweenAndCategory(LocalDateTime from, LocalDateTime to, Category category, Pageable pageable);
-
-    /**
      * 지정된 기간 동안 생성된 정책 조회 (카테고리 필터링 X)
      */
-    Page<Policy> findByCreatedAtBetween(LocalDateTime from, LocalDateTime to, Pageable pageable);
+    List<Policy> findByCreatedAtBetween(LocalDateTime from, LocalDateTime to, Sort sort);
 
+    /**
+     * 지정된 기간 동안 생성된 정책 조회 (카테고리 필터링 O)
+     */
+    List<Policy> findByCreatedAtBetweenAndCategory(LocalDateTime from, LocalDateTime to, Category category, Sort sort);
 
     /**
      * 이름으로 정책 조회 (최신순)
@@ -74,12 +74,6 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
      * policyId로 정책 존재 여부 검사
      */
     boolean existsByPolicyId(Long policyId);
-
-    /**
-     * 조회수 top5 정책 조회
-     * (기본 조회수순, 조회수 같으면 최신순 정렬)
-     */
-    List<Policy> findTop5ByOrderByViewDescPolicyNumDesc();
 
     /**
      * 최근 본 정책 아이디 리스트로 정책 조회

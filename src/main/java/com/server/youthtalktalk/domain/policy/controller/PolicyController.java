@@ -3,11 +3,15 @@ package com.server.youthtalktalk.domain.policy.controller;
 import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
 import com.server.youthtalktalk.domain.member.entity.Member;
-import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.policy.dto.*;
 import com.server.youthtalktalk.domain.policy.entity.SortOption;
 import com.server.youthtalktalk.domain.policy.service.PolicyService;
+import com.server.youthtalktalk.domain.post.dto.PostListRepDto;
+import com.server.youthtalktalk.domain.post.dto.PostListRepDto.PostListDto;
+import com.server.youthtalktalk.domain.post.dto.PostListRepDto.PostListResponse;
+import com.server.youthtalktalk.domain.post.service.PostReadService;
+import com.server.youthtalktalk.domain.post.service.PostService;
 import com.server.youthtalktalk.global.response.BaseResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,9 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @Slf4j
@@ -26,33 +28,31 @@ import java.util.Map;
 public class PolicyController {
 
     private final PolicyService policyService;
+    private final PostReadService postService;
     private final MemberService memberService;
 
     /**
-     * 홈 인기 컨텐츠 조회 (우리 지역 인기정책 + 실시간 정책 + 청년톡톡 BEST)
-     * 홈화면 내에서 페이지네이션이 불필요한 주요 데이터를 일괄 조회합니다.
+     * 홈 전체 조회
+     * 홈 화면의 컨텐츠를 일괄 조회합니다. (우리 지역 인기정책 + 따끈따끈 새로운 정책 + 지금뜨는 정책톡톡 + 청년톡톡 BEST)
      */
     @GetMapping("/home")
-    public BaseResponse<HomeResponseDto> home(){
+    public BaseResponse<HomeResponseDto> home(@RequestParam(defaultValue = "RECENT") String sort){
         Member member = memberService.getCurrentMember();
-        List<PolicyListResponseDto> popularPoliciesInArea = policyService.popularPoliciesInArea(member);
-        HomeResponseDto homeResponseDto = new HomeResponseDto(popularPoliciesInArea);
-        return new BaseResponse<>(homeResponseDto, SUCCESS);
-    }
 
-    /**
-     * 카테고리별 새로운 정책 조회 (따끈따끈 새로운 정책)
-     * 최근 7일 기준 새롭게 등록된 정책들을 카테고리별로 조회합니다.
-     */
-    @GetMapping("/policies/new")
-    public BaseResponse<NewPoliciesResponseDto> getNewPolicies(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "4") int size,
-            @RequestParam(defaultValue = "RECENT") String sort){
-        Member member = memberService.getCurrentMember();
-        NewPoliciesResponseDto newPoliciesByCategory =
-                policyService.getNewPoliciesByCategory(member, page, size, sort);
-        return new BaseResponse<>(newPoliciesByCategory, SUCCESS);
+        // 우리 지역 인기정책 데이터
+        List<PolicyListResponseDto> popularPoliciesInArea = policyService.getPopularPoliciesInArea(member);
+
+        // 따끈따끈 새로운 정책 데이터
+        NewPoliciesResponseDto newPoliciesByCategory = policyService.getNewPoliciesByCategory(member, sort);
+
+        // 지금뜨는 정책톡톡 데이터
+        List<PolicyWithReviewsDto> top5PoliciesWithReviews = policyService.getTop5PoliciesWithReviews(member);
+
+        // 청년톡톡 BEST 데이터
+        List<PostListDto> bestPosts = postService.getTopPostsByView(member);
+
+        HomeResponseDto homeResponseDto = new HomeResponseDto(popularPoliciesInArea, newPoliciesByCategory, top5PoliciesWithReviews, bestPosts);
+        return new BaseResponse<>(homeResponseDto, SUCCESS);
     }
 
     /**
@@ -122,15 +122,6 @@ public class PolicyController {
     public BaseResponse<List<PolicyListResponseDto>> getScrappedPoliciesWithUpcomingDeadline() {
         List<PolicyListResponseDto> listResponseDto = policyService.getScrappedPoliciesWithUpcomingDeadline(memberService.getCurrentMember());
         return new BaseResponse<>(listResponseDto, SUCCESS);
-    }
-
-    /**
-     * 조회수 top5 정책 조회 (최대 5개, 정책별로 후기게시글 같이 반환)
-     */
-    @GetMapping("/policies/top5-with-reviews")
-    public BaseResponse<List<PolicyWithReviewsDto>> getTop5PoliciesWithReviews() {
-        List<PolicyWithReviewsDto> top5PoliciesWithReviews = policyService.getTop5PoliciesWithReviews(memberService.getCurrentMember());
-        return new BaseResponse<>(top5PoliciesWithReviews, SUCCESS);
     }
 
     /**

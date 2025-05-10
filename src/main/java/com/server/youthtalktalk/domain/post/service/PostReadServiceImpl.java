@@ -171,4 +171,15 @@ public class PostReadServiceImpl implements PostReadService {
                 ? content.substring(0, CONTENT_PREVIEW_MAX_LEN) + "..."
                 : content;
     }
+
+    /**
+     * 조회수 top4 게시글 조회
+     */
+    @Override
+    public List<PostListDto> getTopPostsByView(Member member) {
+        List<Post> postList = postRepositoryCustom.findTopPostsByView(member, 4);
+        List<PostListDto> result = new ArrayList<>();
+        postList.forEach(post->result.add(toPostDto(post,member)));
+        return result;
+    }
 }

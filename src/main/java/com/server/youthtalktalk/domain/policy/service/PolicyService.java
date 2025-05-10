@@ -9,14 +9,14 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface PolicyService {
-    List<PolicyListResponseDto> popularPoliciesInArea(Member member);
-    NewPoliciesResponseDto getNewPoliciesByCategory(Member member, int page, int size, String sortOption);
+    List<PolicyListResponseDto> getPopularPoliciesInArea(Member member);
+    NewPoliciesResponseDto getNewPoliciesByCategory(Member member, String sortOption);
+    List<PolicyWithReviewsDto> getTop5PoliciesWithReviews(Member member);
     SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto condition, Pageable pageable, SortOption sortOption);
     List<SearchNameResponseDto> getPoliciesByName(String title, Pageable pageable);
     PolicyDetailResponseDto getPolicyDetail(Long policyId);
     Scrap scrapPolicy(Long policyId, Member member);
     List<PolicyListResponseDto> getScrapPolicies(Pageable pageable,Member member);
     List<PolicyListResponseDto> getScrappedPoliciesWithUpcomingDeadline(Member member);
-    List<PolicyWithReviewsDto> getTop5PoliciesWithReviews(Member member);
     List<PolicyListResponseDto> getRecentViewedPolicies();
 }

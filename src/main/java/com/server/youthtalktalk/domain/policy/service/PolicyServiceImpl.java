@@ -26,7 +26,6 @@ import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
 import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -71,7 +70,7 @@ public class PolicyServiceImpl implements PolicyService {
      * 관심지역의 인기 정책 조회 (top20)
      */
     @Override
-    public List<PolicyListResponseDto> popularPoliciesInArea(Member member) {
+    public List<PolicyListResponseDto> getPopularPoliciesInArea(Member member) {
         Region memberRegion = member.getRegion();
         Long memberId = member.getId();
 
@@ -112,7 +111,7 @@ public class PolicyServiceImpl implements PolicyService {
      * 카테고리 별 새로운 정책 조회
      */
     @Override
-    public NewPoliciesResponseDto getNewPoliciesByCategory(Member member, int page, int size, String sortOption) {
+    public NewPoliciesResponseDto getNewPoliciesByCategory(Member member, String sortOption) {
         // 시간 범위 설정
         LocalDateTime from = LocalDate.now().minusDays(6).atStartOfDay(); // 6일 전 0시
         LocalDateTime to = LocalDate.now().plusDays(1).atStartOfDay(); // 내일 0시 (오늘 24시)
@@ -125,29 +124,76 @@ public class PolicyServiceImpl implements PolicyService {
             );
             default -> Sort.by(Sort.Order.desc("policyNum")); // 최신순
         };
-        PageRequest pageRequest = PageRequest.of(page, size, sort);
 
         // 카테고리별 새로운 정책 조회
-        Page<Policy> all = policyRepository.findByCreatedAtBetween(from, to, pageRequest);
-        Page<Policy> job = policyRepository.findByCreatedAtBetweenAndCategory(from, to, JOB, pageRequest);
-        Page<Policy> dwelling = policyRepository.findByCreatedAtBetweenAndCategory(from, to, DWELLING, pageRequest);
-        Page<Policy> education = policyRepository.findByCreatedAtBetweenAndCategory(from, to, EDUCATION, pageRequest);
-        Page<Policy> life = policyRepository.findByCreatedAtBetweenAndCategory(from, to, LIFE, pageRequest);
-        Page<Policy> participation = policyRepository.findByCreatedAtBetweenAndCategory(from, to, PARTICIPATION, pageRequest);
+        List<Policy> all = policyRepository.findByCreatedAtBetween(from, to, sort);
+        List<Policy> job = policyRepository.findByCreatedAtBetweenAndCategory(from, to, JOB, sort);
+        List<Policy> dwelling = policyRepository.findByCreatedAtBetweenAndCategory(from, to, DWELLING, sort);
+        List<Policy> education = policyRepository.findByCreatedAtBetweenAndCategory(from, to, EDUCATION, sort);
+        List<Policy> life = policyRepository.findByCreatedAtBetweenAndCategory(from, to, LIFE, sort);
+        List<Policy> participation = policyRepository.findByCreatedAtBetweenAndCategory(from, to, PARTICIPATION, sort);
 
         // DTO 변환
         Long memberId = member.getId();
         NewPoliciesResponseDto result = new NewPoliciesResponseDto(
-                PolicyPageDto.from(all, parsePolicyListResponseDto(all.getContent(), memberId)),
-                PolicyPageDto.from(job, parsePolicyListResponseDto(job.getContent(), memberId)),
-                PolicyPageDto.from(dwelling, parsePolicyListResponseDto(dwelling.getContent(), memberId)),
-                PolicyPageDto.from(education, parsePolicyListResponseDto(education.getContent(), memberId)),
-                PolicyPageDto.from(life, parsePolicyListResponseDto(life.getContent(), memberId)),
-                PolicyPageDto.from(participation, parsePolicyListResponseDto(participation.getContent(), memberId))
+                parsePolicyListResponseDto(all, memberId),
+                parsePolicyListResponseDto(job, memberId),
+                parsePolicyListResponseDto(dwelling, memberId),
+                parsePolicyListResponseDto(education, memberId),
+                parsePolicyListResponseDto(life, memberId),
+                parsePolicyListResponseDto(participation, memberId)
         );
         log.info("카테고리별 새로운 정책 조회 성공");
 
         return result;
+    }
+
+    /**
+     * 후기가 많은 정책 top5 조회 (각 정책은 후기 3개와 함께 반환)
+     */
+    @Override
+    public List<PolicyWithReviewsDto> getTop5PoliciesWithReviews(Member member) {
+        List<Policy> topPolicies = policyRepository.findTop5OrderByReviewCount();
+
+        return topPolicies.stream()
+                .map(policy -> toPolicyWithReviewsDto(member, policy))
+                .toList();
+    }
+
+    private PolicyWithReviewsDto toPolicyWithReviewsDto(Member member, Policy policy) {
+        // 정책의 후기글 중에서 조회수 top3 조회
+        List<Review> topReviews = postRepository.findTopReviewsByPolicy(member, policy, 3);
+
+        List<ReviewInPolicyDto> reviews = topReviews.stream()
+                .map(this::toReviewInPolicyDto)
+                .toList();
+
+        return new PolicyWithReviewsDto(
+                policy.getPolicyId(), // 정책 id
+                policy.getTitle(), // 정책 제목
+                policy.getDepartment().getImage_url(), // 정책 이미지 URL
+                reviews // 정책의 인기 후기글 목록 (조회수 top3)
+        );
+    }
+
+    private ReviewInPolicyDto toReviewInPolicyDto(Post review) {
+        // 후기글의 스크랩 수 조회
+        long scrapCount = scrapRepository.countByItemTypeAndItemId(POST, review.getId());
+
+        return new ReviewInPolicyDto(
+                review.getId(), // 게시글 id
+                review.getTitle(), // 게시글 제목
+                createContentSnippet(review.getContents().get(0).getContent()), // 내용 미리보기
+                review.getPostComments().size(), // 댓글 수
+                scrapCount, // 스크랩 수
+                review.getCreatedAt().toLocalDate().toString() // 작성일
+        );
+    }
+
+    private String createContentSnippet(String content) {
+        return content.length() > POST_PREVIEW_MAX_LENGTH
+                ? content.substring(0, POST_PREVIEW_MAX_LENGTH) + "..."
+                : content;
     }
 
     /**
@@ -465,15 +511,6 @@ public class PolicyServiceImpl implements PolicyService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public List<PolicyWithReviewsDto> getTop5PoliciesWithReviews(Member member) {
-        List<Policy> topPolicies = policyRepository.findTop5ByOrderByViewDescPolicyNumDesc();
-
-        return topPolicies.stream()
-                .map(policy -> toPolicyWithReviewsDto(member, policy))
-                .toList();
-    }
-
     /**
      * 최근 본 정책 리스트 조회
      */
@@ -502,41 +539,6 @@ public class PolicyServiceImpl implements PolicyService {
                     return PolicyListResponseDto.toListDto(policy, isScrap, scrapCount);
                 })
                 .toList();
-    }
-
-    private PolicyWithReviewsDto toPolicyWithReviewsDto(Member member, Policy policy) {
-        // 정책의 후기글 중에서 조회수 top3 조회
-        List<Review> topReviews = postRepository.findTopReviewsByPolicy(member, policy, 3);
-
-        List<ReviewInPolicyDto> reviews = topReviews.stream()
-                .map(this::toReviewInPolicyDto)
-                .toList();
-
-        return new PolicyWithReviewsDto(
-                policy.getPolicyId(), // 정책 id
-                policy.getTitle(), // 정책 제목
-                policy.getDepartment().getImage_url(), // 정책 이미지 URL
-                reviews // 정책의 인기 후기글 목록 (조회수 기준 top3)
-        );
-    }
-
-    private ReviewInPolicyDto toReviewInPolicyDto(Post review) {
-        // 후기글의 스크랩 수 조회
-        long scrapCount = scrapRepository.countByItemTypeAndItemId(POST, review.getId());
-        return new ReviewInPolicyDto(
-                review.getId(), // 게시글 id
-                review.getTitle(), // 게시글 제목
-                createContentSnippet(review.getContents().get(0).getContent()), // 내용 미리보기
-                review.getPostComments().size(), // 댓글 수
-                scrapCount, // 스크랩 수
-                review.getCreatedAt().toLocalDate().toString() // 작성일
-        );
-    }
-
-    private String createContentSnippet(String content) {
-        return content.length() > POST_PREVIEW_MAX_LENGTH
-                ? content.substring(0, POST_PREVIEW_MAX_LENGTH) + "..."
-                : content;
     }
 
 }

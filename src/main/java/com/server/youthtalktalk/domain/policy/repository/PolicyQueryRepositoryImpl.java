@@ -18,6 +18,7 @@ import com.server.youthtalktalk.domain.policy.entity.condition.Marriage;
 import com.server.youthtalktalk.domain.policy.entity.condition.Specialization;
 import com.server.youthtalktalk.domain.policy.entity.region.QPolicySubRegion;
 import com.server.youthtalktalk.domain.policy.entity.region.QSubRegion;
+import com.server.youthtalktalk.domain.post.entity.QReview;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -176,5 +177,26 @@ public class PolicyQueryRepositoryImpl implements PolicyQueryRepository {
 
     private BooleanExpression eqApplyDue(LocalDate applyDue) {
         return (applyDue != null) ? policy.applyDue.eq(applyDue) : null;
+    }
+
+    /**
+     * 후기글이 많은 정책 top5 조회
+     */
+    public List<Policy> findTop5OrderByReviewCount() {
+        QPolicy policy = QPolicy.policy;
+        QReview review = QReview.review;
+
+        return queryFactory
+                .select(policy)
+                .from(policy)
+                .leftJoin(policy.reviews, review)
+                .groupBy(policy.policyId)
+                .orderBy(
+                        review.id.count().desc(),    // 1순위: 정책별 후기 많은 순
+                        policy.view.desc(),          // 2순위: 조회수 순
+                        policy.policyNum.desc()      // 3순위: 최신순
+                )
+                .limit(5)
+                .fetch();
     }
 }
