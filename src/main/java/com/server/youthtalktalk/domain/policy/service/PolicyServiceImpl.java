@@ -43,6 +43,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.server.youthtalktalk.domain.ItemType.*;
+import static com.server.youthtalktalk.domain.comment.service.CommentServiceImpl.TIME_FORMAT;
 import static com.server.youthtalktalk.domain.policy.entity.Category.*;
 import static com.server.youthtalktalk.domain.policy.entity.region.Region.*;
 import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
@@ -186,7 +187,7 @@ public class PolicyServiceImpl implements PolicyService {
                 createContentSnippet(review.getContents().get(0).getContent()), // 내용 미리보기
                 review.getPostComments().size(), // 댓글 수
                 scrapCount, // 스크랩 수
-                review.getCreatedAt().toLocalDate().toString() // 작성일
+                review.getCreatedAt().format(DateTimeFormatter.ofPattern(TIME_FORMAT)) // 작성일
         );
     }
 
