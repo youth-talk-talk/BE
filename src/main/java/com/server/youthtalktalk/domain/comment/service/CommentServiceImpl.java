@@ -50,7 +50,7 @@ public class CommentServiceImpl implements CommentService {
 
     public static final String DELETED_WRITER = "알 수 없음";
     public static final String DEFAULT_PROFILE = "기본 이미지";
-    public static final String COMMENT_TIME_FORMAT = "yyyy-MM-dd HH:mm";
+    public static final String TIME_FORMAT = "yyyy-MM-dd HH:mm";
 
     private final CommentRepository commentRepository;
     private final PolicyRepository policyRepository;
@@ -180,7 +180,7 @@ public class CommentServiceImpl implements CommentService {
                             ? DEFAULT_PROFILE : writer.getProfileImage().getImgUrl();
                     String content = comment.getContent();
                     String createdAt = comment.getCreatedAt()
-                            .format(DateTimeFormatter.ofPattern(COMMENT_TIME_FORMAT));
+                            .format(DateTimeFormatter.ofPattern(TIME_FORMAT));
                     Boolean isLikedByMember = isLikedByMember(comment, member);
                     return new CommentDto(comment.getId(), writerId, nickname, profileImg, content, isLikedByMember, createdAt);
                 })
