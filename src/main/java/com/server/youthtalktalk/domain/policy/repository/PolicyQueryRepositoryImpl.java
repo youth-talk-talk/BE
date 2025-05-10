@@ -189,7 +189,7 @@ public class PolicyQueryRepositoryImpl implements PolicyQueryRepository {
         return queryFactory
                 .select(policy)
                 .from(policy)
-                .leftJoin(policy.reviews, review)
+                .innerJoin(policy.reviews, review)
                 .groupBy(policy.policyId)
                 .orderBy(
                         review.id.count().desc(),    // 1순위: 정책별 후기 많은 순
