@@ -29,7 +29,7 @@ public class PolicyListResponseDto {
                 .hostDep(policy.getHostDep())
                 .isScrap(isScrap)
                 .scrapCount(scrapCount)
-                .departmentImgUrl(policy.getDepartment().getImage_url())
+                .departmentImgUrl(policy.getDepartment().getImage_url() == null ? null : policy.getDepartment().getImage_url())
                 .region(policy.getRegion().getName())
                 .build();
     }
