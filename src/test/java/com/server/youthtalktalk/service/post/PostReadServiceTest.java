@@ -23,6 +23,7 @@ import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.post.BlockedMemberPostAccessDeniedException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
 import com.server.youthtalktalk.global.response.exception.post.ReportedPostAccessDeniedException;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -150,6 +151,7 @@ public class PostReadServiceTest {
                 .id(1L)
                 .writer(member)
                 .view(10L)
+                .createdAt(LocalDateTime.now())
                 .contents(createContent(longContent))
                 .build();
         when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId(),ItemType.POST))
@@ -188,6 +190,7 @@ public class PostReadServiceTest {
                 .title("review")
                 .contents(createContent(longContent))
                 .writer(member)
+                .createdAt(LocalDateTime.now())
                 .build();
         when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),review.getId(),ItemType.POST))
                 .thenReturn(true);
@@ -266,6 +269,7 @@ public class PostReadServiceTest {
                     .title("review" + i + 1)
                     .writer(member)
                     .contents(createContent(content))
+                    .createdAt(LocalDateTime.now())
                     .build();
             posts.add(review);
         }
@@ -322,6 +326,7 @@ public class PostReadServiceTest {
                 .id(2L)
                 .title("testReview")
                 .policy(policy)
+                .createdAt(LocalDateTime.now())
                 .contents(createContent(content))
                 .build()));
 
@@ -453,6 +458,7 @@ public class PostReadServiceTest {
                 .writer(writer)
                 .view(view)
                 .title(title)
+                .createdAt(LocalDateTime.now())
                 .postComments(new ArrayList<>())
                 .build();
     }
