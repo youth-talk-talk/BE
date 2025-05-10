@@ -13,7 +13,7 @@ public enum Category {
     JOB("001", "일자리"),
     DWELLING("002", "주거"),
     EDUCATION("003", "교육"),
-    LIFE("004", "생활지원"),
+    LIFE("004", "복지"),
     PARTICIPATION("005", "참여");
 
     private final String key;
