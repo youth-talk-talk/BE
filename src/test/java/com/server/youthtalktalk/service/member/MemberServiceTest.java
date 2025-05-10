@@ -10,6 +10,7 @@ import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.member.dto.SignUpRequestDto;
+import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import com.server.youthtalktalk.global.response.exception.member.BlockDuplicatedException;
 import com.server.youthtalktalk.global.response.exception.member.InvalidMemberForBlockException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
@@ -17,7 +18,6 @@ import com.server.youthtalktalk.global.response.exception.member.NotBlockedMembe
 import com.server.youthtalktalk.global.util.HashUtil;
 import com.server.youthtalktalk.domain.comment.repository.CommentRepository;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
-import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;

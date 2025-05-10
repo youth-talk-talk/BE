@@ -28,8 +28,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -58,10 +56,6 @@ class CommentServiceTest {
 
     @Autowired
     EntityManager em;
-
-    /**
-     * TODO 조회 관련 테스트 코드는 CommentReadServiceTest로 옮겨야 함
-     */
 
     @Test
     void 정책_댓글_생성_성공() {

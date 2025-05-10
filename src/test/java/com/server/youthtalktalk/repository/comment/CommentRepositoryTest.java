@@ -40,15 +40,15 @@ public class CommentRepositoryTest {
     void testFindPostCommentsByPostId() {
         // given
         Post post = postRepository.save(Post.builder().title("post1").build());
-        PostComment comment1 = commentRepository.save(PostComment.builder().post(post).content("post comment1").build());
-        PostComment comment2 = commentRepository.save(PostComment.builder().post(post).content("post comment2").build());
+        commentRepository.save(PostComment.builder().post(post).content("post comment1").build());
+        commentRepository.save(PostComment.builder().post(post).content("post comment2").build());
 
         // when
         List<PostComment> postComments = commentRepository.findPostCommentsByPostId(post.getId());
 
         // then
         assertThat(postComments.size()).isEqualTo(2);
-        assertThat(postComments).extracting("policies").containsExactly("post comment1", "post comment2");
+        assertThat(postComments).extracting("content").containsExactly("post comment1", "post comment2");
     }
 
     @Test
@@ -57,15 +57,15 @@ public class CommentRepositoryTest {
         // given
         Policy policy = createPolicy();
         policyRepository.save(policy);
-        PolicyComment comment1 = commentRepository.save(PolicyComment.builder().policy(policy).content("policy comment1").build());
-        PolicyComment comment2 = commentRepository.save(PolicyComment.builder().policy(policy).content("policy comment2").build());
+        commentRepository.save(PolicyComment.builder().policy(policy).content("policy comment1").build());
+        commentRepository.save(PolicyComment.builder().policy(policy).content("policy comment2").build());
 
         // when
         List<PolicyComment> policyComments = commentRepository.findPolicyCommentsByPolicyId(policy.getPolicyId());
 
         // then
         assertThat(policyComments.size()).isEqualTo(2);
-        assertThat(policyComments).extracting("policies").containsExactly("policy comment1", "policy comment2");
+        assertThat(policyComments).extracting("content").containsExactly("policy comment1", "policy comment2");
     }
 
     private static Policy createPolicy() {
