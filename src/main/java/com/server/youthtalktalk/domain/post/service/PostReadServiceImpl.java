@@ -146,7 +146,7 @@ public class PostReadServiceImpl implements PostReadService {
                 .policyTitle(post instanceof Review ? ((Review)post).getPolicy().getTitle() : null )
                 .comments(post.getPostComments().size())
                 .contentPreview(createContentSnippet(post.getContents().get(0).getContent()))
-                .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST).size())
+                .scrapCount(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST).size())
                 .scrap(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId(),ItemType.POST))
                 .createdAt(post.getCreatedAt().format(DateTimeFormatter.ofPattern(TIME_FORMAT)))
                 .build();

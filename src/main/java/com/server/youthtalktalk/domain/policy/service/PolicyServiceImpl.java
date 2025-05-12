@@ -392,7 +392,7 @@ public class PolicyServiceImpl implements PolicyService {
                 if (earn < MIN_EARN_INPUT) {
                     throw new IllegalArgumentException();
                 }
-                if (earn >= 50_000_000) earn = null;
+                if (earn >= 5000) earn = null; // 5000 이상이면 null로 설정해야 최대소득 제한이 없는 정책 검색 가능
             }
         } catch (IllegalArgumentException e) {
             throw new InvalidValueException(INVALID_EARN);

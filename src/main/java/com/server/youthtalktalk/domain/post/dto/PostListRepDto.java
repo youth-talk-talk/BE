@@ -29,7 +29,7 @@ public class PostListRepDto {
         private String policyTitle; // 자유글 null
         private int comments;
         private String contentPreview;
-        private int scraps;
+        private int scrapCount;
         private boolean scrap;
         private String createdAt;
     }
