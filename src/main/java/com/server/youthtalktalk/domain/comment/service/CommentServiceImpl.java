@@ -177,7 +177,7 @@ public class CommentServiceImpl implements CommentService {
                     Long writerId = (writer == null) ? -1L : writer.getId();
                     String nickname = (writer == null) ? DELETED_WRITER : writer.getNickname();
                     String profileImg = (writer == null || writer.getProfileImage() == null)
-                            ? DEFAULT_PROFILE : writer.getProfileImage().getImgUrl();
+                            ? null : writer.getProfileImage().getImgUrl();
                     String content = comment.getContent();
                     String createdAt = comment.getCreatedAt()
                             .format(DateTimeFormatter.ofPattern(TIME_FORMAT));
