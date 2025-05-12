@@ -165,7 +165,7 @@ public class PolicyServiceImpl implements PolicyService {
         List<Review> topReviews = postRepository.findTopReviewsByPolicy(member, policy, 3);
 
         List<ReviewInPolicyDto> reviews = topReviews.stream()
-                .map(this::toReviewInPolicyDto)
+                .map(review -> toReviewInPolicyDto(review, member))
                 .toList();
 
         return new PolicyWithReviewsDto(
@@ -176,9 +176,9 @@ public class PolicyServiceImpl implements PolicyService {
         );
     }
 
-    private ReviewInPolicyDto toReviewInPolicyDto(Post review) {
-        // 후기글의 스크랩 수 조회
-        long scrapCount = scrapRepository.countByItemTypeAndItemId(POST, review.getId());
+    private ReviewInPolicyDto toReviewInPolicyDto(Post review, Member member) {
+        long scrapCount = scrapRepository.countByItemTypeAndItemId(POST, review.getId()); // 후기글의 스크랩 수 조회
+        boolean scrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(), review.getId(), POST); // 스크랩 여부
 
         return new ReviewInPolicyDto(
                 review.getId(), // 게시글 id
@@ -186,6 +186,7 @@ public class PolicyServiceImpl implements PolicyService {
                 createContentSnippet(review.getContents().get(0).getContent()), // 내용 미리보기
                 review.getPostComments().size(), // 댓글 수
                 scrapCount, // 스크랩 수
+                scrap, // 스크랩 여부
                 review.getCreatedAt().format(DateTimeFormatter.ofPattern(TIME_FORMAT)) // 작성일
         );
     }

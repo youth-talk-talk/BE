@@ -182,7 +182,7 @@ public class PostReadServiceImpl implements PostReadService {
     public List<PostListDto> getTopPostsByView(Member member) {
         List<Post> postList = postRepositoryCustom.findTopReviewsAndPostsByView(member, 4);
         List<PostListDto> result = new ArrayList<>();
-        postList.forEach(post->result.add(toPostDto(post,member)));
+        postList.forEach(post -> result.add(toPostDto(post, member)));
         return result;
     }
 }

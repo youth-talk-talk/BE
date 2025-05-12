@@ -6,6 +6,7 @@ public record ReviewInPolicyDto(
         String contentPreview,
         long commentCount,
         long scrapCount,
+        boolean scrap,
         String createdAt
 ) {
 }
