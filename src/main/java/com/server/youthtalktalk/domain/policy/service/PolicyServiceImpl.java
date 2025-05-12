@@ -57,7 +57,6 @@ public class PolicyServiceImpl implements PolicyService {
     public static final int MIN_AGE_INPUT = 8;
     public static final int MAX_AGE_INPUT = 100;
     public static final int MIN_EARN_INPUT = 0;
-    public static final int MAX_EARN_INPUT = 50_000_000;
     public static final String APPLY_DUE_FORMAT = "yyyy-MM-dd";
     public static final int POST_PREVIEW_MAX_LENGTH = 50;
 
@@ -389,9 +388,10 @@ public class PolicyServiceImpl implements PolicyService {
         try {
             if (input != null && input.isBlank()) {
                 earn = Integer.parseInt(trimmedValue(input));
-                if (earn < MIN_EARN_INPUT || earn > MAX_EARN_INPUT) {
+                if (earn < MIN_EARN_INPUT) {
                     throw new IllegalArgumentException();
                 }
+                if (earn >= 50_000_000) earn = null;
             }
         } catch (IllegalArgumentException e) {
             throw new InvalidValueException(INVALID_EARN);
