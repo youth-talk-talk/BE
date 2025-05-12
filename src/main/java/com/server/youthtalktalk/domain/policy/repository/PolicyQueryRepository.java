@@ -19,4 +19,9 @@ public interface PolicyQueryRepository {
      * 후기 많은 top5 정책 조회
      */
     List<Policy> findTop5OrderByReviewCount();
+
+    /**
+     * 전체 정책 조회
+     */
+    Page<Policy> findAll(Pageable pageable, SortOption sortOption);
 }

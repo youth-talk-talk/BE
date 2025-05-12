@@ -12,7 +12,8 @@ public interface PolicyService {
     List<PolicyListResponseDto> getPopularPoliciesInArea(Member member);
     NewPoliciesResponseDto getNewPoliciesByCategory(Member member, String sortOption);
     List<PolicyWithReviewsDto> getTop5PoliciesWithReviews(Member member);
-    SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto condition, Pageable pageable, SortOption sortOption);
+    PolicyPageResponseDto getAllPolicies(Pageable pageable, SortOption sortOption);
+    PolicyPageResponseDto getPoliciesByCondition(SearchConditionRequestDto condition, Pageable pageable, SortOption sortOption);
     List<SearchNameResponseDto> getPoliciesByName(String title, Pageable pageable);
     PolicyDetailResponseDto getPolicyDetail(Long policyId);
     Scrap scrapPolicy(Long policyId, Member member);

@@ -6,15 +6,14 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class SearchConditionResponseDto {
+public class PolicyPageResponseDto {
     Long totalCount;
     List<PolicyListResponseDto> policyList;
 
-    public static SearchConditionResponseDto toListDto(List<PolicyListResponseDto> policyList, Long totalCount) {
-        return SearchConditionResponseDto.builder()
+    public static PolicyPageResponseDto toListDto(List<PolicyListResponseDto> policyList, Long totalCount) {
+        return PolicyPageResponseDto.builder()
                 .totalCount(totalCount)
                 .policyList(policyList)
                 .build();
     }
-
 }

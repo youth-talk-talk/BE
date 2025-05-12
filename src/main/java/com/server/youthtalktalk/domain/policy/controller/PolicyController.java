@@ -7,11 +7,8 @@ import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.policy.dto.*;
 import com.server.youthtalktalk.domain.policy.entity.SortOption;
 import com.server.youthtalktalk.domain.policy.service.PolicyService;
-import com.server.youthtalktalk.domain.post.dto.PostListRepDto;
 import com.server.youthtalktalk.domain.post.dto.PostListRepDto.PostListDto;
-import com.server.youthtalktalk.domain.post.dto.PostListRepDto.PostListResponse;
 import com.server.youthtalktalk.domain.post.service.PostReadService;
-import com.server.youthtalktalk.domain.post.service.PostService;
 import com.server.youthtalktalk.global.response.BaseResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +53,30 @@ public class PolicyController {
     }
 
     /**
+     * 조건 정책 조회
+     */
+    @PostMapping("/policies/search")
+    public BaseResponse<PolicyPageResponseDto> getPoliciesByCondition(
+            @RequestBody(required = false) SearchConditionRequestDto searchCondition,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "RECENT") SortOption sort) {
+        Pageable pageable = PageRequest.of(page, size);
+        PolicyPageResponseDto pageResponseDto;
+
+        if (searchCondition == null) { // 조건이 없으면 전체 정책 조회
+            pageResponseDto = policyService.getAllPolicies(pageable, sort);
+        } else { // 조건이 있으면 조건 적용 조회
+            pageResponseDto = policyService.getPoliciesByCondition(searchCondition, pageable, sort);
+        }
+
+        if (pageResponseDto.getPolicyList().isEmpty()) {
+            return new BaseResponse<>(pageResponseDto, SUCCESS_POLICY_SEARCH_NO_RESULT);
+        }
+        return new BaseResponse<>(pageResponseDto, SUCCESS_POLICY_FOUND);
+    }
+
+    /**
      * 특정 정책 세부 조회
      */
     @GetMapping("/policies/{id}")
@@ -82,23 +103,6 @@ public class PolicyController {
     public BaseResponse<List<PolicyListResponseDto>> getMyScrapedPolicies(@PageableDefault(size = 10) Pageable pageable){
         List<PolicyListResponseDto> listResponseDto = policyService.getScrapPolicies(pageable,memberService.getCurrentMember());
         return new BaseResponse<>(listResponseDto, SUCCESS);
-    }
-
-    /**
-     * 조건 적용 정책 조회
-     */
-    @PostMapping("/policies/search")
-    public BaseResponse<SearchConditionResponseDto> getPoliciesByCondition(
-            @RequestBody SearchConditionRequestDto request,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "RECENT") SortOption sort) {
-        Pageable pageable = PageRequest.of(page, size);
-        SearchConditionResponseDto listResponseDto = policyService.getPoliciesByCondition(request, pageable, sort);
-        if (listResponseDto.getPolicyList().isEmpty()) {
-            return new BaseResponse<>(listResponseDto, SUCCESS_POLICY_SEARCH_NO_RESULT);
-        }
-        return new BaseResponse<>(listResponseDto, SUCCESS_POLICY_FOUND);
     }
 
     /**

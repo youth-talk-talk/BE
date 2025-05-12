@@ -223,22 +223,38 @@ public class PolicyServiceImpl implements PolicyService {
         return result;
     }
 
+    @Override
+    public PolicyPageResponseDto getAllPolicies(Pageable pageable, SortOption sortOption) {
+        Page<Policy> policies = policyRepository.findAll(pageable, sortOption);
+
+        if (policies.isEmpty()) {
+            log.info("정책이 존재하지 않습니다.");
+            return PolicyPageResponseDto.toListDto(Collections.emptyList(), 0L); // 빈 리스트 반환
+        }
+
+        List<PolicyListResponseDto> result = parsePolicyListResponseDto(policies.getContent(),
+                memberService.getCurrentMember().getId());
+        log.info("전체 정책 조회 성공");
+
+        return PolicyPageResponseDto.toListDto(result, policies.getTotalElements());
+    }
+
     /**
      * 조건 적용 정책 조회
      */
-    public SearchConditionResponseDto getPoliciesByCondition(SearchConditionRequestDto conditionDto, Pageable pageable, SortOption sortOption) {
+    public PolicyPageResponseDto getPoliciesByCondition(SearchConditionRequestDto conditionDto, Pageable pageable, SortOption sortOption) {
         SearchConditionDto searchCondition = setSearchCondition(conditionDto);
-
         Page<Policy> policies = policyRepository.findByCondition(searchCondition, pageable, sortOption);
+
         if (policies.isEmpty()) {
             log.info("조건에 맞는 정책이 존재하지 않습니다");
-            return SearchConditionResponseDto.toListDto(Collections.emptyList(), 0L); // 빈 리스트 반환
+            return PolicyPageResponseDto.toListDto(Collections.emptyList(), 0L); // 빈 리스트 반환
         }
 
         List<PolicyListResponseDto> result = parsePolicyListResponseDto(policies.getContent(), memberService.getCurrentMember().getId());
         log.info("조건 적용 정책 조회 성공");
 
-        return SearchConditionResponseDto.toListDto(result, policies.getTotalElements());
+        return PolicyPageResponseDto.toListDto(result, policies.getTotalElements());
     }
 
     private SearchConditionDto setSearchCondition(SearchConditionRequestDto conditionDto) {

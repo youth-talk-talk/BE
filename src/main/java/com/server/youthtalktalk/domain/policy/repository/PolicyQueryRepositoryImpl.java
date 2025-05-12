@@ -81,6 +81,26 @@ public class PolicyQueryRepositoryImpl implements PolicyQueryRepository {
         return new PageImpl<>(policies, pageable, total);
     }
 
+    @Override
+    public Page<Policy> findAll(Pageable pageable, SortOption sortOption) {
+        List<Policy> policies = queryFactory
+                .selectFrom(policy)
+                .orderBy(sortOption.getOrderSpecifiers())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // 전체 개수 쿼리
+        long total = Optional.ofNullable(
+                queryFactory
+                        .select(policy.count())
+                        .from(policy)
+                        .fetchOne()
+        ).orElse(0L);
+
+        return new PageImpl<>(policies, pageable, total);
+    }
+
     private void filterByKeyword(SearchConditionDto condition, QPolicy policy, BooleanBuilder predicate) {
         String keyword = condition.keyword();
         if (keyword != null && !keyword.isBlank()) {
