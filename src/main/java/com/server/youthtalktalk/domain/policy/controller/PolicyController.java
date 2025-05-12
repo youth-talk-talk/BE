@@ -29,18 +29,15 @@ public class PolicyController {
     private final MemberService memberService;
 
     /**
-     * 홈 전체 조회
-     * 홈 화면의 컨텐츠를 일괄 조회합니다. (우리 지역 인기정책 + 따끈따끈 새로운 정책 + 지금뜨는 정책톡톡 + 청년톡톡 BEST)
+     * 홈 메인 조회
+     * 우리 지역 인기정책 + 지금뜨는 정책톡톡 + 청년톡톡 BEST
      */
     @GetMapping("/home")
-    public BaseResponse<HomeResponseDto> home(@RequestParam(defaultValue = "RECENT") String sort){
+    public BaseResponse<HomeResponseDto> home(){
         Member member = memberService.getCurrentMember();
 
         // 우리 지역 인기정책 데이터
         List<PolicyListResponseDto> popularPoliciesInArea = policyService.getPopularPoliciesInArea(member);
-
-        // 따끈따끈 새로운 정책 데이터
-        NewPoliciesResponseDto newPoliciesByCategory = policyService.getNewPoliciesByCategory(member, sort);
 
         // 지금뜨는 정책톡톡 데이터
         List<PolicyWithReviewsDto> top5PoliciesWithReviews = policyService.getTop5PoliciesWithReviews(member);
@@ -48,8 +45,18 @@ public class PolicyController {
         // 청년톡톡 BEST 데이터
         List<PostListDto> bestPosts = postService.getTopPostsByView(member);
 
-        HomeResponseDto homeResponseDto = new HomeResponseDto(popularPoliciesInArea, newPoliciesByCategory, top5PoliciesWithReviews, bestPosts);
+        HomeResponseDto homeResponseDto = new HomeResponseDto(popularPoliciesInArea, top5PoliciesWithReviews, bestPosts);
         return new BaseResponse<>(homeResponseDto, SUCCESS);
+    }
+
+    /**
+     * 따끈따끈 새로운 정책 조회
+     */
+    @GetMapping("/home/new-policies")
+    public BaseResponse<NewPoliciesResponseDto> trending(@RequestParam(defaultValue = "RECENT") String sort){
+        Member member = memberService.getCurrentMember();
+        NewPoliciesResponseDto newPoliciesByCategory = policyService.getNewPoliciesByCategory(member, sort);
+        return new BaseResponse<>(newPoliciesByCategory, SUCCESS);
     }
 
     /**
