@@ -435,7 +435,7 @@ public class PolicyServiceImpl implements PolicyService {
 
     private LocalDate parseApplyDue(String dateStr) {
         LocalDate applyDue = null;
-        if (dateStr == null) return applyDue;
+        if (dateStr == null || dateStr.isBlank()) return applyDue;
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(APPLY_DUE_FORMAT);
             applyDue = LocalDate.parse(dateStr, formatter);
