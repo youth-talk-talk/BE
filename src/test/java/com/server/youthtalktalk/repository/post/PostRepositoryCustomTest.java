@@ -1,6 +1,7 @@
 package com.server.youthtalktalk.repository.post;
 
 import com.server.youthtalktalk.config.TestQueryDSLConfig;
+import com.server.youthtalktalk.domain.member.entity.Block;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.entity.Role;
 import com.server.youthtalktalk.domain.member.repository.BlockRepository;
@@ -19,6 +20,7 @@ import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.post.entity.Review;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepositoryCustom;
+import com.server.youthtalktalk.domain.report.entity.Report;
 import com.server.youthtalktalk.domain.report.repository.ReportRepository;
 import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -82,11 +84,11 @@ public class PostRepositoryCustomTest {
                 .repeatCode(RepeatCode.PERIOD)
                 .earn(Earn.UNRESTRICTED)
                 .institutionType(InstitutionType.CENTER)
-                .region(Region.ALL)
+                .region(Region.CENTER)
                 .marriage(Marriage.UNRESTRICTED)
                 .build());
 
-        List<Content> contentList = List.of(Content.builder().content("content").type(ContentType.TEXT).build());
+        List<Content> contentList = List.of(Content.builder().content("policies").type(ContentType.TEXT).build());
         for(long i = 1; i <= LEN; i++) {
             postList.add(postRepository.save(Post.builder()
                 .title("post" + i)

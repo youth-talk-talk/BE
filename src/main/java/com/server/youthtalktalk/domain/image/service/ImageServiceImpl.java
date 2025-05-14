@@ -129,7 +129,7 @@ public class ImageServiceImpl implements ImageService{
             DeleteObjectRequest request = new DeleteObjectRequest(bucket, fileName);
             amazonS3.deleteObject(request);
             member.updateProfileImage(null);
-            log.info("delete imgUrl = {}", profileImage.getImgUrl());
+            log.info("delete departmentImgUrl = {}", profileImage.getImgUrl());
         } catch (AmazonS3Exception e) {
             throw new AmazonS3Exception("Failed to delete multiple files", e);
         }
@@ -141,7 +141,7 @@ public class ImageServiceImpl implements ImageService{
             String bucketUrl = "https://s3."+region+".amazonaws.com/"+bucket;
             imageRepository.deleteAllByImgUrlIn(imgUrlList);
             for (String fileUrl : imgUrlList) {
-                log.info("delete imgUrl = {}",fileUrl);
+                log.info("delete departmentImgUrl = {}",fileUrl);
                 String fileName = fileUrl.substring(bucketUrl.length() + 1);
                 DeleteObjectRequest request = new DeleteObjectRequest(bucket, fileName);
                 amazonS3.deleteObject(request);

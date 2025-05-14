@@ -25,12 +25,13 @@ public class PostListRepDto {
         private Long postId;
         private String title;
         private Long writerId;
-        private int scraps;
-        private boolean scrap;
-        private int comments;
         private Long policyId; // 자유글 null
         private String policyTitle; // 자유글 null
+        private int comments;
         private String contentPreview;
+        private int scrapCount;
+        private boolean scrap;
+        private String createdAt;
     }
 
     @Getter

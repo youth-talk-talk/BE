@@ -4,8 +4,10 @@ import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
+import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,57 +23,31 @@ import java.util.Set;
 public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQueryRepository {
 
     /**
-     * top20 정책 조회 (조회수순)
-     * 여러 지역 선택 가능
+     * 전체 지역의 top20 정책 조회
      */
-    @Query("SELECT p FROM Policy p WHERE p.region IN :regions OR p.region = 'ALL' ORDER BY p.view DESC")
-    Page<Policy> findTop20ByRegionsOrderByViewsDesc(@Param("regions") List<Region> regions, Pageable pageable);
+    @NonNull
+    Page<Policy> findAll(@NonNull Pageable pageable);
 
     /**
-     * top20 정책 조회 (조회수순)
-     * 모든 지역 선택
+     * 특정 지역의 top20 정책 조회
      */
-    @Query("SELECT p FROM Policy p ORDER BY p.view DESC")
-    Page<Policy> findTop20OrderByViewsDesc(Pageable pageable);
+    @Query("SELECT p FROM Policy p WHERE p.region = :region OR p.region = 'CENTER'")
+    Page<Policy> findTop20ByRegion(@Param("region") Region region, Pageable pageable);
 
     /**
-     * 카테고리별 정책 조회 (최신순) - 카테고리 중복 선택 가능
+     * 지정된 기간 동안 생성된 정책 조회 (카테고리 필터링 X)
      */
-    @Query("SELECT p FROM Policy p WHERE (p.region = :region OR p.region = 'ALL') AND (p.category IN :categories) ORDER BY p.policyNum DESC")
-    Page<Policy> findByRegionAndCategory(@Param("region") Region region, @Param("categories") List<Category> categories, Pageable pageable);
-
+    List<Policy> findByCreatedAtBetween(LocalDateTime from, LocalDateTime to, Sort sort);
 
     /**
-     * 오늘 포함 지난 7일의 정책 조회 (최신순)
-     * 여러 지역 선택 가능
+     * 지정된 기간 동안 생성된 정책 조회 (카테고리 필터링 O)
      */
-    @Query("SELECT p FROM Policy p " +
-            "WHERE (p.region IN :regions OR p.region = 'ALL') " +
-            "AND p.category IN :categories " +
-            "AND p.createdAt BETWEEN :from AND :to " +
-            "ORDER BY p.createdAt DESC")
-    Page<Policy> findRecentPoliciesByRegionAndCategory(@Param("regions") List<Region> regions,
-                                                       @Param("categories") List<Category> categories,
-                                                       @Param("from") LocalDateTime from,
-                                                       @Param("to") LocalDateTime to,
-                                                       Pageable pageable);
-    /**
-     * 오늘 포함 지난 7일의 정책 조회 (최신순)
-     * 모든 지역 선택
-     */
-    @Query("SELECT p FROM Policy p " +
-            "WHERE p.category IN :categories " +
-            "AND p.createdAt BETWEEN :from AND :to " +
-            "ORDER BY p.createdAt DESC")
-    Page<Policy> findRecentPoliciesAndCategory(@Param("categories") List<Category> categories,
-                                                       @Param("from") LocalDateTime from,
-                                                       @Param("to") LocalDateTime to,
-                                                       Pageable pageable);
+    List<Policy> findByCreatedAtBetweenAndCategory(LocalDateTime from, LocalDateTime to, Category category, Sort sort);
 
     /**
      * 이름으로 정책 조회 (최신순)
      */
-    @Query("SELECT p FROM Policy p WHERE (p.region = :region OR p.region = 'ALL') AND  (REPLACE(p.title, ' ', '') LIKE CONCAT('%', :title, '%')) ORDER BY p.policyNum DESC")
+    @Query("SELECT p FROM Policy p WHERE (p.region = :region OR p.region = 'CENTER') AND  (REPLACE(p.title, ' ', '') LIKE CONCAT('%', :title, '%')) ORDER BY p.policyNum DESC")
     Page<Policy> findByRegionAndTitle(@Param("region") Region region, @Param("title") String title, Pageable pageable);
 
     /**
@@ -98,11 +74,4 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
      * policyId로 정책 존재 여부 검사
      */
     boolean existsByPolicyId(Long policyId);
-
-    /**
-     * 조회수 top5 정책 조회
-     * (기본 조회수순, 조회수 같으면 최신순 정렬)
-     */
-    List<Policy> findTop5ByOrderByViewDescPolicyNumDesc();
-
 }

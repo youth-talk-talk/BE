@@ -20,6 +20,7 @@ import com.server.youthtalktalk.global.response.exception.post.PostNotFoundExcep
 import com.server.youthtalktalk.global.response.exception.post.ReportedPostAccessDeniedException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.server.youthtalktalk.domain.comment.service.CommentServiceImpl.TIME_FORMAT;
 import static com.server.youthtalktalk.domain.post.dto.PostListRepDto.*;
 
 @Service
@@ -144,8 +146,9 @@ public class PostReadServiceImpl implements PostReadService {
                 .policyTitle(post instanceof Review ? ((Review)post).getPolicy().getTitle() : null )
                 .comments(post.getPostComments().size())
                 .contentPreview(createContentSnippet(post.getContents().get(0).getContent()))
+                .scrapCount(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST).size())
                 .scrap(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId(),ItemType.POST))
-                .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST).size())
+                .createdAt(post.getCreatedAt().format(DateTimeFormatter.ofPattern(TIME_FORMAT)))
                 .build();
     }
 
@@ -170,5 +173,16 @@ public class PostReadServiceImpl implements PostReadService {
         return content.length() > CONTENT_PREVIEW_MAX_LEN
                 ? content.substring(0, CONTENT_PREVIEW_MAX_LEN) + "..."
                 : content;
+    }
+
+    /**
+     * 조회수 top4 게시글 조회
+     */
+    @Override
+    public List<PostListDto> getTopPostsByView(Member member) {
+        List<Post> postList = postRepositoryCustom.findTopReviewsAndPostsByView(member, 4);
+        List<PostListDto> result = new ArrayList<>();
+        postList.forEach(post -> result.add(toPostDto(post, member)));
+        return result;
     }
 }

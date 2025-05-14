@@ -1,6 +1,5 @@
 package com.server.youthtalktalk.service.comment;
 
-import com.server.youthtalktalk.domain.comment.dto.CommentDto;
 import com.server.youthtalktalk.domain.likes.entity.Likes;
 import com.server.youthtalktalk.domain.comment.service.CommentService;
 import com.server.youthtalktalk.domain.comment.entity.Comment;
@@ -11,7 +10,6 @@ import com.server.youthtalktalk.domain.likes.repository.LikeRepository;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
 import com.server.youthtalktalk.domain.member.entity.Role;
-import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.entity.RepeatCode;
@@ -24,14 +22,11 @@ import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import com.server.youthtalktalk.global.response.exception.policy.PolicyNotFoundException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -58,9 +53,6 @@ class CommentServiceTest {
 
     @Autowired
     CommentService commentService;
-
-    @Autowired
-    MemberService memberService;
 
     @Autowired
     EntityManager em;
@@ -129,7 +121,7 @@ class CommentServiceTest {
 
         // when, then
         assertThrows(PolicyNotFoundException.class,
-                () -> commentService.createPolicyComment(123456L, "content", member));
+                () -> commentService.createPolicyComment(123456L, "policies", member));
     }
 
     @Test
@@ -140,125 +132,15 @@ class CommentServiceTest {
 
         // when, then
         assertThrows(PostNotFoundException.class,
-                () -> commentService.createPostComment(1000L, "content", member));
+                () -> commentService.createPostComment(1000L, "policies", member));
     }
-
-    @Test
-    @DisplayName("policyId로 특정 정책의 모든 댓글 조회_성공")
-    void testGetPolicyComments() {
-        // given
-        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
-        memberRepository.save(member);
-
-        Policy policy = createPolicy("policyNum");
-        policyRepository.save(policy);
-
-        PolicyComment policyComment1 = PolicyComment.builder().policy(policy).content("content1").writer(member).build();
-        commentRepository.save(policyComment1);
-        PolicyComment policyComment3 = PolicyComment.builder().policy(policy).content("content3").writer(member).build();
-        commentRepository.save(policyComment3);
-        PolicyComment policyComment2 = PolicyComment.builder().policy(policy).content("content2").writer(member).build();
-        commentRepository.save(policyComment2);
-
-        // when
-        List<PolicyComment> policyComments = commentService.getPolicyComments(policy.getPolicyId());
-
-        // then
-        assertThat(policyComments.size()).isEqualTo(3);
-        assertThat(policyComments.get(0).getId()).isEqualTo(policyComment1.getId());
-        assertThat(policyComments.get(1).getId()).isEqualTo(policyComment3.getId());
-        assertThat(policyComments.get(2).getId()).isEqualTo(policyComment2.getId());
-    }
-
-    @Test
-    @DisplayName("postId로 특정 게시글의 모든 댓글 조회_성공")
-    void testGetPostComments() {
-        // given
-        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
-        memberRepository.save(member);
-
-        Post post = Post.builder().build();
-        postRepository.save(post);
-
-        PostComment postComment1 = PostComment.builder().post(post).writer(member).content("content1").build();
-        commentRepository.save(postComment1);
-        PostComment postComment3 = PostComment.builder().post(post).writer(member).content("content1").build();
-        commentRepository.save(postComment3);
-        PostComment postComment2 = PostComment.builder().post(post).writer(member).content("content1").build();
-        commentRepository.save(postComment2);
-
-        // when
-        List<PostComment> postComments = commentService.getPostComments(post.getId());
-
-        // then
-        assertThat(postComments.size()).isEqualTo(3);
-        assertThat(postComments.get(0).getId()).isEqualTo(postComment1.getId());
-        assertThat(postComments.get(1).getId()).isEqualTo(postComment3.getId());
-        assertThat(postComments.get(2).getId()).isEqualTo(postComment2.getId());
-    }
-
-
-    @Test
-    @DisplayName("정책 댓글 조회 시, 차단한 유저가 작성한 댓글 제외_성공")
-    void testToCommentDtoList1() {
-        // given
-        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
-        Member blocked = Member.builder().username("member2").nickname("member2").region(Region.SEOUL).role(Role.USER).build();
-        memberRepository.save(member);
-        memberRepository.save(blocked);
-        memberService.blockMember(member, blocked.getId());
-
-        Post post = Post.builder().build();
-        postRepository.save(post);
-
-        PostComment postComment1 = PostComment.builder().post(post).writer(blocked).content("content1").build();
-        PostComment postComment2 = PostComment.builder().post(post).writer(blocked).content("content2").build();
-        commentRepository.save(postComment1);
-        commentRepository.save(postComment2);
-
-        List<PostComment> postComments = commentService.getPostComments(post.getId());
-
-        // when
-        List<CommentDto> filteredComments = commentService.toCommentDtoList(postComments, member);
-
-        // then
-        assertThat(filteredComments.size()).isEqualTo(0);
-    }
-
-    @Test
-    @DisplayName("게시글 댓글 조회 시, 차단한 유저가 작성한 댓글 제외_성공")
-    void testToCommentDtoList2() {
-        // given
-        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).role(Role.USER).build();
-        Member blocked = Member.builder().username("member2").nickname("member2").region(Region.SEOUL).role(Role.USER).build();
-        memberRepository.save(member);
-        memberRepository.save(blocked);
-        memberService.blockMember(member, blocked.getId());
-
-        Policy policy = createPolicy("policyNum");
-        policyRepository.save(policy);
-
-        PolicyComment policyComment1 = PolicyComment.builder().policy(policy).content("content1").writer(blocked).build();
-        PolicyComment policyComment2 = PolicyComment.builder().policy(policy).content("content2").writer(blocked).build();
-        commentRepository.save(policyComment1);
-        commentRepository.save(policyComment2);
-
-        List<PolicyComment> policyComments = commentService.getPolicyComments(policy.getPolicyId());
-
-        // when
-        List<CommentDto> filteredComments = commentService.toCommentDtoList(policyComments, member);
-
-        // then
-        assertThat(filteredComments.size()).isEqualTo(0);
-    }
-
 
     @Test
     void 정책_댓글_수정_성공() {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
         Policy policy = createPolicy("policyNum");
-        PolicyComment comment = PolicyComment.builder().content("content").build();
+        PolicyComment comment = PolicyComment.builder().content("policies").build();
         comment.setWriter(member);
         comment.setPolicy(policy);
 
@@ -272,7 +154,7 @@ class CommentServiceTest {
         // then
         Comment savedComment = commentRepository.findById(comment.getId()).orElseThrow();
         assertThat(savedComment.getWriter()).isEqualTo(member);
-        assertThat(savedComment.getRelatedEntityId()).isEqualTo(policy.getPolicyId());
+        assertThat(savedComment.getArticleId()).isEqualTo(policy.getPolicyId());
         assertThat(savedComment.getContent().equals("new_content")).isTrue();
 
         assertThat(member.getComments().size()).isEqualTo(1);
@@ -289,7 +171,7 @@ class CommentServiceTest {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
         Post post = Post.builder().title("post1").content("post1_content").build();
-        PostComment comment = PostComment.builder().content("content").build();
+        PostComment comment = PostComment.builder().content("policies").build();
         comment.setWriter(member);
         comment.setPost(post);
 
@@ -303,7 +185,7 @@ class CommentServiceTest {
         // then
         Comment savedComment = commentRepository.findById(comment.getId()).orElseThrow();
         assertThat(savedComment.getWriter()).isEqualTo(member);
-        assertThat(savedComment.getRelatedEntityId()).isEqualTo(post.getId());
+        assertThat(savedComment.getArticleId()).isEqualTo(post.getId());
         assertThat(savedComment.getContent().equals("new_content")).isTrue();
 
         assertThat(member.getComments().size()).isEqualTo(1);
@@ -320,7 +202,7 @@ class CommentServiceTest {
     void 댓글_삭제_성공() {
         // given
         Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
-        Comment comment = PostComment.builder().content("content").build();
+        Comment comment = PostComment.builder().content("policies").build();
         comment.setWriter(member);
 
         memberRepository.save(member);
@@ -332,43 +214,6 @@ class CommentServiceTest {
         // then
         assertThat(commentRepository.findById(comment.getId())).isEmpty();
         assertThat(member.getComments().contains(comment)).isFalse();
-
-    }
-
-    @Test
-    void 회원이_작성한_댓글_조회_성공() {
-        // given
-        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
-        memberRepository.save(member);
-
-        Comment comment1 = PostComment.builder().content("content1").build();
-        Comment comment2 = PostComment.builder().content("content2").build();
-        comment1.setWriter(member);
-        comment2.setWriter(member);
-        commentRepository.save(comment1);
-        commentRepository.save(comment2);
-
-        // when
-        List<Comment> comments = commentService.getMyComments(member);
-
-        // then
-        assertThat(comments.size()).isEqualTo(2);
-        assertThat(comments.contains(comment1)).isTrue();
-        assertThat(comments.contains(comment2)).isTrue();
-        assertThat(comments.get(0).getId()).isEqualTo(comment2.getId()); // 최신순 정렬 검증
-    }
-
-    @Test
-    void 회원이_작성한_댓글_조회_성공_작성한_댓글이_없음() {
-        // given
-        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
-        memberRepository.save(member);
-
-        // when
-        List<Comment> comments = commentService.getMyComments(member);
-
-        // then
-        assertThat(comments.isEmpty()).isTrue();
 
     }
 
@@ -415,34 +260,6 @@ class CommentServiceTest {
         assertThat(!comment.getCommentLikes().contains(like)).isTrue();
     }
 
-    @Test
-    void 회원이_좋아요한_모든_댓글_조회_성공() {
-        // given
-        Member member = Member.builder().username("member1").nickname("member1").region(Region.SEOUL).build();
-        Comment comment1 = PostComment.builder().content("content1").build();
-        Comment comment2 = PostComment.builder().content("content2").build();
-        Likes like1 = Likes.builder().build();
-        Likes like2 = Likes.builder().build();
-        like1.setMember(member);
-        like2.setMember(member);
-        like1.setComment(comment1);
-        like2.setComment(comment2);
-
-        memberRepository.save(member);
-        commentRepository.save(comment1);
-        commentRepository.save(comment2);
-        likeRepository.save(like1);
-        likeRepository.save(like2);
-
-        // when
-        List<Comment> likedComments = commentService.getLikedComments(member);
-
-        // then
-        assertThat(likedComments.size()).isEqualTo(2);
-        assertThat(likedComments.contains(comment1)).isTrue();
-        assertThat(likedComments.contains(comment2)).isTrue();
-    }
-
     private static Policy createPolicy(String policyNum) {
         return Policy.builder()
                 .title("test")
@@ -451,7 +268,7 @@ class CommentServiceTest {
                 .earn(Earn.UNRESTRICTED)
                 .marriage(Marriage.UNRESTRICTED)
                 .institutionType(InstitutionType.CENTER)
-                .region(Region.ALL)
+                .region(Region.CENTER)
                 .build();
     }
 

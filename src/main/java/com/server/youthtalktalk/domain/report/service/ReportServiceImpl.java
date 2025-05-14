@@ -1,16 +1,13 @@
 package com.server.youthtalktalk.domain.report.service;
 
 import com.server.youthtalktalk.domain.comment.entity.Comment;
-import com.server.youthtalktalk.domain.comment.repository.CommentRepository;
 import com.server.youthtalktalk.domain.member.entity.Member;
-import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import com.server.youthtalktalk.domain.report.entity.CommentReport;
 import com.server.youthtalktalk.domain.report.entity.PostReport;
 import com.server.youthtalktalk.domain.report.entity.Report;
 import com.server.youthtalktalk.domain.report.repository.ReportRepository;
-import com.server.youthtalktalk.global.response.exception.comment.CommentNotFoundException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
 import com.server.youthtalktalk.global.response.exception.report.ReportAlreadyExistException;
 import com.server.youthtalktalk.global.response.exception.report.SelfReportNotAllowedException;

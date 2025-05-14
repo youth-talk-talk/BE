@@ -23,7 +23,8 @@ public enum Region {
     GYEONGNAM("6480000","경남", 48),
     JEJU("6500000","제주", 50),
     SEJONG("5690000","세종", 36),
-    ALL("중앙부처","전국", -1);
+    NATIONWIDE("전국", "전국", -1),
+    CENTER("중앙부처","중앙부처", -1);
 
     private final String key;
     private final String name;

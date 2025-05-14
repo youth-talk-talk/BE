@@ -33,4 +33,6 @@ public interface PostRepositoryCustom {
     Page<Post> findAllByScrap(Member member, Pageable pageable);
     /** 특정 정책의 리뷰 Top N개 조회수순 검색*/
     List<Review> findTopReviewsByPolicy(Member member, Policy policy, int top);
+    /** 조회수 기준 Top N개의 후기/자유게시글 검색*/
+    List<Post> findTopReviewsAndPostsByView(Member member, int top);
 }

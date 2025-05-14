@@ -5,11 +5,15 @@ import static com.server.youthtalktalk.domain.member.controller.MemberController
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class SignUpRequestDto {
 
     @NotBlank(message = "socialId는 필수값입니다.")
@@ -27,7 +31,8 @@ public class SignUpRequestDto {
     private String nickname;
 
     @NotBlank(message = "지역은 필수값입니다.")
-    @Pattern(regexp = "서울|부산|대구|인천|광주|대전|울산|경기|강원|충북|충남|전북|전남|경북|경남|제주|세종", message = "지역이 유효하지 않습니다.")
+    @Pattern(regexp = "서울|부산|대구|인천|광주|대전|울산|경기|강원|충북|충남|전북|전남|경북|경남|제주|세종|전국",
+             message = "지역이 유효하지 않습니다.")
     private String region;
 
     private String idToken;

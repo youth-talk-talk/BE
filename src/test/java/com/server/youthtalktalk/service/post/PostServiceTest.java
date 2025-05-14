@@ -21,8 +21,8 @@ import com.server.youthtalktalk.domain.post.entity.Review;
 import com.server.youthtalktalk.domain.post.dto.PostRepDto;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
-import com.server.youthtalktalk.domain.post.service.PostService;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
+import com.server.youthtalktalk.domain.post.service.PostService;
 import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
 import com.server.youthtalktalk.global.response.exception.BusinessException;
@@ -64,7 +64,7 @@ class PostServiceTest {
     private Member member;
     private Policy policy;
     private Post post;
-    private static final String CONTENT = "content";
+    private static final String CONTENT = "policies";
     private static final String IMAGE_URL = "https://example-bucket-name.s3.amazonaws.com/long-file-name-1234";
     
     @BeforeEach
@@ -80,7 +80,7 @@ class PostServiceTest {
                         .category(Category.JOB)
                         .repeatCode(RepeatCode.PERIOD)
                         .earn(Earn.UNRESTRICTED)
-                        .region(Region.ALL)
+                        .region(Region.CENTER)
                         .institutionType(InstitutionType.CENTER)
                         .marriage(Marriage.UNRESTRICTED)
                         .build());

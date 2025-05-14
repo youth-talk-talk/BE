@@ -86,7 +86,7 @@ public class AnnouncementController {
      */
     @PostMapping("/admin/announcements")
     @ResponseBody
-    public BaseResponse<Map<String, Long>> createAnnouncement(@RequestPart("content") @Valid AnnouncementCreateDto announcementCreateDto,
+    public BaseResponse<Map<String, Long>> createAnnouncement(@RequestPart("policies") @Valid AnnouncementCreateDto announcementCreateDto,
                                                               @RequestPart(value = "images",required = false) List<MultipartFile> fileList) throws IOException {
         Long announcementId = announcementService.createAnnouncement(announcementCreateDto,fileList);
 
@@ -100,7 +100,7 @@ public class AnnouncementController {
      */
     @PatchMapping("/admin/announcements/{id}")
     @ResponseBody
-    public BaseResponse<Void> updateAnnouncement(@RequestPart("content") @Valid AnnouncementUpdateDto announcementUpdateDto,
+    public BaseResponse<Void> updateAnnouncement(@RequestPart("policies") @Valid AnnouncementUpdateDto announcementUpdateDto,
                                                  @RequestPart(value = "images",required = false) List<MultipartFile> fileList,
                                                  @PathVariable Long id) {
         announcementService.updateAnnouncement(id, announcementUpdateDto,fileList);

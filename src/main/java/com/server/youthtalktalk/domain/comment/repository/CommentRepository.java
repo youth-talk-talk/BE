@@ -14,13 +14,13 @@ import java.util.List;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    // 게시글 댓글 조회 + 오래된 순 정렬
-    @Query("SELECT pc FROM PostComment pc WHERE pc.post.id = :postId ORDER BY pc.createdAt ASC")
-    List<PostComment> findPostCommentsByPostIdOrderByCreatedAtAsc(@Param("postId") Long postId);
+    // 특정 게시글의 전체 댓글 조회
+    @Query("SELECT pc FROM PostComment pc WHERE pc.post.id = :postId ")
+    List<PostComment> findPostCommentsByPostId(@Param("postId") Long postId);
 
-    // 정책 댓글 조회 + 오래된 순 정렬
-    @Query("SELECT pc FROM PolicyComment pc WHERE pc.policy.policyId = :policyId ORDER BY pc.createdAt ASC")
-    List<PolicyComment> findPolicyCommentsByPolicyIdOrderByCreatedAtAsc(@Param("policyId") Long policyId);
+    // 특정 정책의 전체 댓글 조회
+    @Query("SELECT pc FROM PolicyComment pc WHERE pc.policy.policyId = :policyId")
+    List<PolicyComment> findPolicyCommentsByPolicyId(@Param("policyId") Long policyId);
 
     // 회원이 작성한 댓글 조회 + 최신 순 정렬
     List<Comment> findCommentsByWriterOrderByCreatedAtDesc(Member writer);

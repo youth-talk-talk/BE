@@ -1,7 +1,10 @@
 package com.server.youthtalktalk.repository.policy;
 
+import static com.server.youthtalktalk.domain.member.entity.Role.USER;
 import static com.server.youthtalktalk.domain.policy.entity.Category.JOB;
 import static com.server.youthtalktalk.domain.policy.entity.Category.LIFE;
+import static com.server.youthtalktalk.domain.policy.entity.InstitutionType.LOCAL;
+import static com.server.youthtalktalk.domain.policy.entity.RepeatCode.PERIOD;
 import static com.server.youthtalktalk.domain.policy.entity.SortOption.*;
 import static com.server.youthtalktalk.domain.policy.entity.condition.Earn.ANNUL_INCOME;
 import static com.server.youthtalktalk.domain.policy.entity.condition.Earn.OTHER;
@@ -15,27 +18,31 @@ import static com.server.youthtalktalk.domain.policy.entity.condition.Major.SCIE
 import static com.server.youthtalktalk.domain.policy.entity.condition.Marriage.SINGLE;
 import static com.server.youthtalktalk.domain.policy.entity.condition.Specialization.DISABLED;
 import static com.server.youthtalktalk.domain.policy.entity.condition.Specialization.SOLDIER;
+import static com.server.youthtalktalk.domain.policy.entity.region.Region.SEOUL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static com.server.youthtalktalk.domain.policy.entity.InstitutionType.CENTER;
 
+import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.policy.dto.SearchConditionDto;
 import com.server.youthtalktalk.domain.policy.entity.*;
 import com.server.youthtalktalk.domain.policy.entity.condition.*;
 import com.server.youthtalktalk.domain.policy.entity.region.PolicySubRegion;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.entity.region.SubRegion;
+import com.server.youthtalktalk.domain.policy.repository.DepartmentRepository;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.policy.repository.region.PolicySubRegionRepository;
 import com.server.youthtalktalk.domain.policy.repository.region.SubRegionRepository;
-import com.server.youthtalktalk.domain.policy.service.PolicyService;
+import com.server.youthtalktalk.domain.post.entity.Review;
+import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,8 +64,12 @@ public class PolicyQueryRepositoryTest {
 
     @Autowired
     private SubRegionRepository subRegionRepository;
+
     @Autowired
-    private PolicyService policyService;
+    private PostRepository postRepository;
+
+    @Autowired
+    private DepartmentRepository departmentRepository;
 
     @BeforeEach
     void setUp() {
@@ -315,6 +326,47 @@ public class PolicyQueryRepositoryTest {
         assertThat(result).allMatch(policy -> policy.getApplyDue().equals(LocalDate.now()));
     }
 
+    @Test
+    @DisplayName("후기글이 많은 정책 5개를 후기가 많은 순으로 반환한다")
+    void testFindTop5OrderByReviewCount() {
+        Department dept = Department.builder().code("0000000").name("deptName").image_url("image.png").build();
+        departmentRepository.save(dept);
+
+        // 후기 수 : policy1 (5) > policy2 (4) > policy3 (3) ...
+        for (int i = 1; i <= 6; i++) {
+            Policy policy = policyRepository.save(Policy.builder()
+                    .policyNum("P" + i)
+                    .title("정책" + i)
+                    .view(100 - i * 10)
+                    .policyId(1L)
+                    .department(dept)
+                    .region(SEOUL)
+                    .institutionType(LOCAL)
+                    .repeatCode(PERIOD)
+                    .marriage(SINGLE)
+                    .build());
+
+            for (int j = 1; j <= 6 - i; j++) {
+                Review review = Review.builder()
+                        .title("후기" + j)
+                        .build();
+                review.setPolicy(policy);
+                postRepository.save(review);
+            }
+        }
+
+        // when
+        List<Policy> result = policyRepository.findTop5OrderByReviewCount();
+
+        // then
+        assertThat(result).hasSize(5);
+        assertThat(result.get(0).getPolicyNum()).isEqualTo("P1"); // 후기 5
+        assertThat(result.get(1).getPolicyNum()).isEqualTo("P2"); // 후기 4
+        assertThat(result.get(2).getPolicyNum()).isEqualTo("P3"); // 후기 3
+        assertThat(result.get(3).getPolicyNum()).isEqualTo("P4"); // 후기 2
+        assertThat(result.get(4).getPolicyNum()).isEqualTo("P5"); // 후기 1
+    }
+
     static List<Policy> createDummyPolicies() {
         List<Policy> policies = new ArrayList<>();
 
@@ -395,7 +447,7 @@ public class PolicyQueryRepositoryTest {
                 .earn(ANNUL_INCOME)
                 .marriage(Marriage.UNRESTRICTED)
                 .category(JOB)
-                .region(Region.ALL)
+                .region(Region.CENTER)
                 .build();
         return policyRepository.save(policy);
     }

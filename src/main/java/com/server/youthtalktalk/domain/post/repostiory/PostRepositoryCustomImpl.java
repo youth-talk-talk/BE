@@ -240,6 +240,23 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .fetch();
     }
 
+    /** 조회수 기준 Top N개의 게시글 검색 (후기 포함)*/
+    @Override
+    public List<Post> findTopReviewsAndPostsByView(Member member, int top) {
+        List<Post> posts = queryFactory
+                .selectFrom(post)
+                .leftJoin(block).on(blockJoinWithPost(member))
+                .leftJoin(report).on(reportJoinWithPost(member))
+                .where(
+                        report.id.isNull().and(block.id.isNull())
+                )
+                .orderBy(post.view.desc(), post.id.desc()) // 조회수 내림차순, 그다음 게시글 ID 내림차순
+                .limit(top) // 상위 N개
+                .fetch();
+
+        return posts;
+    }
+
     BooleanExpression blockJoinWithPost(Member member){
         return post.writer.eq(block.blockedMember)
                 .and(block.member.eq(member));
