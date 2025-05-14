@@ -15,6 +15,8 @@ import java.util.List;
 public interface PostRepositoryCustom {
     /** 모든 게시글 검색 */
     Page<Post> findAllPosts(Member member, Pageable pageable);
+    /** 모든 리뷰 검색*/
+    Page<Post> findAllReviews(Member member, Pageable pageable);
     /** 조회수별 게시글 검색 */
     List<Post> findTopPostsByView(Member member, int top);
     /** 모든 게시글 키워드 검색 */

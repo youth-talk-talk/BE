@@ -70,8 +70,7 @@ public class PostReadServiceImpl implements PostReadService {
         Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         List<Post> popularPostList = postRepositoryCustom.findTopPostsByView(member, TOP); // 상위 5개만
         Page<Post> postPage = postRepositoryCustom.findAllPosts(member, pageRequest);
-
-        return toPostListRepDto(popularPostList, postPage.getContent(),member);
+        return toPostListRepDto(popularPostList, postPage.getContent(), member);
     }
 
     /** 리뷰 카테고리별 전체 조회 */
@@ -80,9 +79,15 @@ public class PostReadServiceImpl implements PostReadService {
     public PostListRepDto getAllReviewByCategory(Pageable pageable, List<Category> categories, Member member) {
         Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         List<Post> popularReviewList = postRepositoryCustom.findTopReviewsByView(member, TOP); // 상위 5개만
-        Page<Post> reviewPage = postRepositoryCustom.findAllReviewsByCategory(member, categories, pageRequest);
 
-        return toPostListRepDto(popularReviewList, reviewPage.getContent(),member);
+        Page<Post> reviewPage;
+        if (categories.isEmpty()) { // 카테고리 전체를 선택한 경우
+            reviewPage = postRepositoryCustom.findAllReviews(member, pageRequest);
+        } else { // 특정 카테고리만 선택한 경우
+            reviewPage = postRepositoryCustom.findAllReviewsByCategory(member, categories, pageRequest);
+        }
+
+        return toPostListRepDto(popularReviewList, reviewPage.getContent(), member);
     }
 
     /** 나의 게시글, 리뷰 전체 조회 */

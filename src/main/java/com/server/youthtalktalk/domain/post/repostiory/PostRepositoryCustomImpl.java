@@ -56,6 +56,29 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
         return new PageImpl<>(posts, pageable, total == null ? 0 : total);
     }
 
+    @Override
+    public Page<Post> findAllReviews(Member member, Pageable pageable) {
+        List<Post> reviews = queryFactory
+                .selectFrom(post)
+                .leftJoin(block).on(blockJoinWithPost(member))
+                .leftJoin(report).on(reportJoinWithPost(member))
+                .where(reviewConditionsExcludeReportAndBlocked())
+                .orderBy(post.id.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = queryFactory
+                .select(post.count())
+                .from(post)
+                .leftJoin(block).on(blockJoinWithPost(member))
+                .leftJoin(report).on(reportJoinWithPost(member))
+                .where(reviewConditionsExcludeReportAndBlocked())
+                .fetchOne();
+
+        return new PageImpl<>(reviews, pageable, total == null ? 0 : total);
+    }
+
     /** 조회수별 게시글 검색 */
     @Override
     public List<Post> findTopPostsByView(Member member, int top) {
