@@ -130,8 +130,17 @@ public class PolicyController {
      */
     @GetMapping("/policies/recent-view")
     public BaseResponse<List<PolicyListResponseDto>> getRecentViewedPolicies() {
-        List<PolicyListResponseDto> recentViewedPolicies = policyService.getRecentViewedPolicies();
+        List<PolicyListResponseDto> recentViewedPolicies = policyService.getRecentViewedPolicies(memberService.getCurrentMember());
         return new BaseResponse<>(recentViewedPolicies, SUCCESS);
+    }
+
+    /**
+     * 최근 본 정책 삭제
+     */
+    @DeleteMapping("/policies/recent-view")
+    public BaseResponse<String> deleteRecentViewedPolicy() {
+        policyService.deleteRecentViewedPolicy(memberService.getCurrentMember());
+        return new BaseResponse<>("success", SUCCESS);
     }
 
 }

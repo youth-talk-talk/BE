@@ -273,7 +273,7 @@ public class PostReadServiceTest {
         List<Category> categories = new ArrayList<>(List.of(Category.JOB));
         Pageable pageable = PageRequest.of(0, LEN);
 
-        when(postRepositoryCustom.findTopReviewsByCategoryAndView(member, categories, TOP))
+        when(postRepositoryCustom.findTopReviewsByView(member, TOP))
                 .thenReturn(posts);
         when(postRepositoryCustom.findAllReviewsByCategory(member, categories, pageable))
                 .thenReturn(convertListToPage(posts, pageable));
@@ -284,7 +284,7 @@ public class PostReadServiceTest {
         assertThat(postListRepDto.getAllPosts().get(0).getPolicyTitle()).isEqualTo(policy.getTitle());
         assertThat(postListRepDto.getAllPosts().get(0).getPolicyId()).isEqualTo(policy.getPolicyId());
 
-        verify(postRepositoryCustom).findTopReviewsByCategoryAndView(member, categories, TOP);
+        verify(postRepositoryCustom).findTopReviewsByView(member, TOP);
         verify(postRepositoryCustom).findAllReviewsByCategory(member, categories, pageable);
     }
 
@@ -474,7 +474,6 @@ public class PostReadServiceTest {
 
     private Page<Post> convertListToPage(List<Post> posts, Pageable pageable) {
         int start = (int) pageable.getOffset();
-        System.out.println(start);
         int end = Math.min((start + pageable.getPageSize()), posts.size());
 
         List<Post> subList = posts.subList(start, end);

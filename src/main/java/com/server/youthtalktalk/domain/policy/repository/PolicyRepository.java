@@ -105,9 +105,4 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
      */
     List<Policy> findTop5ByOrderByViewDescPolicyNumDesc();
 
-    /**
-     * 최근 본 정책 아이디 리스트로 정책 조회
-     */
-    List<Policy> findAllByPolicyIdIn(List<Long> policyIds);
-
 }
