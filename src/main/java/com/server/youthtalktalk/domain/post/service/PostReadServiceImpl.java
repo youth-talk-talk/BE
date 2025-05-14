@@ -79,7 +79,7 @@ public class PostReadServiceImpl implements PostReadService {
     @Transactional
     public PostListRepDto getAllReviewByCategory(Pageable pageable, List<Category> categories, Member member) {
         Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
-        List<Post> popularReviewList = postRepositoryCustom.findTopReviewsByCategoryAndView(member, categories, TOP); // 상위 5개만
+        List<Post> popularReviewList = postRepositoryCustom.findTopReviewsByView(member, TOP); // 상위 5개만
         Page<Post> reviewPage = postRepositoryCustom.findAllReviewsByCategory(member, categories, pageRequest);
 
         return toPostListRepDto(popularReviewList, reviewPage.getContent(),member);

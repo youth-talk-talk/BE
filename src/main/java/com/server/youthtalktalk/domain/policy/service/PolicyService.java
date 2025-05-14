@@ -19,5 +19,6 @@ public interface PolicyService {
     Scrap scrapPolicy(Long policyId, Member member);
     List<PolicyListResponseDto> getScrapPolicies(Pageable pageable,Member member);
     List<PolicyListResponseDto> getScrappedPoliciesWithUpcomingDeadline(Member member);
-    List<PolicyListResponseDto> getRecentViewedPolicies();
+    List<PolicyListResponseDto> getRecentViewedPolicies(Member member);
+    void deleteRecentViewedPolicy(Member member);
 }

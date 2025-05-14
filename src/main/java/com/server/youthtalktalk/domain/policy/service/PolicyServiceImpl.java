@@ -1,14 +1,14 @@
 package com.server.youthtalktalk.domain.policy.service;
 
 import com.server.youthtalktalk.domain.policy.dto.SearchConditionDto;
-import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
-import com.server.youthtalktalk.domain.policy.entity.SortOption;
+import com.server.youthtalktalk.domain.policy.entity.*;
 import com.server.youthtalktalk.domain.policy.entity.condition.Education;
 import com.server.youthtalktalk.domain.policy.entity.condition.Employment;
 import com.server.youthtalktalk.domain.policy.entity.condition.Major;
 import com.server.youthtalktalk.domain.policy.entity.condition.Marriage;
 import com.server.youthtalktalk.domain.policy.entity.condition.Specialization;
 import com.server.youthtalktalk.domain.policy.entity.region.SubRegion;
+import com.server.youthtalktalk.domain.policy.repository.RecentViewedPolicyRepository;
 import com.server.youthtalktalk.domain.policy.repository.region.SubRegionRepository;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.post.entity.Review;
@@ -18,8 +18,6 @@ import com.server.youthtalktalk.domain.ItemType;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.policy.dto.*;
-import com.server.youthtalktalk.domain.policy.entity.Category;
-import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
@@ -65,6 +63,7 @@ public class PolicyServiceImpl implements PolicyService {
     private final MemberService memberService;
     private final SubRegionRepository subRegionRepository;
     private final PostRepositoryCustomImpl postRepository;
+    private final RecentViewedPolicyRepository recentViewedPolicyRepository;
 
     /**
      * 관심지역의 인기 정책 조회 (top20)
@@ -215,7 +214,7 @@ public class PolicyServiceImpl implements PolicyService {
                 .orElseThrow(PolicyNotFoundException::new);
 
         policyRepository.save(policy.toBuilder().view(policy.getView()+1).build());
-        member.addRecentViewedPolicies(policy.getPolicyId());
+        addRecentViewedPolicy(member, policy);
 
         boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(memberId, policy.getPolicyId(), POLICY);
         PolicyDetailResponseDto result = PolicyDetailResponseDto.toDto(policy, isScrap);
@@ -533,31 +532,39 @@ public class PolicyServiceImpl implements PolicyService {
      * 최근 본 정책 리스트 조회
      */
     @Override
-    public List<PolicyListResponseDto> getRecentViewedPolicies() {
-        Member member = memberService.getCurrentMember();
+    public List<PolicyListResponseDto> getRecentViewedPolicies(Member member) {
+        List<RecentViewedPolicy> recentViewedPolicies = recentViewedPolicyRepository.findAllByMemberOrderByUpdatedAtDesc(member);
 
-        List<Long> recentViewedPolicyIds = member.getRecentViewedPolicies();
-        List<Policy> recentViewedPolicies = policyRepository.findAllByPolicyIdIn(recentViewedPolicyIds);
-        Map<Long, Policy> policyMap = new HashMap<>();
-        for(Policy policy : recentViewedPolicies){
-            policyMap.put(policy.getPolicyId(), policy);
-        }
-
-        // 역순으로 정렬
-        List<Policy> sortedPolicies = new ArrayList<>();
-        for(int i = recentViewedPolicyIds.size() - 1; i >= 0; i--) {
-            Long id = recentViewedPolicyIds.get(i);
-            sortedPolicies.add(policyMap.get(id));
-        }
-
-        return sortedPolicies.stream()
-                .map(policy -> {
-                    long scrapCount = scrapRepository.countByItemTypeAndItemId(ItemType.POLICY, policy.getPolicyId());
-                    boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(), policy.getPolicyId(), ItemType.POLICY);
-                    return PolicyListResponseDto.toListDto(policy, isScrap, scrapCount);
+        return recentViewedPolicies.stream()
+                .map(recentViewedPolicy -> {
+                    long scrapCount = scrapRepository.countByItemTypeAndItemId(ItemType.POLICY, recentViewedPolicy.getPolicy().getPolicyId());
+                    boolean isScrap = scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(), recentViewedPolicy.getPolicy().getPolicyId(), ItemType.POLICY);
+                    return PolicyListResponseDto.toListDto(recentViewedPolicy.getPolicy(), isScrap, scrapCount);
                 })
                 .toList();
     }
 
+    /**
+     * 최근 본 정책 삭제
+     */
+    @Override
+    public void deleteRecentViewedPolicy(Member member) {
+        recentViewedPolicyRepository.deleteAllByMember(member);
+    }
+
+    private void addRecentViewedPolicy(Member member, Policy policy) {
+        Optional<RecentViewedPolicy> recentViewedPolicy = recentViewedPolicyRepository.findByMemberAndPolicy(member, policy);
+        // 중복되면 최신 순서로 갱신
+        if(recentViewedPolicy.isPresent()){
+            recentViewedPolicy.get().setUpdatedAt();
+        }
+        else{
+            recentViewedPolicyRepository.save(RecentViewedPolicy.builder().member(member).policy(policy).build());
+            if(recentViewedPolicyRepository.countAllByMember(member) > 20){
+                RecentViewedPolicy firstViewedPolicy = recentViewedPolicyRepository.findFirstByMemberOrderByCreatedAt(member).get();
+                recentViewedPolicyRepository.delete(firstViewedPolicy);
+            }
+        }
+    }
 }
 

@@ -74,10 +74,4 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
      * policyId로 정책 존재 여부 검사
      */
     boolean existsByPolicyId(Long policyId);
-
-    /**
-     * 최근 본 정책 아이디 리스트로 정책 조회
-     */
-    List<Policy> findAllByPolicyIdIn(List<Long> policyIds);
-
 }

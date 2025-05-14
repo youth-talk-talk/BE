@@ -19,14 +19,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-import com.server.youthtalktalk.domain.ItemType;
-import com.server.youthtalktalk.domain.comment.entity.PostComment;
-import com.server.youthtalktalk.domain.comment.repository.CommentRepository;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.policy.dto.PolicyListResponseDto;
-import com.server.youthtalktalk.domain.policy.dto.PolicyWithReviewsDto;
-import com.server.youthtalktalk.domain.policy.dto.ReviewInPolicyDto;
 import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.Department;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
@@ -35,15 +30,10 @@ import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.policy.service.PolicyServiceImpl;
 import com.server.youthtalktalk.domain.post.entity.Content;
 import com.server.youthtalktalk.domain.post.entity.ContentType;
-import com.server.youthtalktalk.domain.post.entity.Review;
-import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
-import com.server.youthtalktalk.domain.post.repostiory.PostRepositoryCustomImpl;
-import com.server.youthtalktalk.domain.scrap.entity.Scrap;
 import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -221,92 +211,6 @@ public class PolicyServiceTest {
         verify(policyRepository).findByCreatedAtBetweenAndCategory(eq(from), eq(to), eq(EDUCATION), any(Sort.class));
         verify(policyRepository).findByCreatedAtBetweenAndCategory(eq(from), eq(to), eq(LIFE), any(Sort.class));
         verify(policyRepository).findByCreatedAtBetweenAndCategory(eq(from), eq(to), eq(PARTICIPATION), any(Sort.class));
-    }
-
-    @Test
-    @DisplayName("정책 조회 시 최근 본 정책 목록 추가")
-    void successAddRecentViewedPolicies(){
-        // Given
-        List<Long> recentViewedPolicyIds = new ArrayList<>();
-        for(long i = 1; i <= RECENT_VIEW_MAX_LEN; i++){
-            recentViewedPolicyIds.add(i);
-        }
-        Member member = Member.builder().recentViewedPolicies(recentViewedPolicyIds).role(USER).build();
-
-        Policy viewedPolicy = Policy.builder()
-                .policyId(1L)
-                .view(1)
-                .title("title")
-                .region(SEOUL)
-                .category(JOB)
-                .marriage(MARRIED)
-                .institutionType(LOCAL)
-                .department(dept)
-                .build();
-
-        // When
-        when(memberService.getCurrentMember()).thenReturn(member);
-        doReturn(Optional.ofNullable(viewedPolicy)).when(policyRepository).findByPolicyId(1L);
-
-        doReturn(viewedPolicy.toBuilder().view(2).build()).when(policyRepository).save(any());
-        when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(), viewedPolicy.getPolicyId(), POLICY)).thenReturn(true);
-
-        policyService.getPolicyDetail(viewedPolicy.getPolicyId());
-
-        // Then
-        List<Long> recentViewedPolicies = member.getRecentViewedPolicies();
-        int size = recentViewedPolicies.size();
-        long first = recentViewedPolicies.get(0);
-        long last = recentViewedPolicies.get(size - 1);
-        assertThat(recentViewedPolicies).hasSize((int) RECENT_VIEW_MAX_LEN);
-
-        assertThat(last).isEqualTo(1L); // 새로 추가된 값
-        assertThat(first).isEqualTo(2L); // 최대 사이즈 유지를 위해 가장 오래된 정책은 제거됨
-        // 중복 제거 테스트
-        assertThat(recentViewedPolicies.stream().filter(id -> id.equals(1L)).count()).isEqualTo(1);
-    }
-
-    @Test
-    @DisplayName("최근 본 정책 조회 성공")
-    void successGetRecentViewedPolicies(){
-        // Given
-        List<Long> recentViewedPolicyIds = new ArrayList<>();
-        List<Policy> recentViewedPolicies = new ArrayList<>();
-        for(long i = 1; i <= RECENT_VIEW_MAX_LEN; i++){
-            recentViewedPolicyIds.add(i);
-            recentViewedPolicies.add(Policy.builder()
-                            .policyId(i)
-                            .view(1)
-                            .title("title" + i)
-                            .department(dept)
-                            .region(SEOUL)
-                            .category(JOB)
-                            .build());
-        }
-
-        Member member = Member.builder().recentViewedPolicies(recentViewedPolicyIds).role(USER).build();
-
-        // When
-        when(memberService.getCurrentMember()).thenReturn(member);
-        when(policyRepository.findAllByPolicyIdIn(member.getRecentViewedPolicies())).thenReturn(recentViewedPolicies);
-        for (Policy policy : recentViewedPolicies) {
-            when(scrapRepository.countByItemTypeAndItemId(ItemType.POLICY, policy.getPolicyId()))
-                    .thenReturn(1L);
-            when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(), policy.getPolicyId(), ItemType.POLICY))
-                    .thenReturn(true);
-        }
-
-        List<PolicyListResponseDto> result = policyService.getRecentViewedPolicies();
-        // Then
-        assertThat(result.size()).isEqualTo(RECENT_VIEW_MAX_LEN);
-        for(long i = 0; i < RECENT_VIEW_MAX_LEN; i++){
-            PolicyListResponseDto response = result.get((int)i);
-            Long expectedId = RECENT_VIEW_MAX_LEN - i;
-            assertThat(response.getPolicyId()).isEqualTo(expectedId);
-            assertThat(response.getTitle()).isEqualTo("title" + expectedId);
-            assertThat(response.getScrapCount()).isEqualTo(1L);
-            assertThat(response.isScrap()).isTrue();
-        }
     }
 
     private List<Content> createContent(String content){

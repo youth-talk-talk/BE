@@ -145,8 +145,20 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
     }
 
     @Override
+    public List<Post> findTopReviewsByView(Member member, int top) {
+        return queryFactory
+                .selectFrom(post)
+                .leftJoin(block).on(blockJoinWithPost(member))
+                .leftJoin(report).on(reportJoinWithPost(member))
+                .where(reviewConditionsExcludeReportAndBlocked())
+                .orderBy(post.view.desc(), post.id.desc())
+                .limit(top)
+                .fetch();
+    }
+
+    @Override
     public List<Post> findTopReviewsByCategoryAndView(Member member, List<Category> categories, int top) {
-        List<Post> reviews = queryFactory
+        return queryFactory
                 .selectFrom(post)
                 .leftJoin(block).on(blockJoinWithPost(member))
                 .leftJoin(report).on(reportJoinWithPost(member))
@@ -155,8 +167,6 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .orderBy(post.view.desc(), post.id.desc())
                 .limit(top)
                 .fetch();
-
-        return reviews;
     }
 
     /** 모든 리뷰 키워드 검색 */

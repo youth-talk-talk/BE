@@ -23,6 +23,8 @@ public interface PostRepositoryCustom {
     Page<Post> findAllPostsByWriter(Pageable pageable, Member writer);
     /** 카테고리별 리뷰 검색 */
     Page<Post> findAllReviewsByCategory(Member member, List<Category> categories, Pageable pageable);
+    /** 전체 리뷰 조회수순 검색 */
+    List<Post> findTopReviewsByView(Member member, int top);
     /** 카테고리별 리뷰 조회수순 검색 */
     List<Post> findTopReviewsByCategoryAndView(Member member, List<Category> categories, int top);
     /** 모든 리뷰 키워드 검색 */
