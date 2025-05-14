@@ -1,5 +1,6 @@
 package com.server.youthtalktalk.domain.post.dto;
 
+import com.server.youthtalktalk.domain.policy.entity.Category;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -31,6 +32,7 @@ public class PostListRepDto {
         private String contentPreview;
         private int scrapCount;
         private boolean scrap;
+        private Category category;
         private String createdAt;
     }
 

@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.server.youthtalktalk.domain.ItemType.*;
 import static com.server.youthtalktalk.domain.comment.service.CommentServiceImpl.TIME_FORMAT;
 import static com.server.youthtalktalk.domain.post.dto.PostListRepDto.*;
 
@@ -60,7 +61,7 @@ public class PostReadServiceImpl implements PostReadService {
 
         postRepository.save(post.toBuilder().view(post.getView()+1).build());
         log.info("게시글 조회 성공, postId = {}", postId);
-        return post.toPostRepDto(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId(),ItemType.POST));
+        return post.toPostRepDto(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId(), POST));
     }
 
     /** 게시글 전체 조회 */
@@ -87,7 +88,7 @@ public class PostReadServiceImpl implements PostReadService {
             reviewPage = postRepositoryCustom.findAllReviewsByCategory(member, categories, pageRequest);
         }
 
-        return toPostListRepDto(popularReviewList, reviewPage.getContent(), member);
+        return toReviewListRepDto(popularReviewList, reviewPage.getContent(), member);
     }
 
     /** 나의 게시글, 리뷰 전체 조회 */
@@ -142,6 +143,18 @@ public class PostReadServiceImpl implements PostReadService {
                 .build();
     }
 
+    public PostListRepDto toReviewListRepDto(List<Post> topList, List<Post> postList, Member member) {
+        List<PostListDto> top5_posts = new ArrayList<>();
+        topList.forEach(post -> top5_posts.add(toPostDto(post, member)));
+        List<PostListDto> other_posts = new ArrayList<>();
+        postList.forEach(post -> other_posts.add(toReviewDto(post, member)));
+
+        return builder()
+                .top5Posts(top5_posts)
+                .allPosts(other_posts)
+                .build();
+    }
+
     public PostListDto toPostDto(Post post, Member member) {
         return PostListDto.builder()
                 .postId(post.getId())
@@ -151,14 +164,33 @@ public class PostReadServiceImpl implements PostReadService {
                 .policyTitle(post instanceof Review ? ((Review)post).getPolicy().getTitle() : null )
                 .comments(post.getPostComments().size())
                 .contentPreview(createContentSnippet(post.getContents().get(0).getContent()))
-                .scrapCount(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST).size())
-                .scrap(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId(),ItemType.POST))
+                .scrapCount(scrapRepository.findAllByItemIdAndItemType(post.getId(), POST).size())
+                .scrap(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId(), POST))
                 .createdAt(post.getCreatedAt().format(DateTimeFormatter.ofPattern(TIME_FORMAT)))
                 .build();
     }
 
+    // 리뷰 전용 DTO - TODO 게시글 dto 코드 리팩토링
+    public PostListDto toReviewDto(Post post, Member member) {
+        Review review = (Review) post;
+        Long reviewId = review.getId();
+        return PostListDto.builder()
+                .postId(reviewId)
+                .writerId(review.getWriter() == null ? -1L : review.getWriter().getId())
+                .title(review.getTitle())
+                .contentPreview(createContentSnippet(review.getContents().get(0).getContent()))
+                .policyId(review.getPolicy().getPolicyId())
+                .policyTitle(review.getPolicy().getTitle())
+                .comments(review.getPostComments().size())
+                .scrapCount(scrapRepository.findAllByItemIdAndItemType(review.getId(), POST).size())
+                .scrap(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(), reviewId, POST))
+                .category(review.getPolicy().getCategory())
+                .createdAt(review.getCreatedAt().format(DateTimeFormatter.ofPattern(TIME_FORMAT)))
+                .build();
+    }
+
     public ScrapPostListDto toScrapPostDto(Post post, Member member) {
-        Scrap scrap = scrapRepository.findByMemberAndItemIdAndItemType(member,post.getId(),ItemType.POST)
+        Scrap scrap = scrapRepository.findByMemberAndItemIdAndItemType(member,post.getId(), POST)
                 .orElseThrow(EntityNotFoundException::new);
         return ScrapPostListDto.builder()
                 .postId(post.getId())
@@ -169,7 +201,7 @@ public class PostReadServiceImpl implements PostReadService {
                 .comments(post.getPostComments().size())
                 .contentPreview(createContentSnippet(post.getContents().get(0).getContent()))
                 .scrap(true)
-                .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST).size())
+                .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId(), POST).size())
                 .scrapId(scrap.getId())
                 .build();
     }
