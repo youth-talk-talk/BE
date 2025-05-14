@@ -9,8 +9,9 @@ import java.util.List;
 @Getter
 @Builder
 public class PostListRepDto {
-    private List<? extends PostListDto> top5Posts;
-    private List<? extends PostListDto> allPosts;
+
+    private List<PostListDto> top5Posts;
+    private List<PostListDto> allPosts;
 
     @Getter
     @Builder
@@ -32,22 +33,6 @@ public class PostListRepDto {
         private String contentPreview;
         private int scrapCount;
         private boolean scrap;
-        private String createdAt;
-    }
-
-    @Getter
-    @Builder
-    public static class ReviewListDto extends PostListDto{
-        private Long postId;
-        private String title;
-        private Long writerId;
-        private Long policyId;
-        private String policyTitle;
-        private int comments;
-        private String contentPreview;
-        private int scrapCount;
-        private boolean scrap;
-        private Category category;
         private String createdAt;
     }
 

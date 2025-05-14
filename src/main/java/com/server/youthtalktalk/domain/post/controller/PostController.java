@@ -85,9 +85,9 @@ public class PostController {
 
     /** 리뷰 전체 조회 API */
     @GetMapping("/review")
-    public BaseResponse<PostListRepDto> getAllReview(@PageableDefault(size = 10) Pageable pageable, @RequestParam List<Category> categories){
-        PostListRepDto postListRepDto = postReadService.getAllReviewByCategory(pageable,categories,memberService.getCurrentMember());
-        return new BaseResponse<>(postListRepDto,BaseResponseCode.SUCCESS);
+    public BaseResponse<ReviewListRepDto> getAllReview(@PageableDefault(size = 10) Pageable pageable, @RequestParam(required = false) List<Category> categories){
+        ReviewListRepDto reviewListRepDto = postReadService.getAllReviewByCategory(pageable,categories,memberService.getCurrentMember());
+        return new BaseResponse<>(reviewListRepDto,BaseResponseCode.SUCCESS);
     }
 
     /** 게시글 키워드 검색 API */

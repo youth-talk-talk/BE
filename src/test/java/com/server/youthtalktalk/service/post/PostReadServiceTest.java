@@ -5,6 +5,7 @@ import com.server.youthtalktalk.domain.member.repository.BlockRepository;
 import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.post.dto.PostListRepDto;
+import com.server.youthtalktalk.domain.post.dto.ReviewListRepDto;
 import com.server.youthtalktalk.domain.post.entity.Content;
 import com.server.youthtalktalk.domain.post.entity.ContentType;
 import com.server.youthtalktalk.domain.post.entity.Review;
@@ -282,11 +283,11 @@ public class PostReadServiceTest {
         when(postRepositoryCustom.findAllReviewsByCategory(member, categories, pageable))
                 .thenReturn(convertListToPage(posts, pageable));
         // When
-        PostListRepDto postListRepDto = postReadService.getAllReviewByCategory(pageable, categories, member);
+        ReviewListRepDto reviewListRepDto = postReadService.getAllReviewByCategory(pageable, categories, member);
         // Then
-        assertThat(postListRepDto.getAllPosts()).hasSize(LEN);
-        assertThat(postListRepDto.getAllPosts().get(0).getPolicyTitle()).isEqualTo(policy.getTitle());
-        assertThat(postListRepDto.getAllPosts().get(0).getPolicyId()).isEqualTo(policy.getPolicyId());
+        assertThat(reviewListRepDto.getAllPosts()).hasSize(LEN);
+        assertThat(reviewListRepDto.getAllPosts().get(0).getPolicyTitle()).isEqualTo(policy.getTitle());
+        assertThat(reviewListRepDto.getAllPosts().get(0).getPolicyId()).isEqualTo(policy.getPolicyId());
 
         verify(postRepositoryCustom).findTopReviewsByView(member, TOP);
         verify(postRepositoryCustom).findAllReviewsByCategory(member, categories, pageable);

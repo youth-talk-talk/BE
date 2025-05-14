@@ -1,11 +1,12 @@
 package com.server.youthtalktalk.domain.post.service;
 
-import com.server.youthtalktalk.domain.ItemType;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.repository.BlockRepository;
 import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.post.dto.PostListRepDto;
 import com.server.youthtalktalk.domain.post.dto.PostRepDto;
+import com.server.youthtalktalk.domain.post.dto.ReviewListRepDto;
+import com.server.youthtalktalk.domain.post.dto.ReviewListRepDto.ReviewListDto;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.post.entity.Review;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
@@ -80,12 +81,12 @@ public class PostReadServiceImpl implements PostReadService {
     /** 리뷰 카테고리별 전체 조회 */
     @Override
     @Transactional
-    public PostListRepDto getAllReviewByCategory(Pageable pageable, List<Category> categories, Member member) {
+    public ReviewListRepDto getAllReviewByCategory(Pageable pageable, List<Category> categories, Member member) {
         Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         List<Post> popularReviewList = postRepositoryCustom.findTopReviewsByView(member, TOP); // 상위 5개만
 
         Page<Post> reviewPage;
-        if (categories.isEmpty()) { // 카테고리 전체를 선택한 경우
+        if (categories == null || categories.isEmpty()) { // 카테고리 전체를 선택한 경우
             reviewPage = postRepositoryCustom.findAllReviews(member, pageRequest);
         } else { // 특정 카테고리만 선택한 경우
             reviewPage = postRepositoryCustom.findAllReviewsByCategory(member, categories, pageRequest);
@@ -146,16 +147,13 @@ public class PostReadServiceImpl implements PostReadService {
                 .build();
     }
 
-    public PostListRepDto toReviewListRepDto(List<Post> topList, List<Post> postList, Member member) {
-        List<ReviewListDto> top5_posts = new ArrayList<>();
-        topList.forEach(post -> top5_posts.add(toReviewDto(post, member)));
-        List<ReviewListDto> other_posts = new ArrayList<>();
-        postList.forEach(post -> other_posts.add(toReviewDto(post, member)));
+    public ReviewListRepDto toReviewListRepDto(List<Post> topList, List<Post> postList, Member member) {
+        List<ReviewListDto> top5Posts = new ArrayList<>();
+        topList.forEach(post -> top5Posts.add(toReviewDto(post, member)));
+        List<ReviewListDto> otherPosts = new ArrayList<>();
+        postList.forEach(post -> otherPosts.add(toReviewDto(post, member)));
 
-        return builder()
-                .top5Posts(top5_posts)
-                .allPosts(other_posts)
-                .build();
+        return ReviewListRepDto.builder().top5Posts(top5Posts).allPosts(otherPosts).build();
     }
 
     public PostListDto toPostDto(Post post, Member member) {
