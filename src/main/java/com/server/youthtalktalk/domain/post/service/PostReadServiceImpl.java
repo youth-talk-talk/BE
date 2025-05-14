@@ -39,13 +39,16 @@ import static com.server.youthtalktalk.domain.post.dto.PostListRepDto.*;
 @RequiredArgsConstructor
 @Slf4j
 public class PostReadServiceImpl implements PostReadService {
+
     private final PostRepository postRepository;
     private final ScrapRepository scrapRepository;
     private final ReportRepository reportRepository;
     private final BlockRepository blockRepository;
     private final PostRepositoryCustom postRepositoryCustom;
+
     private static final int TOP = 5;
     private static final int CONTENT_PREVIEW_MAX_LEN = 50;
+
     /** 게시글, 리뷰 상세 조회 */
     @Override
     @Transactional
@@ -144,9 +147,9 @@ public class PostReadServiceImpl implements PostReadService {
     }
 
     public PostListRepDto toReviewListRepDto(List<Post> topList, List<Post> postList, Member member) {
-        List<PostListDto> top5_posts = new ArrayList<>();
-        topList.forEach(post -> top5_posts.add(toPostDto(post, member)));
-        List<PostListDto> other_posts = new ArrayList<>();
+        List<ReviewListDto> top5_posts = new ArrayList<>();
+        topList.forEach(post -> top5_posts.add(toReviewDto(post, member)));
+        List<ReviewListDto> other_posts = new ArrayList<>();
         postList.forEach(post -> other_posts.add(toReviewDto(post, member)));
 
         return builder()
@@ -171,10 +174,10 @@ public class PostReadServiceImpl implements PostReadService {
     }
 
     // 리뷰 전용 DTO - TODO 게시글 dto 코드 리팩토링
-    public PostListDto toReviewDto(Post post, Member member) {
+    public ReviewListDto toReviewDto(Post post, Member member) {
         Review review = (Review) post;
         Long reviewId = review.getId();
-        return PostListDto.builder()
+        return ReviewListDto.builder()
                 .postId(reviewId)
                 .writerId(review.getWriter() == null ? -1L : review.getWriter().getId())
                 .title(review.getTitle())
