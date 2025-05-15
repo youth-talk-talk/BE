@@ -305,10 +305,10 @@ public class PostReadServiceTest {
         Pageable pageable = PageRequest.of(0, LEN);
         when(postRepositoryCustom.findAllPostsByWriter(pageable, member)).thenReturn(convertListToPage(posts, pageable));
         // When
-        List<PostListDto> myPosts = postReadService.getAllMyPost(pageable, member);
+        PostListResponse result = postReadService.getAllMyPost(pageable, member);
         // Then
-        assertThat(myPosts).hasSize(LEN);
-        assertThat(myPosts.get(0).getWriterId()).isEqualTo(member.getId());
+        assertThat(result.getPosts()).hasSize(LEN);
+        assertThat(result.getPosts().getFirst().getWriterId()).isEqualTo(member.getId());
 
         verify(postRepositoryCustom).findAllPostsByWriter(pageable, member);
     }
