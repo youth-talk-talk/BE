@@ -22,6 +22,7 @@ import com.server.youthtalktalk.global.response.exception.post.ReportedPostAcces
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import java.time.format.DateTimeFormatter;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -98,14 +99,17 @@ public class PostReadServiceImpl implements PostReadService {
     /** 나의 게시글, 리뷰 전체 조회 */
     @Override
     @Transactional
-    public List<PostListDto> getAllMyPost(Pageable pageable, Member member) {
+    public PostListResponse getAllMyPost(Pageable pageable, Member member) {
         Pageable pageRequest = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
-        List<Post> postList= postRepositoryCustom.findAllPostsByWriter(pageRequest, member).getContent();
-        List<PostListDto> result = new ArrayList<>();
-        postList.forEach(post->result.add(toPostDto(post,member)));
+        Page<Post> postList = postRepositoryCustom.findAllPostsByWriter(pageRequest, member);
+        List<PostListDto> result = postList.stream().map(post -> toPostDto(post, member)).toList();
 
         log.info("나의 게시글 조회 memberId = {}", member.getId());
-        return result;
+        return PostListResponse.builder()
+                .posts(result)
+                .page(pageRequest.getPageNumber())
+                .total(postList.getTotalElements())
+                .build();
     }
 
     /** 게시글, 리뷰 키워드 검색 */

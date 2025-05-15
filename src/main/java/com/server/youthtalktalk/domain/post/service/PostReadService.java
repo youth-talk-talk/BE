@@ -15,7 +15,7 @@ public interface PostReadService {
     PostRepDto getPostById(Long postId,Member member);
     PostListRepDto getAllPost(Pageable pageable, Member member);
     ReviewListRepDto getAllReviewByCategory(Pageable pageable, List<Category> category, Member member);
-    List<PostListDto> getAllMyPost(Pageable pageable, Member member);
+    PostListResponse getAllMyPost(Pageable pageable, Member member);
     PostListResponse getAllPostByKeyword(Pageable pageable, String type, String keyword, Member member);
     PostListResponse getScrapPostList(Pageable pageable, Member member);
     List<PostListDto> getTopPostsByView(Member member);

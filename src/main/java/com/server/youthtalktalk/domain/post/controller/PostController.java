@@ -99,15 +99,15 @@ public class PostController {
 
     /** 나의 모든 게시글 조회 API */
     @GetMapping("/me")
-    public BaseResponse<List<PostListDto>> getAllMyPost(@PageableDefault(size = 10) Pageable pageable){
-        List<PostListDto> postListDto = postReadService.getAllMyPost(pageable,memberService.getCurrentMember());
-        return new BaseResponse<>(postListDto,BaseResponseCode.SUCCESS);
+    public BaseResponse<PostListResponse> getAllMyPost(@PageableDefault(size = 10) Pageable pageable){
+        PostListResponse postListResponse = postReadService.getAllMyPost(pageable, memberService.getCurrentMember());
+        return new BaseResponse<>(postListResponse, BaseResponseCode.SUCCESS);
     }
 
     /** 나의 스크랩한 게시글 조회 API */
     @GetMapping("/scrap")
     public BaseResponse<PostListResponse> getAllMyScrapedPost(@PageableDefault(size = 10) Pageable pageable){
-        PostListResponse postListDto = postReadService.getScrapPostList(pageable, memberService.getCurrentMember());
-        return new BaseResponse<>(postListDto, BaseResponseCode.SUCCESS);
+        PostListResponse postListResponse = postReadService.getScrapPostList(pageable, memberService.getCurrentMember());
+        return new BaseResponse<>(postListResponse, BaseResponseCode.SUCCESS);
     }
 }
