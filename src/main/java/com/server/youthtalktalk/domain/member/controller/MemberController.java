@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import static com.server.youthtalktalk.domain.comment.service.CommentServiceImpl.DEFAULT_PROFILE;
 import static com.server.youthtalktalk.global.response.BaseResponseCode.*;
 
 @RestController
@@ -42,10 +41,8 @@ public class MemberController {
     @GetMapping("/members/me")
     public BaseResponse<MemberInfoDto> getMemberInfo() {
         Member member = memberService.getCurrentMember();
-        String profileImgUrl = (member.getProfileImage() == null) ? DEFAULT_PROFILE : member.getProfileImage().getImgUrl();
-        MemberInfoDto memberInfoDto = new MemberInfoDto(
-                member.getId(), member.getNickname(), profileImgUrl, member.getRegion().getName());
-        return new BaseResponse<>(memberInfoDto, SUCCESS);
+        MemberInfoDto memberInfo = memberService.getMemberInfo(member);
+        return new BaseResponse<>(memberInfo, SUCCESS);
     }
 
     /**
@@ -55,10 +52,8 @@ public class MemberController {
     public BaseResponse<MemberInfoDto> updateMemberInfo(@Valid @RequestBody MemberUpdateDto memberUpdateDto) {
         Member member = memberService.getCurrentMember();
         memberService.updateMemberInfo(memberUpdateDto, member);
-        String profileImgUrl = (member.getProfileImage() == null) ? DEFAULT_PROFILE : member.getProfileImage().getImgUrl();
-        MemberInfoDto updatedMemberInfo = new MemberInfoDto(
-                member.getId(), member.getNickname(), profileImgUrl, member.getRegion().getName());
-        return new BaseResponse<>(updatedMemberInfo, SUCCESS_MEMBER_UPDATE);
+        MemberInfoDto memberInfo = memberService.getMemberInfo(member);
+        return new BaseResponse<>(memberInfo, SUCCESS_MEMBER_UPDATE);
     }
 
     /**

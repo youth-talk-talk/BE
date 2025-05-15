@@ -49,7 +49,6 @@ import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_
 public class CommentServiceImpl implements CommentService {
 
     public static final String DELETED_WRITER = "알 수 없음";
-    public static final String DEFAULT_PROFILE = "기본 이미지";
     public static final String TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     private final CommentRepository commentRepository;

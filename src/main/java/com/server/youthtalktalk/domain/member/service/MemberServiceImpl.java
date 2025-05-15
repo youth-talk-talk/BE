@@ -3,6 +3,7 @@ package com.server.youthtalktalk.domain.member.service;
 import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_REGION;
 
 import com.server.youthtalktalk.domain.comment.entity.Comment;
+import com.server.youthtalktalk.domain.member.dto.MemberInfoDto;
 import com.server.youthtalktalk.domain.member.entity.Block;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.entity.Role;
@@ -206,5 +207,15 @@ public class MemberServiceImpl implements MemberService {
     private Block findBlock(Member member, Member blockedmember) {
         return blockRepository.findByMemberAndBlockedMember(member, blockedmember)
                 .orElseThrow(NotBlockedMemberException::new);
+    }
+
+    /**
+     * 회원정보 DTO 생성
+     */
+    @Override
+    public MemberInfoDto getMemberInfo(Member member) {
+        String profileImgUrl = (member.getProfileImage() == null) ? null : member.getProfileImage().getImgUrl();
+        return new MemberInfoDto(
+                member.getId(), member.getNickname(), profileImgUrl, member.getRegion().getName());
     }
 }
