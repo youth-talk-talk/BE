@@ -387,20 +387,18 @@ public class PostReadServiceTest {
                     .itemType(ItemType.POST)
                     .itemId(post.getId())
                     .build();
-            when(scrapRepository.findByMemberAndItemIdAndItemType(member,post.getId(),ItemType.POST))
-                    .thenReturn(Optional.of(scrap));
             when(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST))
                     .thenReturn(new ArrayList<>(List.of(scrap)));
         }
 
         // When
-        List<ScrapPostListDto> scrapPostList = postReadService.getScrapPostList(pageable, member);
+        PostListResponse scrapPostList = postReadService.getScrapPostList(pageable, member);
         // Then
-        ScrapPostListDto first = scrapPostList.get(0);
-        assertThat(scrapPostList).hasSize(LEN);
+        PostListDto first = scrapPostList.getPosts().getFirst();
+        assertThat(scrapPostList.getPosts()).hasSize(LEN);
         assertThat(first.getPostId()).isEqualTo(posts.get(0).getId());
         assertThat(first.getTitle()).isEqualTo(posts.get(0).getTitle());
-        assertThat(first.getScraps()).isEqualTo(1);
+        assertThat(first.getScrapCount()).isEqualTo(1);
         assertThat(first.getWriterId()).isEqualTo(member.getId());
         assertThat(first.getPolicyTitle()).isNull();
         assertThat(first.getPolicyId()).isNull();
@@ -422,6 +420,7 @@ public class PostReadServiceTest {
                 .id(2L)
                 .title("testReview")
                 .policy(policy)
+                .createdAt(LocalDateTime.now())
                 .contents(createContent(content))
                 .build()));
 
@@ -434,18 +433,16 @@ public class PostReadServiceTest {
                     .itemType(ItemType.POST)
                     .itemId(post.getId())
                     .build();
-            when(scrapRepository.findByMemberAndItemIdAndItemType(member,post.getId(),ItemType.POST))
-                    .thenReturn(Optional.of(scrap));
             when(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST))
                     .thenReturn(new ArrayList<>(List.of(scrap)));
         }
 
         // When
-        List<ScrapPostListDto> scrapPostList = postReadService.getScrapPostList(pageable, member);
+        PostListResponse scrapPostList = postReadService.getScrapPostList(pageable, member);
         // Then
-        ScrapPostListDto first = scrapPostList.get(0);
-        assertThat(scrapPostList).hasSize(1);
-        assertThat(first.getScraps()).isEqualTo(1);
+        PostListDto first = scrapPostList.getPosts().getFirst();
+        assertThat(scrapPostList.getPosts()).hasSize(1);
+        assertThat(first.getScrapCount()).isEqualTo(1);
         assertThat(first.getPolicyTitle()).isEqualTo(policy.getTitle());
         assertThat(first.getPolicyId()).isEqualTo(policy.getPolicyId());
 

@@ -106,8 +106,8 @@ public class PostController {
 
     /** 나의 스크랩한 게시글 조회 API */
     @GetMapping("/scrap")
-    public BaseResponse<List<ScrapPostListDto>> getAllMyScrapedPost(@PageableDefault(size = 10) Pageable pageable){
-        List<ScrapPostListDto> postListDto = postReadService.getScrapPostList(pageable,memberService.getCurrentMember());
-        return new BaseResponse<>(postListDto,BaseResponseCode.SUCCESS);
+    public BaseResponse<PostListResponse> getAllMyScrapedPost(@PageableDefault(size = 10) Pageable pageable){
+        PostListResponse postListDto = postReadService.getScrapPostList(pageable, memberService.getCurrentMember());
+        return new BaseResponse<>(postListDto, BaseResponseCode.SUCCESS);
     }
 }

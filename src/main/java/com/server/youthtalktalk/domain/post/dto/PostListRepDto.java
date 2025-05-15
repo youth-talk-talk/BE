@@ -1,6 +1,5 @@
 package com.server.youthtalktalk.domain.post.dto;
 
-import com.server.youthtalktalk.domain.policy.entity.Category;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -34,21 +33,6 @@ public class PostListRepDto {
         private int scrapCount;
         private boolean scrap;
         private String createdAt;
-    }
-
-    @Getter
-    @Builder
-    public static class ScrapPostListDto {
-        private Long postId;
-        private String title;
-        private Long writerId;
-        private int scraps;
-        private boolean scrap;
-        private int comments;
-        private Long policyId; // 자유글 null
-        private String policyTitle; // 자유글 null
-        private Long scrapId;
-        private String contentPreview;
     }
 
 }

@@ -130,9 +130,15 @@ public class PostReadServiceImpl implements PostReadService {
 
     @Override
     @Transactional
-    public List<ScrapPostListDto> getScrapPostList(Pageable pageable,Member member) {
-        List<Post> postList = postRepositoryCustom.findAllByScrap(member, pageable).getContent();
-        return postList.stream().map(post -> toScrapPostDto(post,member)).toList();
+    public PostListResponse getScrapPostList(Pageable pageable, Member member) {
+        Page<Post> postList = postRepositoryCustom.findAllByScrap(member, pageable);
+        List<PostListDto> result = postList.stream().map(post -> toPostDto(post, member)).toList();
+        log.info("스크랩한 게시글 전체 조회 성공");
+        return PostListResponse.builder()
+                .posts(result)
+                .page(postList.getNumber())
+                .total(postList.getTotalElements())
+                .build();
     }
 
     public PostListRepDto toPostListRepDto(List<Post> topList,List<Post> postList, Member member) {
@@ -187,23 +193,6 @@ public class PostReadServiceImpl implements PostReadService {
                 .scrap(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(), reviewId, POST))
                 .category(review.getPolicy().getCategory())
                 .createdAt(review.getCreatedAt().format(DateTimeFormatter.ofPattern(TIME_FORMAT)))
-                .build();
-    }
-
-    public ScrapPostListDto toScrapPostDto(Post post, Member member) {
-        Scrap scrap = scrapRepository.findByMemberAndItemIdAndItemType(member,post.getId(), POST)
-                .orElseThrow(EntityNotFoundException::new);
-        return ScrapPostListDto.builder()
-                .postId(post.getId())
-                .title(post.getTitle())
-                .writerId(post.getWriter() == null ? null : post.getWriter().getId())
-                .policyId(post instanceof Review ? ((Review) post).getPolicy().getPolicyId() : null)
-                .policyTitle(post instanceof Review ? ((Review)post).getPolicy().getTitle() : null )
-                .comments(post.getPostComments().size())
-                .contentPreview(createContentSnippet(post.getContents().get(0).getContent()))
-                .scrap(true)
-                .scraps(scrapRepository.findAllByItemIdAndItemType(post.getId(), POST).size())
-                .scrapId(scrap.getId())
                 .build();
     }
 
