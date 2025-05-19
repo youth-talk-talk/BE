@@ -308,7 +308,7 @@ public class PostReadServiceTest {
         PostListResponse result = postReadService.getAllMyPost(pageable, member);
         // Then
         assertThat(result.getPosts()).hasSize(LEN);
-        assertThat(result.getPosts().getFirst().getWriterId()).isEqualTo(member.getId());
+        assertThat(result.getPosts().get(0).getWriterId()).isEqualTo(member.getId());
 
         verify(postRepositoryCustom).findAllPostsByWriter(pageable, member);
     }
@@ -394,7 +394,7 @@ public class PostReadServiceTest {
         // When
         PostListResponse scrapPostList = postReadService.getScrapPostList(pageable, member);
         // Then
-        PostListDto first = scrapPostList.getPosts().getFirst();
+        PostListDto first = scrapPostList.getPosts().get(0);
         assertThat(scrapPostList.getPosts()).hasSize(LEN);
         assertThat(first.getPostId()).isEqualTo(posts.get(0).getId());
         assertThat(first.getTitle()).isEqualTo(posts.get(0).getTitle());
@@ -440,7 +440,7 @@ public class PostReadServiceTest {
         // When
         PostListResponse scrapPostList = postReadService.getScrapPostList(pageable, member);
         // Then
-        PostListDto first = scrapPostList.getPosts().getFirst();
+        PostListDto first = scrapPostList.getPosts().get(0);
         assertThat(scrapPostList.getPosts()).hasSize(1);
         assertThat(first.getScrapCount()).isEqualTo(1);
         assertThat(first.getPolicyTitle()).isEqualTo(policy.getTitle());

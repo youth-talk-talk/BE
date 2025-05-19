@@ -74,8 +74,7 @@ public class Post extends BaseTimeEntity {
                 .writerId(this.getWriter() == null ? null : this.getWriter().getId())
                 .nickname(this.getWriter() == null ? "null" : this.getWriter().getNickname())
                 .view(this.getView())
-                .images(this.getImages().stream().map(PostImage::getImgUrl).toList())
-                .category(this instanceof Review ? ((Review)this).getPolicy().getCategory().getKey() : null)
+                .category(this instanceof Review ? ((Review)this).getPolicy().getCategory().name() : null)
                 .isScrap(isScrap)
                 .build();
     }

@@ -81,22 +81,22 @@ public class PostServiceImpl implements PostService{
         }
 
         Post updatedPost = post.toBuilder()
-                .title(postUpdateReqDto.getTitle())
-                .contents(postUpdateReqDto.getContentList())
+                .title(postUpdateReqDto.title())
+                .contents(postUpdateReqDto.contentList())
                 .build();
         if(post instanceof Review){ // 리뷰이면
-            if(postUpdateReqDto.getPolicyId() != null){
-                Policy policy = policyRepository.findByPolicyId(postUpdateReqDto.getPolicyId()).orElseThrow(PolicyNotFoundException::new);
+            if(postUpdateReqDto.policyId() != null){
+                Policy policy = policyRepository.findByPolicyId(postUpdateReqDto.policyId()).orElseThrow(PolicyNotFoundException::new);
                 ((Review)updatedPost).setPolicy(policy);
             }
         }
         Post savedPost = postRepository.save(updatedPost);
         // 추가된 이미지 매핑
-        if(postUpdateReqDto.getAddImgUrlList()!=null&&!postUpdateReqDto.getAddImgUrlList().isEmpty()){
-            imageService.mappingPostImage(postUpdateReqDto.getAddImgUrlList(),savedPost);
+        if(postUpdateReqDto.addImgUrlList()!=null&&!postUpdateReqDto.addImgUrlList().isEmpty()){
+            imageService.mappingPostImage(postUpdateReqDto.addImgUrlList(),savedPost);
         }
-        if(postUpdateReqDto.getDeletedImgUrlList()!=null&&!postUpdateReqDto.getDeletedImgUrlList().isEmpty()){
-            imageService.deleteMultiFile(postUpdateReqDto.getDeletedImgUrlList());
+        if(postUpdateReqDto.deletedImgUrlList()!=null&&!postUpdateReqDto.deletedImgUrlList().isEmpty()){
+            imageService.deleteMultiFile(postUpdateReqDto.deletedImgUrlList());
         }
         log.info("게시글 수정 성공, postId = {}", savedPost.getId());
         return savedPost.toPostRepDto(scrapRepository.existsByMemberIdAndItemIdAndItemType(writer.getId(),post.getId(),ItemType.POST));
