@@ -41,7 +41,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @Transactional
@@ -107,7 +108,6 @@ class PostServiceTest {
         assertThat(postRepDto.getTitle()).isEqualTo("post");
         assertThat(postRepDto.getContentList().get(0).getType()).isEqualTo(ContentType.TEXT);
         assertThat(postRepDto.getContentList().get(1).getType()).isEqualTo(ContentType.IMAGE);
-        assertThat(postRepDto.getImages().size()).isEqualTo(1);
     }
 
     @Test
@@ -122,7 +122,6 @@ class PostServiceTest {
         assertThat(postRepDto.getTitle()).isEqualTo("review");
         assertThat(postRepDto.getContentList().get(0).getType()).isEqualTo(ContentType.TEXT);
         assertThat(postRepDto.getContentList().get(1).getType()).isEqualTo(ContentType.IMAGE);
-        assertThat(postRepDto.getImages().size()).isEqualTo(1);
     }
 
     @Test
@@ -159,19 +158,21 @@ class PostServiceTest {
         List<String> deleteImgUrlList = new ArrayList<>();
         deleteImgUrlList.add(IMAGE_URL);
 
-        PostUpdateReqDto postUpdateReqDto = PostUpdateReqDto.builder()
-                .title("updatedTitle")
-                .contentList(getContents("updatedContent", updatedImageUrl))
-                .addImgUrlList(addImgUrlList)
-                .deletedImgUrlList(deleteImgUrlList)
-                .build();
+        PostUpdateReqDto postUpdateReqDto = new PostUpdateReqDto(
+                "updatedTitle",
+                "post",// title
+                getContents("updatedContent", updatedImageUrl), // contentList
+                this.policy.getPolicyId(),                  // policyId
+                addImgUrlList,                              // addImgUrlList
+                deleteImgUrlList                            // deletedImgUrlList
+        );
+
         // When
         PostRepDto postRepDto = postService.updatePost(post.getId(), postUpdateReqDto, this.member);
         // Then
         assertThat(postRepDto.getTitle()).isEqualTo("updatedTitle");
         assertThat(postRepDto.getContentList().get(0).getContent()).isEqualTo("updatedContent");
-        assertThat(postRepDto.getImages().size()).isEqualTo(1);
-        assertThat(postRepDto.getImages().get(0)).isEqualTo(updatedImageUrl);
+        assertThat(postRepDto.getContentList().get(1).getContent()).isEqualTo(updatedImageUrl);
     }
 
     @Test
@@ -193,30 +194,35 @@ class PostServiceTest {
         List<String> deleteImgUrlList = new ArrayList<>();
         deleteImgUrlList.add(IMAGE_URL);
 
-        PostUpdateReqDto postUpdateReqDto = PostUpdateReqDto.builder()
-                .title("updatedTitle")
-                .contentList(getContents("updatedContent", updatedImageUrl))
-                .policyId(this.policy.getPolicyId())
-                .addImgUrlList(addImgUrlList)
-                .deletedImgUrlList(deleteImgUrlList)
-                .build();
+        PostUpdateReqDto postUpdateReqDto = new PostUpdateReqDto(
+                "updatedTitle",
+                "review",// title
+                getContents("updatedContent", updatedImageUrl), // contentList
+                this.policy.getPolicyId(),                  // policyId
+                addImgUrlList,                              // addImgUrlList
+                deleteImgUrlList                            // deletedImgUrlList
+        );
+
         // When
         PostRepDto postRepDto = postService.updatePost(review.getId(), postUpdateReqDto,this.member);
         // Then
         assertThat(postRepDto.getTitle()).isEqualTo("updatedTitle");
         assertThat(postRepDto.getContentList().get(0).getContent()).isEqualTo("updatedContent");
         assertThat(postRepDto.getPolicyId()).isEqualTo(review.getPolicy().getPolicyId());
-        assertThat(postRepDto.getImages().size()).isEqualTo(1);
-        assertThat(postRepDto.getImages().get(0)).isEqualTo(updatedImageUrl);
+        assertThat(postRepDto.getContentList().get(1).getContent()).isEqualTo(updatedImageUrl);
     }
 
     @Test
     @DisplayName("존재하지 않는 게시글 수정 실패")
     void failUpdatePostIfNotExistPost() {
         // Given
-        PostUpdateReqDto postUpdateReqDto = PostUpdateReqDto.builder()
-                .title("updatedTitle")
-                .build();
+        PostUpdateReqDto postUpdateReqDto = new PostUpdateReqDto(
+                "updatedTitle",
+                "post",
+                null,
+                0L,
+                null,
+                null);
         // When, Then
         assertThatThrownBy(()-> postService.updatePost(Long.MAX_VALUE, postUpdateReqDto, this.member))
                 .isInstanceOf(PostNotFoundException.class);
@@ -230,9 +236,13 @@ class PostServiceTest {
                 .username("other")
                 .role(Role.USER)
                 .build();
-        PostUpdateReqDto postUpdateReqDto = PostUpdateReqDto.builder()
-                .title("updatedTitle")
-                .build();
+        PostUpdateReqDto postUpdateReqDto = new PostUpdateReqDto(
+                "updatedTitle",
+                "post",
+                null,
+                0L,
+                null,
+                null);
         // When, Then
         assertThatThrownBy(()-> postService.updatePost(this.post.getId(), postUpdateReqDto, other))
                 .isInstanceOf(BusinessException.class)
@@ -249,10 +259,13 @@ class PostServiceTest {
                 .contents(getContents(CONTENT, IMAGE_URL))
                 .build()); // policy 연결하지 않음
         Long notExistPolicyId = 9999L;
-        PostUpdateReqDto postUpdateReqDto = PostUpdateReqDto.builder()
-                .title("updatedTitle")
-                .policyId(notExistPolicyId) // 존재하지 않는 정책 ID
-                .build();
+        PostUpdateReqDto postUpdateReqDto = new PostUpdateReqDto(
+                "updatedTitle",
+                "post",
+                null,
+                notExistPolicyId,
+                null,
+                null);
         // When, Then
         assertThatThrownBy(()-> postService.updatePost(review.getId(), postUpdateReqDto, this.member))
                 .isInstanceOf(PolicyNotFoundException.class);
