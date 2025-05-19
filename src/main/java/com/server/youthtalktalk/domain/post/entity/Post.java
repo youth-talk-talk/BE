@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,6 +65,11 @@ public class Post extends BaseTimeEntity {
     }
 
     public PostRepDto toPostRepDto(boolean isScrap) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String profileImage = null;
+        if(this.getWriter() != null && this.getWriter().getProfileImage() != null){
+            profileImage = this.getWriter().getProfileImage().getImgUrl();
+        }
         return PostRepDto.builder()
                 .postId(this.getId())
                 .title(this.getTitle())
@@ -76,6 +82,8 @@ public class Post extends BaseTimeEntity {
                 .view(this.getView())
                 .category(this instanceof Review ? ((Review)this).getPolicy().getCategory().name() : null)
                 .isScrap(isScrap)
+                .updatedAt(this.getUpdatedAt() == null ? null : this.getUpdatedAt().format(formatter))
+                .profileImage(profileImage)
                 .build();
     }
 }
