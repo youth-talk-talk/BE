@@ -30,6 +30,7 @@ import reactor.util.retry.Retry;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service
@@ -46,29 +47,34 @@ public class PolicyDataServiceImpl implements PolicyDataService {
     @Value("${department.api.secret-key}")
     private String departmentSecretKey;
     private static final String DEFAULT_DEPARTMENT = "0";
-    private static final int PAGE_SIZE = 150;
+    private static final int PAGE_SIZE = 200;
     private static final int LIMIT = 1000;
+    private Set<String> fetchedData = new HashSet<>();
+    private Set<String> unChangedZipCd = new HashSet<>();
 
     @Override
     @Transactional
     @Scheduled(cron = "${youthpolicy.cron}")
     public void saveData() {
-        log.info("[온통청년 Data Fetch] 정책 데이터 패치 시작");
+        log.info("[온통청년 Data Fetch] open api 정책 데이터 패치 시작");
         List<PolicyData> policyDataList = fetchPolicyData();
+        log.info("[온통청년 Data Fetch] open api 정책 데이터 패치 종료 : {} 개", policyDataList.size());
+        log.info("[온통청년 Data Fetch] policy 엔티티와 매핑 시작");
         List<Policy> policyList = getPolicyEntityList(policyDataList).block();
-
-        log.info("[온통청년 Data Fetch] 패치된 정책 데이터 DB 저장");
         assert policyList != null;
+        log.info("[온통청년 Data Fetch] policy 엔티티와 매핑 종료 : {} 개", policyList.size());
+        log.info("[온통청년 Data Fetch] 패치된 정책 데이터 DB 저장");
         List<Policy> savedPolicyList = policyRepository.saveAll(policyList);
         log.info("[온통청년 Data Fetch] SubRegion과 매핑");
-        policySubRegionRepository.deleteAllByPolicyIn(savedPolicyList);
-
         // 하위 지역 코드 매핑
+        policySubRegionRepository.deleteAllInBatch();
         List<PolicySubRegion> policySubRegionList = new ArrayList<>();
         savedPolicyList.stream()
                 .filter(policy -> !policy.getRegion().equals(Region.CENTER))
                 .forEach(policy -> policySubRegionList.addAll(setPolicySubRegions(policy)));
         policySubRegionRepository.saveAll(policySubRegionList);
+        fetchedData.clear();
+        unChangedZipCd.clear();
     }
 
     @Override
@@ -77,25 +83,33 @@ public class PolicyDataServiceImpl implements PolicyDataService {
         // 정책 데이터를 비동기적으로 처리
         return Flux.fromIterable(policyDataList)
                 .delayElements(Duration.ofMillis(50))
-                .parallel(50)  // 최대 동시 실행 개수 10개 제한
+                .parallel(50)  // 최대 동시 실행 개수 제한
                 .runOn(Schedulers.boundedElastic()) // I/O 작업 최적화
                 .flatMap(policyData -> Mono.fromCallable(() -> {
+                    // 중복 데이터 문제 해결
+                    if(fetchedData.contains(policyData.plcyNo())){
+                        return null;
+                    }
+
+                    fetchedData.add(policyData.plcyNo());
                     try {
                         // 기존 정책이 있는지 확인 (policyNum 기준)
-                        Optional<Policy> existingPolicy = policyRepository.findByPolicyNum(policyData.plcyNo());
-                        // 중앙 부처 코드 매핑
+                        // fetch join으로 n+1 문제 해결
+                        Optional<Policy> existingPolicy = policyRepository.findWithDepartmentByPolicyNum(policyData.plcyNo());
+                        // 외부에서 가져온 정책 데이터의 중앙 부처 코드 확인
                         String departmentCode = policyData.sprvsnInstCd();
                         String departmentName = policyData.sprvsnInstCdNm();
 
                         Department department;
-                        // 이미 존재하는 정책이고, 기존 주관 기관이 변경되지 않으면 외부 API 호출 X
+                        // 이미 존재하는 정책이고, 기존 주관 기관이 변경되지 않으면 정책 코드 외부 API 호출 X, 기존 값 이용
                         if(existingPolicy.isPresent() && isExistedDepartment(existingPolicy.get(), departmentCode)) {
                             department = existingPolicy.get().getDepartment();
                         }
+                        // 외부 데이터에서 중앙 부처 코드가 빈값이면 기본값으로 지정
                         else if(departmentCode.isBlank()) {
                             department = defaultDepartment;
                         }
-                        else{
+                        else{ // DB에 저장된 중앙부처코드에서 맞는 값 찾아서 매핑
                             department = departmentRepository.findByCode(departmentCode)
                                     .orElseGet(() -> searchDepartmentCode(departmentCode, departmentName, defaultDepartment));
                         }
@@ -108,8 +122,13 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                         }
 
                         if (existingPolicy.isPresent()) {
-                            // 기존 정책이 있으면 업데이트
+                            // 기존 정책이 있을 경우 기존 정보를 이용하여 업데이트
                             Policy existing = existingPolicy.get();
+                            // 기존 거주 지역과 변경되지 않으면 unChangedZipCd 리스트에 추가
+                            if(existing.getZipCd().equals(policyData.zipCd())){
+                                unChangedZipCd.add(existing.getPolicyNum());
+                            }
+
                             // 필드 업데이트 (toBuilder()를 통해 기존 객체를 기반으로 업데이트)
                             return existing.toBuilder()
                                     .title(policy.getTitle())
@@ -156,6 +175,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
                     } catch (Exception e) {
                         // 예외 발생 시 null 반환하여 필터링
+                        fetchedData.add(policyData.plcyNo());
                         return null;
                     }
                 }))
@@ -182,8 +202,8 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                         .uri(uriBuilder -> uriBuilder
                                 .path("/go/ythip/getPlcy")
                                 .queryParam("apiKeyNm", policySecretKey)
-                                .queryParam("size", PAGE_SIZE)
-                                .queryParam("page", pageNum)
+                                .queryParam("pageSize", PAGE_SIZE)
+                                .queryParam("pageNum", pageNum)
                                 .queryParam("rtnType", "json")
                                 .queryParam("pageType", "1")
                                 .build())

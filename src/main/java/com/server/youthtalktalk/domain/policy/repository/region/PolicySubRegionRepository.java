@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface PolicySubRegionRepository extends JpaRepository<PolicySubRegion, Long> {
     void deleteAllByPolicyIn(List<Policy> policy);
+    void deleteAllByPolicy(Policy policy);
+    boolean existsByPolicy(Policy policy);
 }

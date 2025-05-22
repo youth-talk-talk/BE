@@ -64,7 +64,7 @@ public class PostReadServiceImpl implements PostReadService {
             throw new BlockedMemberPostAccessDeniedException();
         }
 
-        postRepository.save(post.toBuilder().view(post.getView()+1).build());
+        postRepository.save(post.toBuilder().view(post.getView()+1).updatedAt(post.getUpdatedAt()).build());
         log.info("게시글 조회 성공, postId = {}", postId);
         return post.toPostRepDto(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId(), POST));
     }

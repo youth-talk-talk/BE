@@ -70,6 +70,9 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
 
     Optional<Policy> findByPolicyNum(String policyNum);
 
+    @Query("SELECT p FROM Policy p JOIN FETCH p.department WHERE p.policyNum = :policyNum")
+    Optional<Policy> findWithDepartmentByPolicyNum(@Param("policyNum") String policyNum);
+
     /**
      * policyId로 정책 존재 여부 검사
      */

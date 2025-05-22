@@ -44,7 +44,7 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
      */
 
     private final List<String> NO_CHECK_URL =
-            Arrays.asList(LOGIN_URL, SIGNUP_URL, ADMIN_LOGIN_URL, STATIC_RESOURCE);
+            Arrays.asList(LOGIN_URL, SIGNUP_URL, ADMIN_LOGIN_URL, STATIC_RESOURCE, API_PREFIX + "/data/fetch");
     private final JwtService jwtService;
     private final MemberRepository memberRepository;
     private final GrantedAuthoritiesMapper authoritiesMapper = new NullAuthoritiesMapper();
