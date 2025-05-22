@@ -78,26 +78,26 @@ public class PolicyDetailResponseDto {
                 )) // 세부 지역 (, 로 연결)
                 .earnEtc(sanitize(policy.getEarnEtc())) // 소득 요건
                 .specialization(sanitize(
-                        policy.getSpecialization() == null ? null :
+                        policy.getSpecialization().isEmpty() ? null :
                                 policy.getSpecialization().stream()
                                         .map(Specialization::getName)
                                         .collect(Collectors.joining(", "))
                 )) // 특화 분야
                 .major(sanitize(
-                        policy.getMajor() == null ? null :
+                        policy.getMajor().isEmpty() ? null :
                                 policy.getMajor().stream()
                                         .map(Major::getName)
                                         .collect(Collectors.joining(", "))
                 )) // 전공 요건
                 .education(sanitize(
-                        policy.getEducation() == null ? null :
+                        policy.getEducation().isEmpty() ? null :
                                 policy.getEducation().stream()
                                         .map(Education::getName)
                                         .collect(Collectors.joining(", "))
                 )) // 학력 요건
                 .marriage(sanitize(policy.getMarriage().getName())) // 결혼 요건
                 .employment(sanitize(
-                        policy.getEmployment() == null ? null :
+                        policy.getEmployment().isEmpty() ? null :
                                 policy.getEmployment().stream()
                                         .map(Employment::getName)
                                         .collect(Collectors.joining(", "))
