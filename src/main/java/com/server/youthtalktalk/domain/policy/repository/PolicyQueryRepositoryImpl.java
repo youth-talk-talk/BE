@@ -214,20 +214,6 @@ public class PolicyQueryRepositoryImpl implements PolicyQueryRepository {
                 .otherwise(0L)
                 .sum();
 
-//        return queryFactory
-//                .select(policy)
-//                .from(policy)
-//                .innerJoin(policy.reviews, review)
-//                .where(review.view.goe(5)) // 조회수 5 이상인 리뷰만 포함
-//                .groupBy(policy.policyId)
-//                .having(review.id.count().goe(2)) // 후기가 2개 이상인 정책만 포함
-//                .orderBy(
-//                        review.id.count().desc(),    // 1순위: 후기 많은 순
-//                        policy.policyNum.desc()      // 3순위: 최신순
-//                )
-//                .limit(5)
-//                .fetch();
-
         return queryFactory
                 .select(policy)
                 .from(policy)
