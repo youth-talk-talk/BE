@@ -332,13 +332,13 @@ public class PolicyQueryRepositoryTest {
         Department dept = Department.builder().code("0000000").name("deptName").image_url("image.png").build();
         departmentRepository.save(dept);
 
-        // 후기 수 : policy1 (5) > policy2 (4) > policy3 (3) ...
+        // 후기 수 : policy1 (5) > policy2 (4) > policy3 (3) > policy4 (2) > policy5 (1) > policy6 (0)
         for (int i = 1; i <= 6; i++) {
             Policy policy = policyRepository.save(Policy.builder()
                     .policyNum("P" + i)
                     .title("정책" + i)
                     .view(100 - i * 10)
-                    .policyId(1L)
+                    .policyId(100L * i)
                     .department(dept)
                     .region(SEOUL)
                     .institutionType(LOCAL)
@@ -347,9 +347,17 @@ public class PolicyQueryRepositoryTest {
                     .build());
 
             for (int j = 1; j <= 6 - i; j++) {
-                Review review = Review.builder()
-                        .title("후기" + j)
-                        .build();
+                Review review;
+                if (i == 1 || i == 2) { // policyId1, policyId2의 리뷰들만 조회수 5 이상
+                    review = Review.builder()
+                            .title("후기" + j)
+                            .view(j * 10L)
+                            .build();
+                } else { // 그 외의 정책들의 모든 리뷰는 조회수 0
+                    review = Review.builder()
+                            .title("후기" + j)
+                            .build();
+                }
                 review.setPolicy(policy);
                 postRepository.save(review);
             }
@@ -359,12 +367,11 @@ public class PolicyQueryRepositoryTest {
         List<Policy> result = policyRepository.findTop5OrderByReviewCount();
 
         // then
-        assertThat(result).hasSize(5);
-        assertThat(result.get(0).getPolicyNum()).isEqualTo("P1"); // 후기 5
-        assertThat(result.get(1).getPolicyNum()).isEqualTo("P2"); // 후기 4
-        assertThat(result.get(2).getPolicyNum()).isEqualTo("P3"); // 후기 3
-        assertThat(result.get(3).getPolicyNum()).isEqualTo("P4"); // 후기 2
-        assertThat(result.get(4).getPolicyNum()).isEqualTo("P5"); // 후기 1
+        assertThat(result).hasSize(2); // 조회수가 5 이상인 후기를 2개 이상 가진 정책 (policy1, policy2)
+        assertThat(result.get(0).getPolicyNum()).isEqualTo("P1"); // 5개
+        assertThat(result.get(0).getReviews().stream().allMatch(review -> review.getView() >= 5)).isTrue();
+        assertThat(result.get(1).getPolicyNum()).isEqualTo("P2"); // 4개
+        assertThat(result.get(1).getReviews().stream().allMatch(review -> review.getView() >= 5)).isTrue();
     }
 
     static List<Policy> createDummyPolicies() {

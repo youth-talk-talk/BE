@@ -2,7 +2,9 @@ package com.server.youthtalktalk.domain.policy.repository;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.server.youthtalktalk.domain.policy.dto.SearchConditionDto;
@@ -206,16 +208,33 @@ public class PolicyQueryRepositoryImpl implements PolicyQueryRepository {
         QPolicy policy = QPolicy.policy;
         QReview review = QReview.review;
 
+        // 정책의 리뷰 중에서 view >= 5인 리뷰의 수
+        NumberExpression<Long> reviewCount = new CaseBuilder()
+                .when(review.view.goe(5)).then(1L)
+                .otherwise(0L)
+                .sum();
+
+//        return queryFactory
+//                .select(policy)
+//                .from(policy)
+//                .innerJoin(policy.reviews, review)
+//                .where(review.view.goe(5)) // 조회수 5 이상인 리뷰만 포함
+//                .groupBy(policy.policyId)
+//                .having(review.id.count().goe(2)) // 후기가 2개 이상인 정책만 포함
+//                .orderBy(
+//                        review.id.count().desc(),    // 1순위: 후기 많은 순
+//                        policy.policyNum.desc()      // 3순위: 최신순
+//                )
+//                .limit(5)
+//                .fetch();
+
         return queryFactory
                 .select(policy)
                 .from(policy)
                 .innerJoin(policy.reviews, review)
                 .groupBy(policy.policyId)
-                .orderBy(
-                        review.id.count().desc(),    // 1순위: 정책별 후기 많은 순
-                        policy.view.desc(),          // 2순위: 조회수 순
-                        policy.policyNum.desc()      // 3순위: 최신순
-                )
+                .having(reviewCount.goe(2))
+                .orderBy(reviewCount.desc(), policy.policyNum.desc())
                 .limit(5)
                 .fetch();
     }

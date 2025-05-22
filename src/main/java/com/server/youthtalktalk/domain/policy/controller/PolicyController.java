@@ -40,12 +40,12 @@ public class PolicyController {
         List<PolicyListResponseDto> popularPoliciesInArea = policyService.getPopularPoliciesInArea(member);
 
         // 지금뜨는 정책톡톡 데이터
-        List<PolicyWithReviewsDto> top5PoliciesWithReviews = policyService.getTop5PoliciesWithReviews(member);
+        List<PolicyWithReviewsDto> policiesWithReviews = policyService.getTop5PoliciesWithReviews(member);
 
         // 청년톡톡 BEST 데이터
         List<PostListDto> bestPosts = postService.getTopPostsByView(member);
 
-        HomeResponseDto homeResponseDto = new HomeResponseDto(popularPoliciesInArea, top5PoliciesWithReviews, bestPosts);
+        HomeResponseDto homeResponseDto = new HomeResponseDto(popularPoliciesInArea, policiesWithReviews, bestPosts);
         return new BaseResponse<>(homeResponseDto, SUCCESS);
     }
 

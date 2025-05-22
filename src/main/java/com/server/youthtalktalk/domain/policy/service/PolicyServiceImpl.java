@@ -148,7 +148,7 @@ public class PolicyServiceImpl implements PolicyService {
     }
 
     /**
-     * 후기가 많은 정책 top5 조회 (각 정책은 후기 3개와 함께 반환)
+     * 후기가 많은 정책 top5 조회 (각 정책은 최대 3개의 후기와 함께 반환)
      */
     @Override
     public List<PolicyWithReviewsDto> getTop5PoliciesWithReviews(Member member) {
