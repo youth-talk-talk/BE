@@ -17,7 +17,5 @@ public interface RecentViewedPolicyRepository extends JpaRepository<RecentViewed
     void deleteAllByMember(Member member);
     Optional<RecentViewedPolicy> findByMemberAndPolicy(Member member, Policy policy);
     int countAllByMember(Member member);
-    Optional<RecentViewedPolicy> findFirstByMemberOrderByCreatedAt(Member member);
-    @Query("update RecentViewedPolicy set updatedAt = :updatedAt where id = :id")
-    void updateRecentViewedPolicyUpdatedAt(Long id, LocalDateTime updatedAt);
+    Optional<RecentViewedPolicy> findFirstByMemberOrderByUpdatedAt(Member member);
 }

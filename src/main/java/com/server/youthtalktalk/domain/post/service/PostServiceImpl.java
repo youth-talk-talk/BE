@@ -49,6 +49,7 @@ public class PostServiceImpl implements PostService{
             post = Post.builder()
                     .title(postCreateReqDto.title())
                     .contents(postCreateReqDto.contentList())
+                    .updatedAt(LocalDateTime.now())
                     .view(0L)
                     .build();
         }
@@ -56,6 +57,7 @@ public class PostServiceImpl implements PostService{
             Review review = Review.builder()
                     .title(postCreateReqDto.title())
                     .contents(postCreateReqDto.contentList())
+                    .updatedAt(LocalDateTime.now())
                     .view(0L)
                     .build();
             Policy policy = policyRepository.findByPolicyId(postCreateReqDto.policyId()).orElseThrow(PolicyNotFoundException::new);
@@ -83,6 +85,7 @@ public class PostServiceImpl implements PostService{
         Post updatedPost = post.toBuilder()
                 .title(postUpdateReqDto.title())
                 .contents(postUpdateReqDto.contentList())
+                .updatedAt(LocalDateTime.now())
                 .build();
         if(post instanceof Review){ // 리뷰이면
             if(postUpdateReqDto.policyId() != null){

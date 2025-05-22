@@ -10,7 +10,10 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +24,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "post_type")
-public class Post extends BaseTimeEntity {
+public class Post{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,6 +42,12 @@ public class Post extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member writer;
+
+    @Column(updatable = false)
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 
     @ElementCollection
     @CollectionTable(name = "post_contents", joinColumns = @JoinColumn(name = "post_id"))
@@ -62,6 +71,10 @@ public class Post extends BaseTimeEntity {
         if (member != null) {
             member.getPosts().add(this);
         }
+    }
+
+    public void setUpdatedAt(){
+        this.updatedAt = LocalDateTime.now();
     }
 
     public PostRepDto toPostRepDto(boolean isScrap) {
