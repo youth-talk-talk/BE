@@ -561,7 +561,7 @@ public class PolicyServiceImpl implements PolicyService {
         else{
             recentViewedPolicyRepository.save(RecentViewedPolicy.builder().member(member).policy(policy).build());
             if(recentViewedPolicyRepository.countAllByMember(member) > 20){
-                RecentViewedPolicy firstViewedPolicy = recentViewedPolicyRepository.findFirstByMemberOrderByCreatedAt(member).get();
+                RecentViewedPolicy firstViewedPolicy = recentViewedPolicyRepository.findFirstByMemberOrderByUpdatedAt(member).get();
                 recentViewedPolicyRepository.delete(firstViewedPolicy);
             }
         }
