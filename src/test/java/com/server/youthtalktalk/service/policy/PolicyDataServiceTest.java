@@ -132,14 +132,13 @@ public class PolicyDataServiceTest {
     void successGetPolicyEntityListForOtherDataIfCatchException(){
         // Given
         PolicyData validPolicyData = policyData.toBuilder().sprvsnInstCd("").build();
-        PolicyData invalidPolicyData = PolicyData.builder().sprvsnInstCd("").build(); // 잘못된 데이터
+        PolicyData invalidPolicyData = PolicyData.builder().plcyNo("1").sprvsnInstCd("").build(); // 잘못된 데이터
         List<PolicyData> policyDataList = Arrays.asList(invalidPolicyData, validPolicyData);
         // When
         Department defaultDepartment = Department.builder().departmentId(1L).code("0000000").name("기본").image_url("").build();
 
         when(departmentRepository.findByCode(DEFAULT_DEPARTMENT)).thenReturn(Optional.of(defaultDepartment));
-        when(policyRepository.findByPolicyNum(validPolicyData.plcyNo())).thenReturn(Optional.empty());
-        when(policyRepository.findByPolicyNum(invalidPolicyData.plcyNo())).thenReturn(Optional.empty());
+        //when(policyRepository.findByPolicyNum(validPolicyData.plcyNo())).thenReturn(Optional.empty());
         List<Policy> policyList = policyDataService.getPolicyEntityList(policyDataList).block();
         // Then
         assertThat(policyList).hasSize(1);
