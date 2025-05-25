@@ -58,7 +58,8 @@ public interface PolicyRepository extends JpaRepository<Policy,String>, PolicyQu
     /**
      * 스크랩한 정책 조회(최신순)
      */
-    @Query("select p from Policy p join Scrap s on s.itemId = p.policyId where s.member = :member order by s.id DESC ")
+    @Query("select p from Policy p join Scrap s on s.itemId = p.policyId " +
+            "where s.member = :member and s.itemType = 'POLICY' order by s.id DESC")
     Page<Policy> findAllByScrap(@Param("member") Member member, Pageable pageable);
 
     /**
