@@ -5,6 +5,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.server.youthtalktalk.domain.ItemType;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.entity.QBlock;
 import com.server.youthtalktalk.domain.policy.entity.Category;
@@ -229,7 +230,11 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .leftJoin(block).on(blockJoinWithPost(member))
                 .leftJoin(report).on(reportJoinWithPost(member))
                 .join(scrap).on(post.id.eq(scrap.itemId))
-                .where(report.id.isNull().and(block.id.isNull()).and(scrap.member.eq(member)))
+                .where(
+                        report.id.isNull().and(block.id.isNull())
+                                .and(scrap.member.eq(member))
+                                .and(scrap.itemType.eq(ItemType.POST))
+                )
                 .orderBy(scrap.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -241,7 +246,11 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .leftJoin(block).on(blockJoinWithPost(member))
                 .leftJoin(report).on(reportJoinWithPost(member))
                 .join(scrap).on(post.id.eq(scrap.itemId))
-                .where(report.id.isNull().and(block.id.isNull()).and(scrap.member.eq(member)))
+                .where(
+                        report.id.isNull().and(block.id.isNull())
+                                .and(scrap.member.eq(member))
+                                .and(scrap.itemType.eq(ItemType.POST))
+                )
                 .fetchOne();
 
         return new PageImpl<>(posts, pageable, total == null ? 0 : total);
