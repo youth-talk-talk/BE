@@ -1,7 +1,12 @@
 package com.server.youthtalktalk.domain.comment.dto;
 
-public interface MyCommentDto {
-    Long commentId();
-    String nickname();
-    String content();
+public record MyCommentDto(
+        Long commentId,
+        String content,
+        Long articleId,
+        String articleType,
+        String articleTitle,
+        Boolean isLikedByMember,
+        int likeCount
+) {
 }

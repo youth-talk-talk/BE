@@ -4,6 +4,7 @@ import com.server.youthtalktalk.domain.post.entity.Content;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Builder
@@ -13,12 +14,13 @@ public class PostRepDto {
     private String postType;
     private String title;
     private List<Content> contentList;
-    private String policyId; // 자유글 null
+    private Long policyId; // 자유글 null
     private String policyTitle; // 자유글 null
     private Long writerId;
     private String nickname;
+    private String profileImage;
     private Long view;
-    private List<String> images;
     private String category;
     private boolean isScrap;
+    private String updatedAt;
 }

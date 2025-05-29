@@ -5,9 +5,11 @@ import com.server.youthtalktalk.domain.member.repository.BlockRepository;
 import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.post.dto.PostListRepDto;
+import com.server.youthtalktalk.domain.post.dto.ReviewListRepDto;
 import com.server.youthtalktalk.domain.post.entity.Content;
 import com.server.youthtalktalk.domain.post.entity.ContentType;
 import com.server.youthtalktalk.domain.post.entity.Review;
+import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepositoryCustom;
 import com.server.youthtalktalk.domain.post.service.PostReadServiceImpl;
 import com.server.youthtalktalk.domain.report.repository.ReportRepository;
@@ -15,7 +17,6 @@ import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.entity.Role;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.post.dto.PostRepDto;
-import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import com.server.youthtalktalk.domain.scrap.entity.Scrap;
 import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
 import com.server.youthtalktalk.global.response.BaseResponseCode;
@@ -23,6 +24,7 @@ import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.post.BlockedMemberPostAccessDeniedException;
 import com.server.youthtalktalk.global.response.exception.post.PostNotFoundException;
 import com.server.youthtalktalk.global.response.exception.post.ReportedPostAccessDeniedException;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,6 +63,9 @@ public class PostReadServiceTest {
 
     private static final int LEN = 5;
     private static final int TOP = 5;
+    private static final String content = "policies";
+    private static final String longContent = "상품이 정말 마음에 들어요. 품질도 좋고 사용하기 편리합니다. 정말 좋은 상품인거 같습니다. 앞으로도 잘 사용할게요.";
+    private static final int CONTENT_MAX_LEN = 50;
 
     @Test
     @DisplayName("게시글 상세 조회 성공")
@@ -71,14 +76,14 @@ public class PostReadServiceTest {
         Post post = Post.builder()
                 .title("post")
                 .id(1L)
-                .contents(new ArrayList<>(List.of(createContent())))
+                .contents(createContent(content))
                 .view(1L)
                 .writer(member2)
                 .build();
         when(postRepository.findById(post.getId())).thenReturn(Optional.of(post));
         when(reportRepository.existsByPostAndReporter(post,member1)).thenReturn(false);
         when(blockRepository.existsByMemberAndBlockedMember(member1, post.getWriter())).thenReturn(false);
-        when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member1.getId(),post.getId().toString(), ItemType.POST))
+        when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member1.getId(),post.getId(), ItemType.POST))
                 .thenReturn(true);
         // When
         PostRepDto postRepDto = postReadService.getPostById(post.getId(),member1);
@@ -93,7 +98,7 @@ public class PostReadServiceTest {
         verify(postRepository).findById(post.getId());
         verify(reportRepository).existsByPostAndReporter(post,member1);
         verify(blockRepository).existsByMemberAndBlockedMember(member1,post.getWriter());
-        verify(scrapRepository).existsByMemberIdAndItemIdAndItemType(member1.getId(),post.getId().toString(), ItemType.POST);
+        verify(scrapRepository).existsByMemberIdAndItemIdAndItemType(member1.getId(),post.getId(), ItemType.POST);
     }
 
     @Test
@@ -141,10 +146,18 @@ public class PostReadServiceTest {
     void successFreePostToPostDto(){
         // Given
         Member member = createMember("member",1L);
-        Post post = createPost("post",1L, member, 10L);
-        when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId().toString(),ItemType.POST))
+
+        Post post = Post.builder()
+                .title("post")
+                .id(1L)
+                .writer(member)
+                .view(10L)
+                .createdAt(LocalDateTime.now())
+                .contents(createContent(longContent))
+                .build();
+        when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId(),ItemType.POST))
                 .thenReturn(true);
-        when(scrapRepository.findAllByItemIdAndItemType(post.getId().toString(), ItemType.POST))
+        when(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST))
                 .thenReturn(new ArrayList<>());
         // When
         PostListDto postListDto = postReadService.toPostDto(post, member);
@@ -156,9 +169,10 @@ public class PostReadServiceTest {
         assertThat(postListDto.getPolicyId()).isNull();
         assertThat(postListDto.getPolicyTitle()).isNull();
         assertThat(postListDto.getComments()).isEqualTo(0);
+        assertThat(postListDto.getContentPreview()).isEqualTo(longContent.substring(0, CONTENT_MAX_LEN) + "...");
 
-        verify(scrapRepository).existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId().toString(),ItemType.POST);
-        verify(scrapRepository).findAllByItemIdAndItemType(post.getId().toString(), ItemType.POST);
+        verify(scrapRepository).existsByMemberIdAndItemIdAndItemType(member.getId(),post.getId(),ItemType.POST);
+        verify(scrapRepository).findAllByItemIdAndItemType(post.getId(), ItemType.POST);
     }
 
     @Test
@@ -167,7 +181,7 @@ public class PostReadServiceTest {
         // Given
         Member member = createMember("member",1L);
         Policy policy = Policy.builder()
-                .policyId("policyId")
+                .policyNum("policyNum")
                 .title("policy")
                 .build();
         Review review = Review.builder()
@@ -175,11 +189,13 @@ public class PostReadServiceTest {
                 .postComments(new ArrayList<>())
                 .policy(policy)
                 .title("review")
+                .contents(createContent(longContent))
                 .writer(member)
+                .createdAt(LocalDateTime.now())
                 .build();
-        when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),review.getId().toString(),ItemType.POST))
+        when(scrapRepository.existsByMemberIdAndItemIdAndItemType(member.getId(),review.getId(),ItemType.POST))
                 .thenReturn(true);
-        when(scrapRepository.findAllByItemIdAndItemType(review.getId().toString(), ItemType.POST))
+        when(scrapRepository.findAllByItemIdAndItemType(review.getId(), ItemType.POST))
                 .thenReturn(new ArrayList<>());
         // When
         PostListDto postListDto = postReadService.toPostDto(review, member);
@@ -188,12 +204,12 @@ public class PostReadServiceTest {
         assertThat(postListDto.getTitle()).isEqualTo("review");
         assertThat(postListDto.getWriterId()).isEqualTo(member.getId());
         assertThat(postListDto.isScrap()).isTrue();
-        assertThat(postListDto.getPolicyId()).isEqualTo("policyId");
         assertThat(postListDto.getPolicyTitle()).isEqualTo("policy");
         assertThat(postListDto.getComments()).isEqualTo(0);
+        assertThat(postListDto.getContentPreview()).isEqualTo(longContent.substring(0, CONTENT_MAX_LEN) + "...");
 
-        verify(scrapRepository).existsByMemberIdAndItemIdAndItemType(member.getId(),review.getId().toString(),ItemType.POST);
-        verify(scrapRepository).findAllByItemIdAndItemType(review.getId().toString(), ItemType.POST);
+        verify(scrapRepository).existsByMemberIdAndItemIdAndItemType(member.getId(),review.getId(),ItemType.POST);
+        verify(scrapRepository).findAllByItemIdAndItemType(review.getId(), ItemType.POST);
     }
 
     @Test
@@ -240,7 +256,7 @@ public class PostReadServiceTest {
         // Given
         Member member = createMember("member",1L);
         Policy policy = Policy.builder()
-                .policyId("policyId")
+                .policyNum("policyNum")
                 .title("policy")
                 .category(Category.JOB)
                 .build();
@@ -253,6 +269,8 @@ public class PostReadServiceTest {
                     .view(LEN - i)
                     .title("review" + i + 1)
                     .writer(member)
+                    .contents(createContent(content))
+                    .createdAt(LocalDateTime.now())
                     .build();
             posts.add(review);
         }
@@ -260,18 +278,18 @@ public class PostReadServiceTest {
         List<Category> categories = new ArrayList<>(List.of(Category.JOB));
         Pageable pageable = PageRequest.of(0, LEN);
 
-        when(postRepositoryCustom.findTopReviewsByCategoryAndView(member, categories, TOP))
+        when(postRepositoryCustom.findTopReviewsByView(member, TOP))
                 .thenReturn(posts);
         when(postRepositoryCustom.findAllReviewsByCategory(member, categories, pageable))
                 .thenReturn(convertListToPage(posts, pageable));
         // When
-        PostListRepDto postListRepDto = postReadService.getAllReviewByCategory(pageable, categories, member);
+        ReviewListRepDto reviewListRepDto = postReadService.getAllReviewByCategory(pageable, categories, member);
         // Then
-        assertThat(postListRepDto.getAllPosts()).hasSize(LEN);
-        assertThat(postListRepDto.getAllPosts().get(0).getPolicyTitle()).isEqualTo(policy.getTitle());
-        assertThat(postListRepDto.getAllPosts().get(0).getPolicyId()).isEqualTo(policy.getPolicyId());
+        assertThat(reviewListRepDto.getAllPosts()).hasSize(LEN);
+        assertThat(reviewListRepDto.getAllPosts().get(0).getPolicyTitle()).isEqualTo(policy.getTitle());
+        assertThat(reviewListRepDto.getAllPosts().get(0).getPolicyId()).isEqualTo(policy.getPolicyId());
 
-        verify(postRepositoryCustom).findTopReviewsByCategoryAndView(member, categories, TOP);
+        verify(postRepositoryCustom).findTopReviewsByView(member, TOP);
         verify(postRepositoryCustom).findAllReviewsByCategory(member, categories, pageable);
     }
 
@@ -287,10 +305,10 @@ public class PostReadServiceTest {
         Pageable pageable = PageRequest.of(0, LEN);
         when(postRepositoryCustom.findAllPostsByWriter(pageable, member)).thenReturn(convertListToPage(posts, pageable));
         // When
-        List<PostListDto> myPosts = postReadService.getAllMyPost(pageable, member);
+        PostListResponse result = postReadService.getAllMyPost(pageable, member);
         // Then
-        assertThat(myPosts).hasSize(LEN);
-        assertThat(myPosts.get(0).getWriterId()).isEqualTo(member.getId());
+        assertThat(result.getPosts()).hasSize(LEN);
+        assertThat(result.getPosts().get(0).getWriterId()).isEqualTo(member.getId());
 
         verify(postRepositoryCustom).findAllPostsByWriter(pageable, member);
     }
@@ -301,7 +319,6 @@ public class PostReadServiceTest {
         // Given
         Member member = createMember("member",1L);
         Policy policy = Policy.builder()
-                .policyId("policyId")
                 .title("policy")
                 .category(Category.JOB)
                 .build();
@@ -310,6 +327,8 @@ public class PostReadServiceTest {
                 .id(2L)
                 .title("testReview")
                 .policy(policy)
+                .createdAt(LocalDateTime.now())
+                .contents(createContent(content))
                 .build()));
 
         Pageable pageable = PageRequest.of(0, 1);
@@ -366,22 +385,20 @@ public class PostReadServiceTest {
             Scrap scrap = Scrap.builder()
                     .member(member)
                     .itemType(ItemType.POST)
-                    .itemId(post.getId().toString())
+                    .itemId(post.getId())
                     .build();
-            when(scrapRepository.findByMemberAndItemIdAndItemType(member,post.getId().toString(),ItemType.POST))
-                    .thenReturn(Optional.of(scrap));
-            when(scrapRepository.findAllByItemIdAndItemType(post.getId().toString(), ItemType.POST))
+            when(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST))
                     .thenReturn(new ArrayList<>(List.of(scrap)));
         }
 
         // When
-        List<ScrapPostListDto> scrapPostList = postReadService.getScrapPostList(pageable, member);
+        PostListResponse scrapPostList = postReadService.getScrapPostList(pageable, member);
         // Then
-        ScrapPostListDto first = scrapPostList.get(0);
-        assertThat(scrapPostList).hasSize(LEN);
+        PostListDto first = scrapPostList.getPosts().get(0);
+        assertThat(scrapPostList.getPosts()).hasSize(LEN);
         assertThat(first.getPostId()).isEqualTo(posts.get(0).getId());
         assertThat(first.getTitle()).isEqualTo(posts.get(0).getTitle());
-        assertThat(first.getScraps()).isEqualTo(1);
+        assertThat(first.getScrapCount()).isEqualTo(1);
         assertThat(first.getWriterId()).isEqualTo(member.getId());
         assertThat(first.getPolicyTitle()).isNull();
         assertThat(first.getPolicyId()).isNull();
@@ -395,7 +412,7 @@ public class PostReadServiceTest {
         // Given
         Member member = createMember("member",1L);
         Policy policy = Policy.builder()
-                .policyId("policyId")
+                .policyNum("policyNum")
                 .title("policy")
                 .category(Category.JOB)
                 .build();
@@ -403,6 +420,8 @@ public class PostReadServiceTest {
                 .id(2L)
                 .title("testReview")
                 .policy(policy)
+                .createdAt(LocalDateTime.now())
+                .contents(createContent(content))
                 .build()));
 
 
@@ -412,20 +431,18 @@ public class PostReadServiceTest {
             Scrap scrap = Scrap.builder()
                     .member(member)
                     .itemType(ItemType.POST)
-                    .itemId(post.getId().toString())
+                    .itemId(post.getId())
                     .build();
-            when(scrapRepository.findByMemberAndItemIdAndItemType(member,post.getId().toString(),ItemType.POST))
-                    .thenReturn(Optional.of(scrap));
-            when(scrapRepository.findAllByItemIdAndItemType(post.getId().toString(), ItemType.POST))
+            when(scrapRepository.findAllByItemIdAndItemType(post.getId(), ItemType.POST))
                     .thenReturn(new ArrayList<>(List.of(scrap)));
         }
 
         // When
-        List<ScrapPostListDto> scrapPostList = postReadService.getScrapPostList(pageable, member);
+        PostListResponse scrapPostList = postReadService.getScrapPostList(pageable, member);
         // Then
-        ScrapPostListDto first = scrapPostList.get(0);
-        assertThat(scrapPostList).hasSize(1);
-        assertThat(first.getScraps()).isEqualTo(1);
+        PostListDto first = scrapPostList.getPosts().get(0);
+        assertThat(scrapPostList.getPosts()).hasSize(1);
+        assertThat(first.getScrapCount()).isEqualTo(1);
         assertThat(first.getPolicyTitle()).isEqualTo(policy.getTitle());
         assertThat(first.getPolicyId()).isEqualTo(policy.getPolicyId());
 
@@ -435,10 +452,11 @@ public class PostReadServiceTest {
     private Post createPost(String title, Long id, Member writer, Long view){
         return Post.builder()
                 .id(id)
-                .contents(new ArrayList<>(List.of(createContent())))
+                .contents(createContent(content))
                 .writer(writer)
                 .view(view)
                 .title(title)
+                .createdAt(LocalDateTime.now())
                 .postComments(new ArrayList<>())
                 .build();
     }
@@ -451,16 +469,15 @@ public class PostReadServiceTest {
                 .build();
     }
 
-    private Content createContent(){
-        return Content.builder()
-                .content("content")
+    private List<Content> createContent(String content){
+        return new ArrayList<>(List.of(Content.builder()
+                .content(content)
                 .type(ContentType.TEXT)
-                .build();
+                .build()));
     }
 
     private Page<Post> convertListToPage(List<Post> posts, Pageable pageable) {
         int start = (int) pageable.getOffset();
-        System.out.println(start);
         int end = Math.min((start + pageable.getPageSize()), posts.size());
 
         List<Post> subList = posts.subList(start, end);

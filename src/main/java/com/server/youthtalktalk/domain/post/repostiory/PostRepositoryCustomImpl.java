@@ -5,9 +5,11 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.server.youthtalktalk.domain.ItemType;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.entity.QBlock;
 import com.server.youthtalktalk.domain.policy.entity.Category;
+import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.post.entity.QPost;
 import com.server.youthtalktalk.domain.post.entity.QReview;
@@ -53,6 +55,29 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .fetchOne();
 
         return new PageImpl<>(posts, pageable, total == null ? 0 : total);
+    }
+
+    @Override
+    public Page<Post> findAllReviews(Member member, Pageable pageable) {
+        List<Post> reviews = queryFactory
+                .selectFrom(post)
+                .leftJoin(block).on(blockJoinWithPost(member))
+                .leftJoin(report).on(reportJoinWithPost(member))
+                .where(reviewConditionsExcludeReportAndBlocked())
+                .orderBy(post.id.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        Long total = queryFactory
+                .select(post.count())
+                .from(post)
+                .leftJoin(block).on(blockJoinWithPost(member))
+                .leftJoin(report).on(reportJoinWithPost(member))
+                .where(reviewConditionsExcludeReportAndBlocked())
+                .fetchOne();
+
+        return new PageImpl<>(reviews, pageable, total == null ? 0 : total);
     }
 
     /** 조회수별 게시글 검색 */
@@ -144,8 +169,20 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
     }
 
     @Override
+    public List<Post> findTopReviewsByView(Member member, int top) {
+        return queryFactory
+                .selectFrom(post)
+                .leftJoin(block).on(blockJoinWithPost(member))
+                .leftJoin(report).on(reportJoinWithPost(member))
+                .where(reviewConditionsExcludeReportAndBlocked())
+                .orderBy(post.view.desc(), post.id.desc())
+                .limit(top)
+                .fetch();
+    }
+
+    @Override
     public List<Post> findTopReviewsByCategoryAndView(Member member, List<Category> categories, int top) {
-        List<Post> reviews = queryFactory
+        return queryFactory
                 .selectFrom(post)
                 .leftJoin(block).on(blockJoinWithPost(member))
                 .leftJoin(report).on(reportJoinWithPost(member))
@@ -154,8 +191,6 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .orderBy(post.view.desc(), post.id.desc())
                 .limit(top)
                 .fetch();
-
-        return reviews;
     }
 
     /** 모든 리뷰 키워드 검색 */
@@ -194,8 +229,12 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .selectFrom(post)
                 .leftJoin(block).on(blockJoinWithPost(member))
                 .leftJoin(report).on(reportJoinWithPost(member))
-                .join(scrap).on(post.id.stringValue().eq(scrap.itemId))
-                .where(report.id.isNull().and(block.id.isNull()).and(scrap.member.eq(member)))
+                .join(scrap).on(post.id.eq(scrap.itemId))
+                .where(
+                        report.id.isNull().and(block.id.isNull())
+                                .and(scrap.member.eq(member))
+                                .and(scrap.itemType.eq(ItemType.POST))
+                )
                 .orderBy(scrap.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -206,11 +245,48 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
                 .from(post)
                 .leftJoin(block).on(blockJoinWithPost(member))
                 .leftJoin(report).on(reportJoinWithPost(member))
-                .join(scrap).on(post.id.stringValue().eq(scrap.itemId))
-                .where(report.id.isNull().and(block.id.isNull()).and(scrap.member.eq(member)))
+                .join(scrap).on(post.id.eq(scrap.itemId))
+                .where(
+                        report.id.isNull().and(block.id.isNull())
+                                .and(scrap.member.eq(member))
+                                .and(scrap.itemType.eq(ItemType.POST))
+                )
                 .fetchOne();
 
         return new PageImpl<>(posts, pageable, total == null ? 0 : total);
+    }
+
+    /** 특정 정책의 리뷰 Top N개 조회수순 검색*/
+    @Override
+    public List<Review> findTopReviewsByPolicy(Member member, Policy policy, int top) {
+        return queryFactory
+                .selectFrom(review)
+                .leftJoin(block).on(blockJoinWithReview(member))
+                .leftJoin(report).on(reportJoinWithReview(member))
+                .where(
+                        review.policy.eq(policy),
+                        report.id.isNull().and(block.id.isNull())
+                )
+                .orderBy(review.view.desc())
+                .limit(top)
+                .fetch();
+    }
+
+    /** 조회수 기준 Top N개의 게시글 검색 (후기 포함)*/
+    @Override
+    public List<Post> findTopReviewsAndPostsByView(Member member, int top) {
+        List<Post> posts = queryFactory
+                .selectFrom(post)
+                .leftJoin(block).on(blockJoinWithPost(member))
+                .leftJoin(report).on(reportJoinWithPost(member))
+                .where(
+                        report.id.isNull().and(block.id.isNull())
+                )
+                .orderBy(post.view.desc(), post.id.desc()) // 조회수 내림차순, 그다음 게시글 ID 내림차순
+                .limit(top) // 상위 N개
+                .fetch();
+
+        return posts;
     }
 
     BooleanExpression blockJoinWithPost(Member member){
@@ -220,6 +296,16 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom{
 
     BooleanExpression reportJoinWithPost(Member member){
         return post.eq(report.post)
+                .and(report.reporter.eq(member));
+    }
+
+    BooleanExpression blockJoinWithReview(Member member){
+        return review.writer.eq(block.blockedMember)
+                .and(block.member.eq(member));
+    }
+
+    BooleanExpression reportJoinWithReview(Member member){
+        return review.eq(report.post)
                 .and(report.reporter.eq(member));
     }
 

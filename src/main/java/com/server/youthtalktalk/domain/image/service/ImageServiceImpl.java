@@ -8,6 +8,9 @@ import com.server.youthtalktalk.domain.announcement.entity.Announcement;
 import com.server.youthtalktalk.domain.image.entity.AnnouncementImage;
 import com.server.youthtalktalk.domain.image.entity.Image;
 import com.server.youthtalktalk.domain.image.entity.PostImage;
+import com.server.youthtalktalk.domain.image.entity.ProfileImage;
+import com.server.youthtalktalk.domain.member.entity.Member;
+import com.server.youthtalktalk.domain.member.service.MemberService;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.image.repository.ImageRepository;
 import jakarta.transaction.Transactional;
@@ -28,14 +31,15 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Transactional
 public class ImageServiceImpl implements ImageService{
+
     // @Value는 lombok 어노테이션이 아님에 주의! 버켓 이름 동적 할당(properties에서 가져옴)
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
     @Value(("${cloud.aws.region.static}"))
     private String region;
+
     private final AmazonS3 amazonS3;
     private final ImageRepository imageRepository;
-
 
     @Override
     public String uploadMultiFile(MultipartFile multipartFile) throws IOException {
@@ -110,12 +114,34 @@ public class ImageServiceImpl implements ImageService{
     }
 
     @Override
+    public void saveProfileImage(String imgUrl, Member member) {
+        ProfileImage profileImage = ProfileImage.builder().imgUrl(imgUrl).build();
+        profileImage.setMember(member);
+        imageRepository.save(profileImage);
+    }
+
+    @Override
+    public void deleteProfileImage(Member member) {
+        try {
+            String bucketUrl = "https://s3." + region + ".amazonaws.com/" + bucket;
+            ProfileImage profileImage = member.getProfileImage();
+            String fileName = profileImage.getImgUrl().substring(bucketUrl.length() + 1);
+            DeleteObjectRequest request = new DeleteObjectRequest(bucket, fileName);
+            amazonS3.deleteObject(request);
+            member.updateProfileImage(null);
+            log.info("delete departmentImgUrl = {}", profileImage.getImgUrl());
+        } catch (AmazonS3Exception e) {
+            throw new AmazonS3Exception("Failed to delete multiple files", e);
+        }
+    }
+
+    @Override
     public void deleteMultiFile(List<String> imgUrlList) {
         try {
             String bucketUrl = "https://s3."+region+".amazonaws.com/"+bucket;
             imageRepository.deleteAllByImgUrlIn(imgUrlList);
             for (String fileUrl : imgUrlList) {
-                log.info("delete imgUrl = {}",fileUrl);
+                log.info("delete departmentImgUrl = {}",fileUrl);
                 String fileName = fileUrl.substring(bucketUrl.length() + 1);
                 DeleteObjectRequest request = new DeleteObjectRequest(bucket, fileName);
                 amazonS3.deleteObject(request);

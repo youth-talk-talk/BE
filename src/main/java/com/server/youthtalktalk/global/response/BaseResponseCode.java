@@ -26,6 +26,8 @@ public enum BaseResponseCode {
     SUCCESS_MEMBER_DELETE("S13", "회원 탈퇴를 완료하였습니다.", HttpStatus.OK.value()),
     SUCCESS_MEMBER_BLOCK("S14", "회원 차단에 성공했습니다.", HttpStatus.OK.value()),
     SUCCESS_MEMBER_UNBLOCK("S15", "차단 해제를 성공했습니다.", HttpStatus.OK.value()),
+    SUCCESS_EMPTY_PROFILE("S16", "등록된 프로필 이미지가 없습니다.", HttpStatus.OK.value()),
+
     // Announcement
     SUCCESS_ANNOUNCEMENT_CREATE("S16", "공지사항을 성공적으로 등록했습니다.", HttpStatus.OK.value()),
     SUCCESS_ANNOUNCEMENT_UPDATE("S17", "공지사항을 성공적으로 수정했습니다.", HttpStatus.OK.value()),
@@ -50,9 +52,29 @@ public enum BaseResponseCode {
     BLOCK_DUPLICATED("M09", "이미 차단한 회원입니다.", HttpStatus.BAD_REQUEST.value()),
     NOT_BLOCKED_MEMBER("M10", "차단한 회원이 아닙니다.", HttpStatus.BAD_REQUEST.value()),
     INVALID_MEMBER_FOR_BLOCK("M11", "차단(해제)할 수 없는 회원입니다.", HttpStatus.BAD_REQUEST.value()),
+    EXCEED_PROFILE_SIZE("M12", "프로필 이미지는 최대 5MB까지 업로드할 수 있습니다.", HttpStatus.BAD_REQUEST.value()),
 
     // Policy
     POLICY_NOT_FOUND("PC01","해당 정책을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),
+    FAIL_POLICY_DATA_FETCH("PC02", "정책 데이터 패치 실패", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    INVALID_KEYWORD("PC03", "검색어(키워드)가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_INSTITUTION_TYPE("PC04", "운영기관이 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_CATEGORY("PC05", "카테고리가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_REGION("PC06", "지역이 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_MARRIAGE("PC07", "결혼여부가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_AGE("PC08", "나이가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_EARN("PC09", "소득이 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_EDUCATION("PC10", "학력이 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_MAJOR("PC11", "전공요건이 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_SPECIALIZATION("PC12", "특화분야가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_EMPLOYMENT("PC13", "취업상태가 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    INVALID_APPLY_DUE("PC14", "마감일이 올바르지 않습니다.", HttpStatus.BAD_REQUEST.value()),
+    FAIL_POLICY_DATA_EDUCATION("PC15", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 교육 요건", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    FAIL_POLICY_DATA_EMPLOYMENT("PC16", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 고용 요건", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    FAIL_POLICY_DATA_MAJOR("PC17", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 전공 요건", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    FAIL_POLICY_DATA_SPECIALIZATION("PC18", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 특화 요건", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    FAIL_POLICY_DATA_CATEGORY("PC19", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 카테고리", HttpStatus.INTERNAL_SERVER_ERROR.value()),
+    FAIL_POLICY_DATA_SUB_CATEGORY("PC20", "정책 데이터 엔티티 변환 실패 : 존재하지 않는 하위 카테고리", HttpStatus.INTERNAL_SERVER_ERROR.value()),
 
     // Post
     POST_NOT_FOUND("PS01","해당 게시글을 찾을 수 없습니다.",HttpStatus.BAD_REQUEST.value()),
@@ -64,6 +86,7 @@ public enum BaseResponseCode {
     COMMENT_NOT_FOUND("C01", "해당 댓글을 찾을 수 없습니다.", HttpStatus.BAD_REQUEST.value()),
     COMMENT_ALREADY_LIKED("C02", "이미 좋아요한 댓글입니다.", HttpStatus.BAD_REQUEST.value()),
     COMMENT_LIKE_NOT_FOUND("C03", "좋아요 정보가 없습니다.", HttpStatus.BAD_REQUEST.value()),
+    COMMENT_TYPE_UNKNOWN("C04", "알 수 없는 댓글 타입입니다.", HttpStatus.INTERNAL_SERVER_ERROR.value()),
 
     // Token
     INVALID_ACCESS_TOKEN("T01", "유효하지 않은 엑세스 토큰입니다.", HttpStatus.UNAUTHORIZED.value()),
@@ -74,8 +97,10 @@ public enum BaseResponseCode {
 
     // Report
     REPORT_ALREADY_EXISTENCE_EXCEPTION("R01","이미 신고한 게시글입니다.",HttpStatus.CONFLICT.value()),
-    SELF_REPORT_NOT_ALLOWED_EXCEPTION("R02", "본인의 게시글은 신고할 수 없습니다.", HttpStatus.BAD_REQUEST.value());
+    SELF_REPORT_NOT_ALLOWED_EXCEPTION("R02", "본인의 게시글은 신고할 수 없습니다.", HttpStatus.BAD_REQUEST.value()),
 
+    // Notification
+    NOTIFICATION_NOT_FOUND_EXCEPTION("N01", "존재하지 않는 알림입니다.", HttpStatus.NOT_FOUND.value());
     private final String code;
     private final String message;
     private final int status;

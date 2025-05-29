@@ -13,13 +13,13 @@ import java.util.List;
 @Builder
 public class PostCreateTestReqDto {
     @NotBlank(message = "게시글 제목은 필수값입니다.")
-    @Size(max = 50,message = "게시글 제목은 최대 50자입니다.")
+    @Size(max = 50, message = "게시글 제목은 최대 50자입니다.")
     private String title;
 
-    @NotNull(message = "Content list cannot be null")
-    @Size(min = 1, message = "Content list must contain at least one item")
+    @NotNull(message = "게시글 본문 리스트는 필수값입니다.")
+    @Size(min = 1, message = "게시글 본문 리스트는 최소 1개 이상입니다.")
     private List<Content> contentList;
 
     private String postType; // 자유글 : null, 리뷰 : review
-    private String policyId; // 자유글 : null, 리뷰 : 해당 정책 아이디
+    private Long policyId; // 자유글 : null, 리뷰 : 해당 정책 아이디
 }

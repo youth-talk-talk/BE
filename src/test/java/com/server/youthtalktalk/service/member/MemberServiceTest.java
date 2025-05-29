@@ -7,9 +7,10 @@ import com.server.youthtalktalk.domain.member.entity.Role;
 import com.server.youthtalktalk.domain.member.entity.SocialType;
 import com.server.youthtalktalk.domain.member.repository.BlockRepository;
 import com.server.youthtalktalk.domain.member.service.MemberService;
-import com.server.youthtalktalk.domain.policy.entity.Region;
+import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.member.dto.SignUpRequestDto;
+import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import com.server.youthtalktalk.global.response.exception.member.BlockDuplicatedException;
 import com.server.youthtalktalk.global.response.exception.member.InvalidMemberForBlockException;
 import com.server.youthtalktalk.global.response.exception.member.MemberNotFoundException;
@@ -17,11 +18,11 @@ import com.server.youthtalktalk.global.response.exception.member.NotBlockedMembe
 import com.server.youthtalktalk.global.util.HashUtil;
 import com.server.youthtalktalk.domain.comment.repository.CommentRepository;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
-import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -109,7 +110,8 @@ class MemberServiceTest {
     }
 
     @Test
-    public void 회원가입_실패_Size_검증_오류() {
+    @DisplayName("회원가입 실패_닉네임 길이 제한 초과")
+    public void testSignUp1() {
         // given
         SignUpRequestDto signUpRequestDto1 = SignUpRequestDto.builder()
                 .socialId("11111").socialType("kakao").nickname("여덟글자보다긴닉네임").region("부산").build();
@@ -120,24 +122,30 @@ class MemberServiceTest {
         // then
         assertFalse(violations1.isEmpty());
         assertThat(violations1.size()).isEqualTo(1);
-        assertThat(violations1.iterator().next().getMessage()).isEqualTo("닉네임 길이는 8자 이하입니다.");
-
+        assertThat(violations1.iterator().next().getMessage()).isEqualTo("닉네임 길이는 1자 이상 8자 이하여야 합니다.");
     }
 
     @Test
-    public void 회원가입_실패_Pattern_검증_오류() {
+    @DisplayName("회원가입 실패_닉네임에 허용되지 않은 글자 포함")
+    public void testSignUp2() {
         // given
         SignUpRequestDto signUpRequestDto1 = SignUpRequestDto.builder()
-                .socialId("11111").socialType("kakao").nickname("member1").region("지역").build();
+                .socialId("11111").socialType("kakao").nickname("member1@").region("서울").build(); // 닉네임에 특수문자 포함
+        SignUpRequestDto signUpRequestDto2 = SignUpRequestDto.builder()
+                .socialId("22222").socialType("kakao").nickname("member2 ").region("서울").build(); // 닉네임에 공백 포함
 
         // when
         Set<ConstraintViolation<SignUpRequestDto>> violations1 = validator.validate(signUpRequestDto1);
+        Set<ConstraintViolation<SignUpRequestDto>> violations2 = validator.validate(signUpRequestDto2);
 
         // then
         assertFalse(violations1.isEmpty());
         assertThat(violations1.size()).isEqualTo(1);
-        assertThat(violations1.iterator().next().getMessage()).isEqualTo("지역이 유효하지 않습니다.");
+        assertThat(violations1.iterator().next().getMessage()).isEqualTo("닉네임은 한글과 영어(대소문자) 및 숫자만 가능하며, 공백과 특수문자는 사용할 수 없습니다.");
 
+        assertFalse(violations2.isEmpty());
+        assertThat(violations2.size()).isEqualTo(1);
+        assertThat(violations2.iterator().next().getMessage()).isEqualTo("닉네임은 한글과 영어(대소문자) 및 숫자만 가능하며, 공백과 특수문자는 사용할 수 없습니다.");
     }
 
     @Test

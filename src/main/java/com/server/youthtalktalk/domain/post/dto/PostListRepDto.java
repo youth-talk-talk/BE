@@ -8,6 +8,7 @@ import java.util.List;
 @Getter
 @Builder
 public class PostListRepDto {
+
     private List<PostListDto> top5Posts;
     private List<PostListDto> allPosts;
 
@@ -25,25 +26,13 @@ public class PostListRepDto {
         private Long postId;
         private String title;
         private Long writerId;
-        private int scraps;
-        private boolean scrap;
-        private int comments;
-        private String policyId; // 자유글 null
+        private Long policyId; // 자유글 null
         private String policyTitle; // 자유글 null
-    }
-
-    @Getter
-    @Builder
-    public static class ScrapPostListDto {
-        private Long postId;
-        private String title;
-        private Long writerId;
-        private int scraps;
-        private boolean scrap;
         private int comments;
-        private String policyId; // 자유글 null
-        private String policyTitle; // 자유글 null
-        private Long scrapId;
+        private String contentPreview;
+        private int scrapCount;
+        private boolean scrap;
+        private String createdAt;
     }
 
 }

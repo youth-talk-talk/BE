@@ -1,12 +1,18 @@
 package com.server.youthtalktalk.repository.post;
 
 import com.server.youthtalktalk.config.TestQueryDSLConfig;
+import com.server.youthtalktalk.domain.member.entity.Block;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.entity.Role;
 import com.server.youthtalktalk.domain.member.repository.BlockRepository;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
 import com.server.youthtalktalk.domain.policy.entity.Category;
+import com.server.youthtalktalk.domain.policy.entity.InstitutionType;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
+import com.server.youthtalktalk.domain.policy.entity.RepeatCode;
+import com.server.youthtalktalk.domain.policy.entity.condition.Earn;
+import com.server.youthtalktalk.domain.policy.entity.condition.Marriage;
+import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.post.entity.Content;
 import com.server.youthtalktalk.domain.post.entity.ContentType;
@@ -14,10 +20,9 @@ import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.post.entity.Review;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import com.server.youthtalktalk.domain.post.repostiory.PostRepositoryCustom;
-import com.server.youthtalktalk.domain.post.repostiory.PostRepositoryCustomImpl;
+import com.server.youthtalktalk.domain.report.entity.Report;
 import com.server.youthtalktalk.domain.report.repository.ReportRepository;
 import com.server.youthtalktalk.domain.scrap.repository.ScrapRepository;
-import com.server.youthtalktalk.global.config.QueryDSLConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,7 +37,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ActiveProfiles("test")
@@ -73,12 +78,17 @@ public class PostRepositoryCustomTest {
                 .build());
 
         this.policy = policyRepository.save(Policy.builder()
-                .policyId("policyId")
+                .policyNum("policyNum")
                 .title("policy1")
                 .category(Category.JOB)
+                .repeatCode(RepeatCode.PERIOD)
+                .earn(Earn.UNRESTRICTED)
+                .institutionType(InstitutionType.CENTER)
+                .region(Region.CENTER)
+                .marriage(Marriage.UNRESTRICTED)
                 .build());
 
-        List<Content> contentList = List.of(Content.builder().content("content").type(ContentType.TEXT).build());
+        List<Content> contentList = List.of(Content.builder().content("policies").type(ContentType.TEXT).build());
         for(long i = 1; i <= LEN; i++) {
             postList.add(postRepository.save(Post.builder()
                 .title("post" + i)

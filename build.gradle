@@ -34,6 +34,7 @@ dependencyManagement {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -42,7 +43,6 @@ dependencies {
 
 	implementation 'com.h2database:h2' // H2 데이터베이스 의존성 추가 (테스트용)
     implementation 'com.auth0:java-jwt:4.4.0' // jwt 설정
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client' // oauth2 client
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE' // s3
 
 	/* mysql 데이터베이스 설정 */
@@ -81,7 +81,11 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.mockito:mockito-core:4.8.0'
+	testImplementation 'org.mockito:mockito-inline:3.12.4'
 	testRuntimeOnly 'com.h2database:h2'
+	// Jackson for JSON processing
+	implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.16.1'
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
 	// JUnit 5 (JUnit Jupiter) 의존성 명시적 선언
 //	testImplementation 'org.junit.jupiter:junit-jupiter-api'
@@ -102,4 +106,14 @@ tasks.register('copyYamlFiles', Copy) {
 
 processResources {
 	dependsOn tasks.named('copyYamlFiles')
+}
+
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+tasks.withType(Copy) {
+	filesMatching('**/*.properties') {
+		filter { line -> new String(line.getBytes('UTF-8'), 'UTF-8') }
+	}
 }

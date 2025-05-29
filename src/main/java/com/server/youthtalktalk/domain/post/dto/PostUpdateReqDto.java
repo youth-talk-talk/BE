@@ -6,21 +6,22 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
-@Getter
-@Builder
-public class PostUpdateReqDto {
-    @NotBlank(message = "게시글 제목은 필수값입니다.")
-    @Size(max = 50,message = "게시글 제목은 최대 50자입니다.")
-    private String title;
+public record PostUpdateReqDto(
+        @NotBlank(message = "게시글 제목은 필수값입니다.")
+        @Size(max = 50, message = "게시글 제목은 최대 50자입니다.")
+        String title,
 
-    @NotNull(message = "게시글 본문은 필수값입니다.")
-    @Size(min = 1, message = "게시글 본문은 필수값입니다.")
-    private List<Content> contentList;
+        String postType,
 
-    private String policyId; // 정책을 변경했을 때만
-    private List<String> addImgUrlList;
-    private List<String> deletedImgUrlList;
-}
+        @NotNull(message = "게시글 본문은 필수값입니다.")
+        @Size(min = 1, message = "게시글 본문은 필수값입니다.")
+        List<Content> contentList,
+
+        Long policyId,                  // 정책을 변경했을 때만
+        List<String> addImgUrlList,
+        List<String> deletedImgUrlList
+) {}

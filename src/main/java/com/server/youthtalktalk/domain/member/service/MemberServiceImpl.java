@@ -1,24 +1,28 @@
 package com.server.youthtalktalk.domain.member.service;
 
+import static com.server.youthtalktalk.global.response.BaseResponseCode.INVALID_REGION;
+
 import com.server.youthtalktalk.domain.comment.entity.Comment;
+import com.server.youthtalktalk.domain.member.dto.MemberInfoDto;
 import com.server.youthtalktalk.domain.member.entity.Block;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.entity.Role;
 import com.server.youthtalktalk.domain.member.entity.SocialType;
 import com.server.youthtalktalk.domain.member.repository.BlockRepository;
-import com.server.youthtalktalk.domain.policy.entity.Region;
+import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import com.server.youthtalktalk.domain.member.dto.MemberUpdateDto;
 import com.server.youthtalktalk.domain.member.dto.SignUpRequestDto;
 import com.server.youthtalktalk.domain.member.dto.apple.AppleDto;
 import com.server.youthtalktalk.domain.member.dto.apple.AppleTokenResponseDto;
+import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import com.server.youthtalktalk.global.jwt.JwtService;
+import com.server.youthtalktalk.global.response.exception.InvalidValueException;
 import com.server.youthtalktalk.global.response.exception.member.*;
 import com.server.youthtalktalk.global.util.AppleAuthUtil;
 import com.server.youthtalktalk.global.util.HashUtil;
 import com.server.youthtalktalk.domain.comment.repository.CommentRepository;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
-import com.server.youthtalktalk.domain.post.repostiory.PostRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +45,6 @@ public class MemberServiceImpl implements MemberService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final BlockRepository blockRepository;
-
     private final JwtService jwtService;
     private final HttpServletResponse httpServletResponse;
     private final AppleAuthUtil appleAuthUtil;
@@ -55,7 +58,8 @@ public class MemberServiceImpl implements MemberService {
         String socialId = signUpRequestDto.getSocialId(); // 평문의 소셜 id
         String nickname = signUpRequestDto.getNickname();
         SocialType socialType = SocialType.fromString(signUpRequestDto.getSocialType());
-        Region region = Region.fromRegionStr(signUpRequestDto.getRegion());
+        Region region = Region.fromName(signUpRequestDto.getRegion());
+        if (region == null) throw new InvalidValueException(INVALID_REGION);
 
         String username = hashUtil.hash(socialId);
         checkIfDuplicatedMember(username); // 중복 회원 검증
@@ -106,8 +110,14 @@ public class MemberServiceImpl implements MemberService {
         String updateRegion = memberUpdateDto.region();
         if (updateNickname != null)
             member.updateNickname(updateNickname);
-        if (updateRegion != null)
-            member.updateRegion(Region.fromRegionStr(updateRegion));
+        if (updateRegion != null){
+            Region region = Region.fromName(memberUpdateDto.region());
+            if (region != null) {
+                member.updateRegion(region);
+            } else {
+                throw new InvalidValueException(INVALID_REGION);
+            }
+        }
     }
 
     /**
@@ -197,5 +207,15 @@ public class MemberServiceImpl implements MemberService {
     private Block findBlock(Member member, Member blockedmember) {
         return blockRepository.findByMemberAndBlockedMember(member, blockedmember)
                 .orElseThrow(NotBlockedMemberException::new);
+    }
+
+    /**
+     * 회원정보 DTO 생성
+     */
+    @Override
+    public MemberInfoDto getMemberInfo(Member member) {
+        String profileImgUrl = (member.getProfileImage() == null) ? null : member.getProfileImage().getImgUrl();
+        return new MemberInfoDto(
+                member.getId(), member.getNickname(), profileImgUrl, member.getRegion().getName());
     }
 }

@@ -3,7 +3,9 @@ package com.server.youthtalktalk.domain.comment.entity;
 import com.server.youthtalktalk.domain.BaseTimeEntity;
 import com.server.youthtalktalk.domain.likes.entity.Likes;
 import com.server.youthtalktalk.domain.member.entity.Member;
+import com.server.youthtalktalk.domain.report.entity.CommentReport;
 import jakarta.persistence.*;
+import java.util.Objects;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -33,6 +35,10 @@ public abstract class Comment extends BaseTimeEntity {
     @OneToMany(mappedBy = "comment")
     private List<Likes> commentLikes = new ArrayList<>();
 
+    @Builder.Default
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL)
+    private List<CommentReport> commentReports = new ArrayList<>();
+
     /* 연관관계 메서드 */
     public void setWriter(Member member) {
         this.writer = member;
@@ -46,11 +52,27 @@ public abstract class Comment extends BaseTimeEntity {
         like.setComment(null);
     }
 
-    // content 업데이트
     public void updateContent(String content) {
         this.content = content;
     }
 
-    // 연관엔티티(post/policy) id 조회
-    public abstract Object getRelatedEntityId();
+    public abstract Long getArticleId();
+
+    public abstract String getArticleType();
+
+    public abstract String getArticleTitle();
+
+    @Override
+    public boolean equals(Object object) {
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+        Comment comment = (Comment) object;
+        return Objects.equals(id, comment.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
 }

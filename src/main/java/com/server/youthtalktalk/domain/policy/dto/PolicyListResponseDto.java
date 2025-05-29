@@ -10,14 +10,17 @@ import lombok.Getter;
 @Builder
 public class PolicyListResponseDto {
 
-    private String policyId; // 정책 아이디
+    private Long policyId; // 정책 아이디
     private Category category; // 카테고리
     private String title; // 정책명
     private String deadlineStatus; // 마감 상태
     private String hostDep; // 주관 기관명
     private boolean isScrap; // 스크랩 여부
+    private long scrapCount; // 스크랩 수
+    private String departmentImgUrl; // 중앙부처 이미지 url
+    private String region; // 지역
 
-    public static PolicyListResponseDto toListDto(Policy policy, Boolean isScrap) {
+    public static PolicyListResponseDto toListDto(Policy policy, Boolean isScrap, long scrapCount) {
         return PolicyListResponseDto.builder()
                 .policyId(policy.getPolicyId())
                 .category(policy.getCategory())
@@ -25,6 +28,9 @@ public class PolicyListResponseDto {
                 .deadlineStatus(DeadlineStatusCalculator.calculateDeadline(policy.getApplyDue()))
                 .hostDep(policy.getHostDep())
                 .isScrap(isScrap)
+                .scrapCount(scrapCount)
+                .departmentImgUrl(policy.getDepartment().getImage_url() == null ? null : policy.getDepartment().getImage_url())
+                .region(policy.getRegion().getName())
                 .build();
     }
 }

@@ -10,7 +10,12 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +25,8 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "post_type")
-public class Post extends BaseTimeEntity {
+@EntityListeners(AuditingEntityListener.class)
+public class Post{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,6 +44,12 @@ public class Post extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member writer;
+
+    @Column(updatable = false)
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 
     @ElementCollection
     @CollectionTable(name = "post_contents", joinColumns = @JoinColumn(name = "post_id"))
@@ -63,7 +75,16 @@ public class Post extends BaseTimeEntity {
         }
     }
 
+    public void setUpdatedAt(){
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public PostRepDto toPostRepDto(boolean isScrap) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String profileImage = null;
+        if(this.getWriter() != null && this.getWriter().getProfileImage() != null){
+            profileImage = this.getWriter().getProfileImage().getImgUrl();
+        }
         return PostRepDto.builder()
                 .postId(this.getId())
                 .title(this.getTitle())
@@ -74,9 +95,10 @@ public class Post extends BaseTimeEntity {
                 .writerId(this.getWriter() == null ? null : this.getWriter().getId())
                 .nickname(this.getWriter() == null ? "null" : this.getWriter().getNickname())
                 .view(this.getView())
-                .images(this.getImages().stream().map(PostImage::getImgUrl).toList())
-                .category(this instanceof Review ? ((Review)this).getPolicy().getCategory().getKey() : null)
+                .category(this instanceof Review ? ((Review)this).getPolicy().getCategory().name() : null)
                 .isScrap(isScrap)
+                .updatedAt(this.getUpdatedAt() == null ? null : this.getUpdatedAt().format(formatter))
+                .profileImage(profileImage)
                 .build();
     }
 }

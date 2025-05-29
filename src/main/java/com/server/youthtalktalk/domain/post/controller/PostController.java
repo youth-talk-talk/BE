@@ -1,5 +1,6 @@
 package com.server.youthtalktalk.domain.post.controller;
 
+import com.server.youthtalktalk.domain.image.service.ImageService;
 import com.server.youthtalktalk.domain.policy.entity.Category;
 import com.server.youthtalktalk.domain.post.dto.*;
 import com.server.youthtalktalk.global.response.BaseResponse;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 import static com.server.youthtalktalk.domain.post.dto.PostListRepDto.*;
 
@@ -22,9 +24,11 @@ import static com.server.youthtalktalk.domain.post.dto.PostListRepDto.*;
 @RestController
 @RequiredArgsConstructor
 public class PostController {
+
     private final PostService postService;
     private final PostReadService postReadService;
     private final MemberService memberService;
+    private final ImageService imageService;
 
     /** 게시글 생성 API */
     @PostMapping("")
@@ -56,6 +60,14 @@ public class PostController {
             return new BaseResponse<>(BaseResponseCode.SUCCESS_SCRAP_CANCEL);
     }
 
+    /** 이미지 업로드 API **/
+    @PostMapping("/image")
+    public BaseResponse<String> uploadImage(@RequestParam("image") MultipartFile image) throws IOException {
+        String imgUrl = imageService.uploadMultiFile(image);
+        imageService.createPostImage(imgUrl);
+        return new BaseResponse<>(imgUrl, BaseResponseCode.SUCCESS);
+    }
+
     // READ
     /** 게시글 상세 조회 API */
     @GetMapping("/{id}")
@@ -73,9 +85,9 @@ public class PostController {
 
     /** 리뷰 전체 조회 API */
     @GetMapping("/review")
-    public BaseResponse<PostListRepDto> getAllReview(@PageableDefault(size = 10) Pageable pageable, @RequestParam List<Category> categories){
-        PostListRepDto postListRepDto = postReadService.getAllReviewByCategory(pageable,categories,memberService.getCurrentMember());
-        return new BaseResponse<>(postListRepDto,BaseResponseCode.SUCCESS);
+    public BaseResponse<ReviewListRepDto> getAllReview(@PageableDefault(size = 10) Pageable pageable, @RequestParam(required = false) List<Category> categories){
+        ReviewListRepDto reviewListRepDto = postReadService.getAllReviewByCategory(pageable,categories,memberService.getCurrentMember());
+        return new BaseResponse<>(reviewListRepDto,BaseResponseCode.SUCCESS);
     }
 
     /** 게시글 키워드 검색 API */
@@ -87,15 +99,15 @@ public class PostController {
 
     /** 나의 모든 게시글 조회 API */
     @GetMapping("/me")
-    public BaseResponse<List<PostListDto>> getAllMyPost(@PageableDefault(size = 10) Pageable pageable){
-        List<PostListDto> postListDto = postReadService.getAllMyPost(pageable,memberService.getCurrentMember());
-        return new BaseResponse<>(postListDto,BaseResponseCode.SUCCESS);
+    public BaseResponse<PostListResponse> getAllMyPost(@PageableDefault(size = 10) Pageable pageable){
+        PostListResponse postListResponse = postReadService.getAllMyPost(pageable, memberService.getCurrentMember());
+        return new BaseResponse<>(postListResponse, BaseResponseCode.SUCCESS);
     }
 
     /** 나의 스크랩한 게시글 조회 API */
     @GetMapping("/scrap")
-    public BaseResponse<List<ScrapPostListDto>> getAllMyScrapedPost(@PageableDefault(size = 10) Pageable pageable){
-        List<ScrapPostListDto> postListDto = postReadService.getScrapPostList(pageable,memberService.getCurrentMember());
-        return new BaseResponse<>(postListDto,BaseResponseCode.SUCCESS);
+    public BaseResponse<PostListResponse> getAllMyScrapedPost(@PageableDefault(size = 10) Pageable pageable){
+        PostListResponse postListResponse = postReadService.getScrapPostList(pageable, memberService.getCurrentMember());
+        return new BaseResponse<>(postListResponse, BaseResponseCode.SUCCESS);
     }
 }

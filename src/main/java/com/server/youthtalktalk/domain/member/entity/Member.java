@@ -1,17 +1,20 @@
 package com.server.youthtalktalk.domain.member.entity;
 
 import com.server.youthtalktalk.domain.BaseTimeEntity;
+import com.server.youthtalktalk.domain.image.entity.ProfileImage;
 import com.server.youthtalktalk.domain.likes.entity.Likes;
+import com.server.youthtalktalk.domain.notification.entity.Notification;
+import com.server.youthtalktalk.domain.policy.entity.Policy;
+import com.server.youthtalktalk.domain.policy.entity.RecentViewedPolicy;
 import com.server.youthtalktalk.domain.report.entity.Report;
 import com.server.youthtalktalk.domain.scrap.entity.Scrap;
 import com.server.youthtalktalk.domain.comment.entity.Comment;
-import com.server.youthtalktalk.domain.policy.entity.Region;
+import com.server.youthtalktalk.domain.policy.entity.region.Region;
 import com.server.youthtalktalk.domain.post.entity.Post;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Getter
@@ -60,8 +63,19 @@ public class Member extends BaseTimeEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Block> blocks = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "reporter", cascade = CascadeType.ALL)
     private List<Report> reports = new ArrayList<>();
+
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
+    private List<Notification> notifications = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<RecentViewedPolicy> recentViewedPolicies = new ArrayList<>();
+
+    @JoinColumn(name = "img_id")
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private ProfileImage profileImage;
 
     // refresh token 업데이트
     public void updateRefreshToken(String updateRefreshToken) {
@@ -91,6 +105,11 @@ public class Member extends BaseTimeEntity {
     // block 삭제
     public void removeBlock(Block block) {
         this.blocks.remove(block);
+    }
+
+    // profileImage 업데이트
+    public void updateProfileImage(ProfileImage updateProfileImage) {
+        this.profileImage = updateProfileImage;
     }
 
     /* 연관관계 편의 메서드 */
