@@ -66,11 +66,11 @@ fi
 NGINX_CONFIG_FILE="/etc/nginx/sites-enabled/default"
 if [ "$NEW_CONTAINER" == "blue" ]; then
     sudo sed -i 's/proxy_pass http:\/\/green;/proxy_pass http:\/\/blue;/' $NGINX_CONFIG_FILE
-    sudo sed -i 's/proxy_pass http:\/\/green\/api\/v1\/notifications\/subscribe;/proxy_pass http:\/\/blue\/api\/v1\/notifications\/subscribe;/' $NGINX_CONFIG_FILE
+    sudo sed -i -E '/location \/api\/v1\/notifications\/subscribe/,/}/ s#(proxy_pass)[[:space:]]+http://green;#\1 http://blue;#' $NGINX_CONFIG_FILE
     sudo sed -i 's/proxy_pass http:\/\/green\/actuator\/health;/proxy_pass http:\/\/blue\/actuator\/health;/' $NGINX_CONFIG_FILE
 else
     sudo sed -i 's/proxy_pass http:\/\/blue;/proxy_pass http:\/\/green;/' $NGINX_CONFIG_FILE
-    sudo sed -i 's/proxy_pass http:\/\/blue\/api\/v1\/notifications\/subscribe;/proxy_pass http:\/\/green\/api\/v1\/notifications\/subscribe;/' $NGINX_CONFIG_FILE
+    sudo sed -i -E '/location \/api\/v1\/notifications\/subscribe/,/}/ s#(proxy_pass)[[:space:]]+http://blue;#\1 http://green;#' $NGINX_CONFIG_FILE
     sudo sed -i 's/proxy_pass http:\/\/blue\/actuator\/health;/proxy_pass http:\/\/green\/actuator\/health;/' $NGINX_CONFIG_FILE
 fi
 
