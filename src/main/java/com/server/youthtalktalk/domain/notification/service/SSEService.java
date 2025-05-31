@@ -5,23 +5,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.notification.dto.NotificationRepDto;
 import com.server.youthtalktalk.domain.notification.entity.Notification;
-import com.server.youthtalktalk.domain.notification.entity.NotificationDetail;
-import com.server.youthtalktalk.domain.notification.entity.NotificationType;
 import com.server.youthtalktalk.domain.notification.entity.SSEEvent;
 import com.server.youthtalktalk.domain.notification.repository.EmitterRepository;
 import com.server.youthtalktalk.domain.notification.repository.NotificationRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -29,6 +25,7 @@ import java.util.Map;
 @Slf4j
 public class SSEService {
     private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
     private final EmitterRepository emitterRepository;
     private final MessageSource messageSource;
 
@@ -39,14 +36,27 @@ public class SSEService {
         // 고유 아이디 생성
         String emitterId = user.getId() + "_" + System.currentTimeMillis();
 
+        // 기존 연결이 있다면 정리
+        emitterRepository.deleteAllEmitterStartWithUserId(String.valueOf(user.getId()));
+        emitterRepository.deleteAllEventCacheStartWithUserId(String.valueOf(user.getId()));
+
         SseEmitter sseEmitter = emitterRepository.save(emitterId, new SseEmitter(DEFAULT_TIMEOUT));
-        log.info("new emitter added : {}", sseEmitter);
+        log.info("new emitter added : {}", emitterId);
         log.info("lastEventId : {}", lastEventId);
 
         /* 상황별 emitter 삭제 처리 */
-        sseEmitter.onCompletion(() -> emitterRepository.deleteById(emitterId)); //완료 시, 타임아웃 시, 에러 발생 시
-        sseEmitter.onTimeout(() -> emitterRepository.deleteById(emitterId));
-        sseEmitter.onError((e) -> emitterRepository.deleteById(emitterId));
+        sseEmitter.onCompletion(() -> {
+            log.info("SSE connection completed: {}", emitterId);
+            emitterRepository.deleteById(emitterId);
+        });
+        sseEmitter.onTimeout(() -> {
+            log.info("SSE connection timeout: {}", emitterId);
+            emitterRepository.deleteById(emitterId);
+        });
+        sseEmitter.onError((e) -> {
+            log.error("SSE connection error: {} - {}", emitterId, e.getMessage());
+            emitterRepository.deleteById(emitterId);
+        });
 
         /* 503 Service Unavailable 방지용 dummy event 전송 */
         sendToClient(sseEmitter, emitterId, "EventStream Created. [userId=" + user.getId() + "]");
@@ -62,34 +72,11 @@ public class SSEService {
         return sseEmitter;
     }
 
-    @EventListener
-    public void send(SSEEvent sseEvent) {
-        // 알램 객체 생성
-        NotificationType type = sseEvent.getType();
-        Long postId = type.equals(NotificationType.POST) ? sseEvent.getId() : null;
-        Long policyId = type.equals(NotificationType.POLICY) ? sseEvent.getId() : null;
-
-        String[] messages = setTitleAndContent(sseEvent.getComment(), sseEvent.getPolicyTitle(), sseEvent.getSender(), sseEvent.getNotificationDetail());
-        String title = messages[0];
-        String message = messages[1];
-
-        Notification notification = Notification.builder()
-                .sender(sseEvent.getSender())
-                .type(type)
-                .createdAt(LocalDateTime.now())
-                .detail(sseEvent.getNotificationDetail())
-                .postId(postId)
-                .policyId(policyId)
-                .isCheck(false)
-                .title(title)
-                .message(message)
-                .build();
-        notification.setReceiver(sseEvent.getReceiver());
-        Notification savedNotification = notificationRepository.save(notification);
-
-        saveEventToUserEmitters(notification.getReceiver().getId(), savedNotification);
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void send(SSEEvent event) {
+        Notification notification = notificationService.saveNotification(event);
+        saveEventToUserEmitters(notification.getReceiver().getId(), notification);
     }
-
 
     private void saveEventToUserEmitters(Long receiverId, Notification savedNotification) {
         String userId = String.valueOf(receiverId);
@@ -112,35 +99,16 @@ public class SSEService {
     }
 
     private void sendToClient(SseEmitter sseEmitter, String emitterId, Object data) {
-        try{
+        try {
             sseEmitter.send(SseEmitter.event()
                     .id(emitterId)
                     .data(data));
         } catch (IOException e) {
+            // 연결이 끊어진 상태라면 해당 emitter만 지우고 넘어간다
             emitterRepository.deleteById(emitterId);
-            throw new RuntimeException("SSE Connection Failed : 알림 전송 실패");
+            // 필요하면 로그만 남기고 종료
+            log.warn("SSE Connection Lost: emitterId={} 삭제", emitterId);
+            return;
         }
-    }
-
-    private String[] setTitleAndContent(String comment, String policyTitle, String sender, NotificationDetail detail){
-        String title = "";
-        String message = "";
-
-        switch(detail){
-            case POST_COMMENT: message = comment;
-            case POST_COMMENT_LIKE:
-            case POLICY_COMMENT_LIKE:
-                title = messageSource.getMessage("notification." + detail.name() + ".title", new Object[]{sender}, null);
-                break;
-
-            case TODAY_FINISHED:
-            case WEEK_BEFORE_FINISHED:
-            case WEEK_AFTER_SCRAP:
-                title = messageSource.getMessage("notification." + detail.name() + ".title", null, null);
-                message = messageSource.getMessage("notification." + detail + ".policies", new Object[]{policyTitle}, null);
-                break;
-        }
-
-        return new String[]{title, message};
     }
 }

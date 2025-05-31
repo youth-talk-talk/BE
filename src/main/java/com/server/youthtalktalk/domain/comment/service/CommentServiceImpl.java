@@ -12,9 +12,11 @@ import com.server.youthtalktalk.domain.likes.repository.LikeRepository;
 import com.server.youthtalktalk.domain.member.entity.Member;
 import com.server.youthtalktalk.domain.member.repository.BlockRepository;
 import com.server.youthtalktalk.domain.member.repository.MemberRepository;
+import com.server.youthtalktalk.domain.notification.entity.Notification;
 import com.server.youthtalktalk.domain.notification.entity.NotificationDetail;
 import com.server.youthtalktalk.domain.notification.entity.NotificationType;
 import com.server.youthtalktalk.domain.notification.entity.SSEEvent;
+import com.server.youthtalktalk.domain.notification.service.NotificationService;
 import com.server.youthtalktalk.domain.policy.entity.Policy;
 import com.server.youthtalktalk.domain.policy.repository.PolicyRepository;
 import com.server.youthtalktalk.domain.post.entity.Post;
@@ -80,22 +82,31 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public PostComment createPostComment(Long postId, String content, Member member) {
         Post post = postRepository.findById(postId).orElseThrow(PostNotFoundException::new);
+        Member receiver = post.getWriter();
         PostComment postComment = PostComment.builder().content(content).build();
         postComment.setPost(post);
         postComment.setWriter(member);
         commentRepository.save(postComment);
 
+        // writer를 미리 로딩
+        SSEEvent sseEvent = SSEEvent.builder()
+                .detail(NotificationDetail.POST_COMMENT)
+                .receiver(receiver)              // 단일 수신자용 @Singular 메서드
+                .sender(member.getNickname())
+                .policyTitle(null)
+                .type(NotificationType.POST)
+                .id(post.getId())
+                .comment(postComment.getContent())
+                .build();
+
         // 자신의 게시글에 작성한 댓글이 아니면 알림 전송
         if(post.getWriter() != null && !isEqualsPostWriter(member, post)){
-            eventPublisher.publishEvent(SSEEvent.builder()
-                    .detail(NotificationDetail.POST_COMMENT)
-                    .receiver(post.getWriter())              // 단일 수신자용 @Singular 메서드
-                    .sender(member.getNickname())
-                    .policyTitle(null)
-                    .type(NotificationType.POST)
-                    .id(post.getId())
-                    .comment(postComment.getContent())
-                    .build());
+            try {
+                eventPublisher.publishEvent(sseEvent);
+                log.info("Notification event published for post comment: postId={}, commentId={}", post.getId(), postComment.getId());
+            } catch (Exception e) {
+                log.error("Failed to publish notification event: {}", e.getMessage());
+            }
         }
         return postComment;
     }

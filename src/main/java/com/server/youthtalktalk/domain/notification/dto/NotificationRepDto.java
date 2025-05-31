@@ -10,7 +10,6 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-@Builder
 public record NotificationRepDto(
         Long notificationId, // 알림 아이디
         NotificationDetail detail, // 알림 종류
@@ -26,18 +25,18 @@ public record NotificationRepDto(
         boolean isRecent // 최근 알림인지 여부(아닐 경우 지난 알림)
 ) {
     public static NotificationRepDto toDto(Notification notification){
-        return NotificationRepDto.builder()
-                .notificationId(notification.getId())
-                .detail(notification.getDetail())
-                .sender(notification.getSender())
-                .postId(notification.getPostId())
-                .policyId(notification.getPolicyId())
-                .message(notification.getMessage())
-                .createdAt(notification.getCreatedAt())
-                .isCheck(notification.isCheck())
-                .isRecent(isRecent(notification))
-                .title(notification.getTitle())
-                .build();
+        return new NotificationRepDto(
+                notification.getId(),
+                notification.getDetail(),
+                notification.getSender(),
+                notification.getPostId(),
+                notification.getPolicyId(),
+                notification.getTitle(),
+                notification.getMessage(),
+                notification.getCreatedAt(),
+                notification.isCheck(),
+                isRecent(notification)
+        );
     }
 
     private static boolean isRecent(Notification notification) {
