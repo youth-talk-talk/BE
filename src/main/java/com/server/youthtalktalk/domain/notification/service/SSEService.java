@@ -62,7 +62,6 @@ public class SSEService {
         return sseEmitter;
     }
 
-    @Transactional
     @EventListener
     public void send(SSEEvent sseEvent) {
         // 알램 객체 생성
